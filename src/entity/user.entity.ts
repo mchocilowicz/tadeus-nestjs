@@ -6,12 +6,15 @@ export class User extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column()
+    @Column({nullable: true})
     phone: string;
 
-    @Column()
+    @Column({nullable: true})
+    name: string;
+
+    @Column({nullable: true})
     code: number;
 
-    @Column()
+    @Column({nullable: true})
     email: string;
 }

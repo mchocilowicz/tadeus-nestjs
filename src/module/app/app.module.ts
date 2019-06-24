@@ -1,13 +1,30 @@
 import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
-import {AppController} from './app.controller';
-import {AppService} from './app.service';
 import {Connection} from "typeorm";
+import {RouterModule, Routes} from "nest-router";
+import {ApiModule} from "../api/api.module";
+import {DashboardModule} from "../dashboard/dashboard.module";
+
+const routes: Routes = [
+    {
+        path: '/',
+        module: DashboardModule,
+    },
+    {
+        path: '/api',
+        module: ApiModule
+    }
+];
 
 @Module({
-    imports: [TypeOrmModule.forRoot()],
-    controllers: [AppController],
-    providers: [AppService],
+    imports: [
+        RouterModule.forRoutes(routes),
+        TypeOrmModule.forRoot(),
+        ApiModule,
+        DashboardModule
+    ],
+    controllers: [],
+    providers: [],
 })
 export class AppModule {
     constructor(private readonly connection: Connection) {
