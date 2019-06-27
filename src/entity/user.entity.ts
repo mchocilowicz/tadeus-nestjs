@@ -1,4 +1,14 @@
-import {BaseEntity, Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
+import { Role } from "../common/role";
+import { Place } from "./place.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -17,4 +27,16 @@ export class User extends BaseEntity {
 
     @Column({nullable: true})
     email: string;
+
+    @Column('text')
+    role: Role;
+
+    @OneToMany(type => Place, place => place.user)
+    places: Place[];
+
+    @CreateDateColumn()
+    createdDate: Date;
+
+    @UpdateDateColumn()
+    updatedDate: Date;
 }

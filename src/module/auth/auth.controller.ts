@@ -1,34 +1,25 @@
-import {Body, Controller, Post} from '@nestjs/common';
-import {AuthService} from "./auth.service";
-import {PhoneDto} from "../../dto/phone.dto";
+import { Body, Controller, Post } from '@nestjs/common';
+import { AuthService } from "./auth.service";
+import { PhoneDto } from "../../dto/phone.dto";
+import { VerifyUserDto } from "../../dto/verifyUser.dto";
 
-@Controller('auth')
+@Controller()
 export class AuthController {
     constructor(private readonly service: AuthService) {
     }
 
-    @Post('signIn')
-    signIn(@Body() phone: any): Promise<void> {
+    @Post('phone')
+    signIn(@Body() phone: PhoneDto): Promise<void> {
         return this.service.signIn(phone);
     }
 
-    @Post('phone')
-    registerPhone(@Body() phone: PhoneDto): Promise<void> {
-        return this.service.createUser(phone);
-    }
-
-    @Post('information')
-    fillInformation(@Body() dto: any): Promise<string> {
-        return this.service.fillUserInformation(dto)
-    }
-
     @Post('code')
-    verifyCode(@Body() dto: any): Promise<void> {
+    verifyCode(@Body() dto: VerifyUserDto): Promise<string> {
         return this.service.checkVerificationCode(dto)
     }
 
     @Post('anonymous')
-    anonymous(): Promise<string> {
+    createAnonymous(): Promise<string> {
         return this.service.createAnonymousUser();
     }
 }

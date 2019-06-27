@@ -1,5 +1,5 @@
 export class UserInformationDto {
-    readonly phone: string;
-    readonly name: string;
-    readonly email: string;
+    phone: string;
+    name: string;
+    email: string;
 }

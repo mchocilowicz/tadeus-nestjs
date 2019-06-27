@@ -1,9 +1,13 @@
-import {Module} from '@nestjs/common';
-import {TypeOrmModule} from '@nestjs/typeorm';
-import {Connection} from "typeorm";
-import {RouterModule, Routes} from "nest-router";
-import {ApiModule} from "../api/api.module";
-import {DashboardModule} from "../dashboard/dashboard.module";
+import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Connection } from "typeorm";
+import { RouterModule, Routes } from "nest-router";
+import { DashboardModule } from "../dashboard/dashboard.module";
+import { NgoModule } from "../ngo/ngo.module";
+import { AuthModule } from "../auth/auth.module";
+import { RegisterModule } from "../register/register.module";
+import { CityModule } from "../city/city.module";
+import { PlaceModule } from "../place/place.module";
 
 const routes: Routes = [
     {
@@ -12,7 +16,28 @@ const routes: Routes = [
     },
     {
         path: '/api',
-        module: ApiModule
+        children: [
+            {
+                path: '/ngo',
+                module: NgoModule
+            },
+            {
+                path: '/login',
+                module: AuthModule,
+            },
+            {
+                path: '/register',
+                module: RegisterModule
+            },
+            {
+                path: '/city',
+                module: CityModule
+            },
+            {
+                path: '/place',
+                module: PlaceModule
+            }
+        ]
     }
 ];
 
@@ -20,8 +45,12 @@ const routes: Routes = [
     imports: [
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRoot(),
-        ApiModule,
-        DashboardModule
+        DashboardModule,
+        NgoModule,
+        CityModule,
+        AuthModule,
+        PlaceModule,
+        RegisterModule,
     ],
     controllers: [],
     providers: [],
