@@ -4,7 +4,7 @@ import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { UserInformationDto } from "../../dto/userInformation.dto";
 import { PhoneDto } from "../../dto/phone.dto";
 import { JwtService } from "@nestjs/jwt";
-import { Role } from "../../common/role";
+import { Role } from "../../common/enum/role";
 import { RegisterPhoneDto } from "../../dto/registerPhone.dto";
 
 @Injectable()
@@ -14,7 +14,7 @@ export class AuthService {
 
     async createUser(phone: RegisterPhoneDto): Promise<void> {
         let count = await User.count({phone: phone.phone});
-        let anonymousUser = await User.findOne({id: phone.annonymousKey});
+        let anonymousUser = await User.findOne({id: phone.anonymousKey});
         if (count === 0) {
             if (anonymousUser) {
                 this.registerUser(anonymousUser)

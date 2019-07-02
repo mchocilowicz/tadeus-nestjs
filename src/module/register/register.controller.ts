@@ -3,6 +3,7 @@ import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { UserInformationDto } from "../../dto/userInformation.dto";
 import { AuthService } from "../auth/auth.service";
 import { RegisterPhoneDto } from "../../dto/registerPhone.dto";
+import { ApiUseTags } from "@nestjs/swagger";
 
 @Controller()
 export class RegisterController {
@@ -10,16 +11,19 @@ export class RegisterController {
     }
 
     @Post('phone')
+    @ApiUseTags('register')
     registerPhone(@Body() phone: RegisterPhoneDto) {
         return this.service.createUser(phone);
     }
 
     @Post('code')
+    @ApiUseTags('register')
     checkCode(@Body() dto: VerifyUserDto) {
         this.service.checkCode(dto)
     }
 
     @Put('information')
+    @ApiUseTags('register')
     fillInformation(@Body() dto: UserInformationDto) {
         return this.service.fillUserInformation(dto)
     }

@@ -7,7 +7,7 @@ import {
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import { Role } from "../common/role";
+import { Role } from "../common/enum/role";
 import { Place } from "./place.entity";
 
 @Entity()
@@ -39,4 +39,10 @@ export class User extends BaseEntity {
 
     @UpdateDateColumn()
     updatedDate: Date;
+
+    @Column()
+    blocked: boolean = false;
+
+    @Column()
+    registered: boolean = false;
 }

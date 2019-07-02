@@ -8,6 +8,8 @@ import { AuthModule } from "../auth/auth.module";
 import { RegisterModule } from "../register/register.module";
 import { CityModule } from "../city/city.module";
 import { PlaceModule } from "../place/place.module";
+import { MorganInterceptor, MorganModule } from "nest-morgan";
+import { APP_INTERCEPTOR } from "@nestjs/core";
 
 const routes: Routes = [
     {
@@ -43,6 +45,7 @@ const routes: Routes = [
 
 @Module({
     imports: [
+        MorganModule.forRoot(),
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRoot(),
         DashboardModule,
@@ -53,13 +56,15 @@ const routes: Routes = [
         RegisterModule,
     ],
     controllers: [],
-    providers: [],
+    providers: [
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: MorganInterceptor('combined')
+        }
+    ],
 })
 export class AppModule {
     constructor(private readonly connection: Connection) {
-        if (connection.isConnected) {
-            console.log("Connected to database");
-        }
     }
 
 }

@@ -7,9 +7,13 @@ import * as compression from 'compression';
 import { AppModule } from './module/app/app.module';
 import { join } from 'path';
 import { Const } from "./util/const";
+import { LoggerService } from "./common/service/logger.service";
+import morgan = require("morgan");
 
 async function bootstrap() {
-    const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+        logger: new LoggerService(Const.APP_NAME)
+    });
 
     const options = new DocumentBuilder()
         .setTitle(Const.APP_NAME)
@@ -26,8 +30,9 @@ async function bootstrap() {
         max: 100
     }));
     app.use(compression());
-    app.useStaticAssets(join(__dirname, 'dashboard/dist/dashboard'));
-    app.setBaseViewsDir(join(__dirname, 'dashboard/dist/dashboard'));
+    app.use(morgan('combined'));
+    app.useStaticAssets(join(__dirname, '..', 'view/'));
+    app.setBaseViewsDir(join(__dirname, '..', 'view/'));
 
     const port = process.env.PORT ? process.env.PORT : 3000;
 

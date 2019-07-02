@@ -4,7 +4,7 @@ import { AuthService } from "./auth.service";
 import { SmsService } from "./sms.service";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
-import { JwtStrategy } from "../../common/jwt.strategy";
+import { JwtStrategy } from "../../common/strategy/jwt.strategy";
 
 @Module({
     controllers: [AuthController],

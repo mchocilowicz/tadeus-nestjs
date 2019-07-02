@@ -1,4 +1,8 @@
+import { ApiModelProperty } from "@nestjs/swagger";
+
 export class RegisterPhoneDto {
+    @ApiModelProperty()
     phone: string;
-    annonymousKey: string;
+    @ApiModelProperty()
+    anonymousKey: string;
 }
