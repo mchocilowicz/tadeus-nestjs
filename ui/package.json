@@ -4,7 +4,7 @@
   "scripts": {
     "start": "npx ng serve",
     "build": "npx ng build",
-    "build:prod": " build --prod",
+    "build:prod": "npx ng build --prod",
     "test": "npx ng test",
     "lint": "npx ng lint",
     "e2e": "npx ng e2e"
