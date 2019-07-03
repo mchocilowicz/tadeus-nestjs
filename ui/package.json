@@ -4,13 +4,15 @@
   "scripts": {
     "start": "npx ng serve",
     "build": "npx ng build",
-    "build:prod": "npx ng build --prod",
+    "build:prod": " build --prod",
     "test": "npx ng test",
     "lint": "npx ng lint",
     "e2e": "npx ng e2e"
   },
   "private": true,
   "dependencies": {
+    "@angular/cli": "^8.0.6",
+    "@angular/compiler-cli": "~8.0.1",
     "@angular/animations": "~8.0.1",
     "@angular/common": "~8.0.1",
     "@angular/compiler": "~8.0.1",
@@ -25,8 +27,6 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.800.0",
-    "@angular/cli": "^8.0.6",
-    "@angular/compiler-cli": "~8.0.1",
     "@angular/language-service": "~8.0.1",
     "@types/jasmine": "~3.3.8",
     "@types/jasminewd2": "~2.0.3",
