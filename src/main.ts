@@ -9,6 +9,7 @@ import { join } from 'path';
 import { Const } from "./util/const";
 import { LoggerService } from "./common/service/logger.service";
 import morgan = require("morgan");
+import { TadeusExceptionFilter } from "./common/filter/exception.filter";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -31,6 +32,7 @@ async function bootstrap() {
     }));
     app.use(compression());
     app.use(morgan('combined'));
+    app.useGlobalFilters(new TadeusExceptionFilter());
     app.useStaticAssets(join(__dirname, '..', 'view/'));
     app.setBaseViewsDir(join(__dirname, '..', 'view/'));
 

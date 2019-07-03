@@ -9,7 +9,6 @@ export class CityController {
     create(@Body() dto: { name: string, location: string }) {
         const city = new City();
         city.name = dto.name;
-        city.date = new Date();
         city.location = dto.location;
         city.save()
     }

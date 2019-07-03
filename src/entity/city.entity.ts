@@ -24,7 +24,4 @@ export class City extends BaseEntity {
 
     @OneToMany(place => Place, place => place.city)
     place: City[];
-    //
-    // @Column({type: "date"})
-    // date
 }

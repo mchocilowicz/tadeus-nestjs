@@ -9,7 +9,8 @@ import { RegisterModule } from "../register/register.module";
 import { CityModule } from "../city/city.module";
 import { PlaceModule } from "../place/place.module";
 import { MorganInterceptor, MorganModule } from "nest-morgan";
-import { APP_INTERCEPTOR } from "@nestjs/core";
+import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
+import { TadeusExceptionFilter } from "../../common/filter/exception.filter";
 
 const routes: Routes = [
     {
@@ -47,7 +48,20 @@ const routes: Routes = [
     imports: [
         MorganModule.forRoot(),
         RouterModule.forRoutes(routes),
-        TypeOrmModule.forRoot(),
+        TypeOrmModule.forRootAsync({
+            useFactory: () => ({
+                // extra: {
+                //     ssl: true
+                // },
+                url: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:6543/tadeus",
+                type: "postgres",
+                entities: [
+                    __dirname + "../..**/*.entity{.ts,.js}"
+                ],
+                synchronize: true,
+                logging: true
+            })
+        }),
         DashboardModule,
         NgoModule,
         CityModule,
@@ -60,11 +74,17 @@ const routes: Routes = [
         {
             provide: APP_INTERCEPTOR,
             useClass: MorganInterceptor('combined')
+        },
+        {
+            provide: APP_FILTER,
+            useClass: TadeusExceptionFilter
         }
     ],
 })
+
 export class AppModule {
     constructor(private readonly connection: Connection) {
+
     }
 
 }
