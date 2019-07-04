@@ -11,6 +11,7 @@ import { PlaceModule } from "../place/place.module";
 import { MorganInterceptor, MorganModule } from "nest-morgan";
 import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
 import { TadeusExceptionFilter } from "../../common/filter/exception.filter";
+import { join } from "path";
 
 const routes: Routes = [
     {
@@ -56,7 +57,7 @@ const routes: Routes = [
                 url: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:6543/tadeus",
                 type: "postgres",
                 entities: [
-                    __dirname + "../..**/*.entity{.ts,.js}"
+                    join(__dirname,"../../**/*.entity{.ts,.js}")
                 ],
                 synchronize: true,
                 logging: true
