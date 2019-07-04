@@ -25,6 +25,6 @@ export class RegisterController {
     @Put('information')
     @ApiUseTags('register')
     fillInformation(@Body() dto: UserInformationDto) {
-        return this.service.fillUserInformation(dto)
+        this.service.fillUserInformation(dto)
     }
 }

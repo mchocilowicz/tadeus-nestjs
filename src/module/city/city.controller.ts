@@ -1,21 +1,28 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Post } from "@nestjs/common";
 import { City } from "../../entity/city.entity";
-import { ApiUseTags } from "@nestjs/swagger";
+import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { CreateCityDto } from "../../dto/create-city.dto";
 
 @Controller()
 export class CityController {
     @Post()
     @ApiUseTags('city')
-    create(@Body() dto: { name: string, location: string }) {
+    @ApiResponse({status: 201, type: City})
+    async create(@Body() dto: CreateCityDto): Promise<City> {
         const city = new City();
         city.name = dto.name;
         city.location = dto.location;
-        city.save()
+        try {
+          return await city.save()
+        } catch (e) {
+            throw new BadRequestException("Could not create city")
+        }
     }
 
     @Get()
     @ApiUseTags('city')
-    getAll() {
+    @ApiResponse({status: 200, type: City, isArray: true})
+    getAll(): Promise<City[]> {
         return City.find()
     }
 }

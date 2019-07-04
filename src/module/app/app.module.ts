@@ -76,10 +76,10 @@ const routes: Routes = [
             provide: APP_INTERCEPTOR,
             useClass: MorganInterceptor('combined')
         },
-        {
-            provide: APP_FILTER,
-            useClass: TadeusExceptionFilter
-        }
+        // {
+        //     provide: APP_FILTER,
+        //     useClass: TadeusExceptionFilter
+        // }
     ],
 })
 

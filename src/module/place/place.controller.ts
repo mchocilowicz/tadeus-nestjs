@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Post, Query } from "@nestjs/common";
 import { PlaceType } from "../../entity/place-type.entity";
 import { createQueryBuilder } from "typeorm";
 import { ApiUseTags } from "@nestjs/swagger";
@@ -40,10 +40,15 @@ export class PlaceController {
 
     @Post('type')
     @ApiUseTags('place')
-    savePlaceType(@Body() dto: { name: string }) {
+    async savePlaceType(@Body() dto: { name: string }) {
         const type = new PlaceType();
         type.name = dto.name;
-        type.save();
+        try {
+            await type.save();    
+        } catch (e) {
+            throw new BadRequestException("Could not create new Place")
+        }
+
     }
 
 }

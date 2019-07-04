@@ -3,7 +3,7 @@ import { NgoType } from "../../entity/ngo-type.entity";
 import { Ngo } from "../../entity/ngo.entity";
 import { CreateNgoDto } from "../../dto/create-ngo.dto";
 import { createQueryBuilder } from "typeorm";
-import { ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitQuery, ApiUseTags } from "@nestjs/swagger";
 
 @Controller()
 export class NgoController {
@@ -24,6 +24,8 @@ export class NgoController {
 
     @Get()
     @ApiUseTags('ngo')
+    @ApiImplicitQuery({ name: 'city', type:"string", description: 'city name', required: false})
+    @ApiImplicitQuery({ name: 'ngoType', type: "string", description: 'ngo type name', required: false})
     async getAll(@Query() query: { city: string, ngoType: string }) {
         let sqlQuery = createQueryBuilder('Ngo')
             .leftJoinAndSelect('Ngo.city', 'city')

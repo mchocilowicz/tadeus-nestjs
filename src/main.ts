@@ -32,7 +32,7 @@ async function bootstrap() {
     }));
     app.use(compression());
     app.use(morgan('combined'));
-    app.useGlobalFilters(new TadeusExceptionFilter());
+    // app.useGlobalFilters(new TadeusExceptionFilter());
     app.useStaticAssets(join(__dirname, '..', 'view/'));
     app.setBaseViewsDir(join(__dirname, '..', 'view/'));
 
