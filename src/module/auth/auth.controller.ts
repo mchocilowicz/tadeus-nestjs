@@ -2,7 +2,8 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from "./auth.service";
 import { PhoneDto } from "../../dto/phone.dto";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
-import { ApiUseTags } from "@nestjs/swagger";
+import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { City } from "../../entity/city.entity";
 
 @Controller()
 export class AuthController {
@@ -17,12 +18,14 @@ export class AuthController {
 
     @Post('code')
     @ApiUseTags('auth')
+    @ApiResponse({status: 200, type: "string"})
     verifyCode(@Body() dto: VerifyUserDto): Promise<string> {
         return this.service.checkVerificationCode(dto)
     }
 
     @Post('anonymous')
     @ApiUseTags('auth')
+    @ApiResponse({status: 200, type: "string"})
     createAnonymous(): Promise<string> {
         return this.service.createAnonymousUser();
     }

@@ -32,7 +32,12 @@ export class AuthService {
         user.role = Role.CLIENT;
         user.code = this.generateCode();
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
-        await user.save()
+        try {
+            await user.save()
+        } catch (e) {
+            throw new BadRequestException('could not create user ')
+        }
+
     }
 
     async createAnonymousUser(): Promise<string> {
@@ -50,7 +55,7 @@ export class AuthService {
         return this.jwtService.sign({id: user.id})
     }
 
-    async checkCode(dto: VerifyUserDto): Promise<void> {
+    async checkCode(dto: VerifyUserDto) {
         let user = await User.findOne({phone: dto.phone, code: dto.code});
         if (!user) {
             throw new NotFoundException('Verifycation code is invalid')

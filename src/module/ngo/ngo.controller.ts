@@ -3,7 +3,9 @@ import { NgoType } from "../../entity/ngo-type.entity";
 import { Ngo } from "../../entity/ngo.entity";
 import { CreateNgoDto } from "../../dto/create-ngo.dto";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitQuery, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { CreateNgoTypeDto } from "../../dto/create-ngoType.dto";
+
 
 @Controller()
 export class NgoController {
@@ -26,6 +28,7 @@ export class NgoController {
     @ApiUseTags('ngo')
     @ApiImplicitQuery({ name: 'city', type:"string", description: 'city name', required: false})
     @ApiImplicitQuery({ name: 'ngoType', type: "string", description: 'ngo type name', required: false})
+    @ApiResponse({status: 200, type: Ngo, isArray: true})
     async getAll(@Query() query: { city: string, ngoType: string }) {
         let sqlQuery = createQueryBuilder('Ngo')
             .leftJoinAndSelect('Ngo.city', 'city')
@@ -47,13 +50,14 @@ export class NgoController {
 
     @Get('type')
     @ApiUseTags('ngo')
+    @ApiResponse({status: 200, type: NgoType, isArray: true})
     getNgoTypes() {
         return NgoType.find();
     }
 
     @Post('type')
     @ApiUseTags('ngo')
-    async createNgoType(@Body() dto: { name: string }) {
+    async createNgoType(@Body() dto: CreateNgoTypeDto) {
         const type = new NgoType();
         type.name = dto.name;
         try {
