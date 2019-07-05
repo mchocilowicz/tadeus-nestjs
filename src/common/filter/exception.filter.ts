@@ -1,5 +1,4 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
-import { loggers } from "winston";
 
 @Catch()
 export class TadeusExceptionFilter implements ExceptionFilter {

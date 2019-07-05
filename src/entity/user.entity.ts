@@ -45,4 +45,10 @@ export class User extends BaseEntity {
 
     @Column()
     registered: boolean = false;
+
+    @Column()
+    qrCode: string;
+
+    @Column()
+    xp: number;
 }

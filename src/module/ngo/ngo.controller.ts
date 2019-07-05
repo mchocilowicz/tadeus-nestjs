@@ -26,8 +26,8 @@ export class NgoController {
 
     @Get()
     @ApiUseTags('ngo')
-    @ApiImplicitQuery({ name: 'city', type:"string", description: 'city name', required: false})
-    @ApiImplicitQuery({ name: 'ngoType', type: "string", description: 'ngo type name', required: false})
+    @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
+    @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo type name', required: false})
     @ApiResponse({status: 200, type: Ngo, isArray: true})
     async getAll(@Query() query: { city: string, ngoType: string }) {
         let sqlQuery = createQueryBuilder('Ngo')

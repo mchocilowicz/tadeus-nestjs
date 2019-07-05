@@ -12,19 +12,19 @@ export class RegisterController {
 
     @Post('phone')
     @ApiUseTags('register')
-    registerPhone(@Body() phone: RegisterPhoneDto) {
+    registerPhone(@Body() phone: RegisterPhoneDto): Promise<void> {
         return this.service.createUser(phone);
     }
 
     @Post('code')
     @ApiUseTags('register')
-    checkCode(@Body() dto: VerifyUserDto) {
-        this.service.checkCode(dto)
+    checkCode(@Body() dto: VerifyUserDto): Promise<void> {
+        return this.service.checkCode(dto)
     }
 
     @Put('information')
     @ApiUseTags('register')
-    fillInformation(@Body() dto: UserInformationDto) {
-        this.service.fillUserInformation(dto)
+    fillInformation(@Body() dto: UserInformationDto): Promise<void> {
+        return this.service.fillUserInformation(dto)
     }
 }

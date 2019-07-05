@@ -3,7 +3,6 @@ import { AuthService } from "./auth.service";
 import { PhoneDto } from "../../dto/phone.dto";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { City } from "../../entity/city.entity";
 
 @Controller()
 export class AuthController {

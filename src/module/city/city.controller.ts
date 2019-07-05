@@ -13,7 +13,7 @@ export class CityController {
         city.name = dto.name;
         city.location = dto.location;
         try {
-          return await city.save()
+            return await city.save()
         } catch (e) {
             throw new BadRequestException("Could not create city")
         }

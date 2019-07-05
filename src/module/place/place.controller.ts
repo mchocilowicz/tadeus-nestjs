@@ -3,7 +3,6 @@ import { PlaceType } from "../../entity/place-type.entity";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { CreatePlaceTypeDto } from "../../dto/create-placeType.dto";
-import { City } from "../../entity/city.entity";
 import { Place } from "../../entity/place.entity";
 
 @Controller()
@@ -16,8 +15,8 @@ export class PlaceController {
 
     @Get()
     @ApiUseTags('place')
-    @ApiImplicitQuery({ name: 'city', type:"string", description: 'city name', required: false})
-    @ApiImplicitQuery({ name: 'placeType', type: "string", description: 'place type name', required: false})
+    @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
+    @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place type name', required: false})
     @ApiResponse({status: 200, type: Place, isArray: true})
     async getAll(@Query() query: { city: string, placeType: string }) {
         let sqlQuery = createQueryBuilder('Place')
