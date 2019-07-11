@@ -5,31 +5,28 @@ import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
 
 @Controller()
+@ApiUseTags('auth')
 export class AuthController {
     constructor(private readonly service: AuthService) {
     }
 
     @Post('client')
-    @ApiUseTags('auth')
     signIn(@Body() phone: PhoneDto): Promise<void> {
         return this.service.signIn(phone);
     }
 
     @Post('partner')
-    @ApiUseTags('auth')
     partnerSignIn(@Body() phone: PhoneDto): Promise<void> {
         return this.service.partnerSignIn(phone);
     }
 
     @Post('code')
-    @ApiUseTags('auth')
     @ApiResponse({status: 200, type: "string"})
     verifyCode(@Body() dto: VerifyUserDto): Promise<string> {
         return this.service.checkVerificationCode(dto);
     }
 
     @Post('anonymous')
-    @ApiUseTags('auth')
     @ApiResponse({status: 200, type: "string"})
     createAnonymous(): Promise<string> {
         return this.service.createAnonymousUser();
