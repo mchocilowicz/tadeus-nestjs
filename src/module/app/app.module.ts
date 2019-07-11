@@ -8,9 +8,11 @@ import { AuthModule } from "../auth/auth.module";
 import { RegisterModule } from "../register/register.module";
 import { CityModule } from "../city/city.module";
 import { PlaceModule } from "../place/place.module";
-import { MorganInterceptor, MorganModule } from "nest-morgan";
-import { APP_INTERCEPTOR } from "@nestjs/core";
 import { join } from "path";
+import { ApiModule } from "../api/api.module";
+import { ClientModule } from "../client/client.module";
+import { TransactionModule } from "../transaction/transaction.module";
+import { PassportModule } from "@nestjs/passport";
 
 const routes: Routes = [
     {
@@ -19,6 +21,7 @@ const routes: Routes = [
     },
     {
         path: '/api',
+        module: ApiModule,
         children: [
             {
                 path: '/ngo',
@@ -39,6 +42,14 @@ const routes: Routes = [
             {
                 path: '/place',
                 module: PlaceModule
+            },
+            {
+                path: '/client',
+                module: ClientModule
+            },
+            {
+                path: '/transaction',
+                module: TransactionModule
             }
         ]
     }
@@ -46,7 +57,7 @@ const routes: Routes = [
 
 @Module({
     imports: [
-        MorganModule.forRoot(),
+        // MorganModule.forRoot(),
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRootAsync({
             useFactory: () => ({
@@ -62,19 +73,23 @@ const routes: Routes = [
                 logging: true
             })
         }),
+        ApiModule,
         DashboardModule,
         NgoModule,
         CityModule,
         AuthModule,
         PlaceModule,
         RegisterModule,
+        ClientModule,
+        TransactionModule,
+        PassportModule
     ],
     controllers: [],
     providers: [
-        {
-            provide: APP_INTERCEPTOR,
-            useClass: MorganInterceptor('combined')
-        },
+        // {
+        //     provide: APP_INTERCEPTOR,
+        //     useClass: MorganInterceptor('combined')
+        // },
         // {
         //     provide: APP_FILTER,
         //     useClass: TadeusExceptionFilter

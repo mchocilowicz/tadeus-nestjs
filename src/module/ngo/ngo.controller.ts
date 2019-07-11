@@ -8,10 +8,10 @@ import { CreateNgoTypeDto } from "../../dto/create-ngoType.dto";
 
 
 @Controller()
+@ApiUseTags('ngo')
 export class NgoController {
 
     @Post()
-    @ApiUseTags('ngo')
     async create(@Body() dto: CreateNgoDto) {
         console.log(dto);
         const ngo = new Ngo();
@@ -20,12 +20,14 @@ export class NgoController {
         ngo.location = dto.location;
         ngo.name = dto.name;
         ngo.type = dto.type;
+        ngo.bankNumber = dto.bankNumber;
+        ngo.email = dto.email;
+        ngo.phone = dto.phone;
         const result = await createQueryBuilder('Ngo').insert().values(ngo).execute();
         console.log(result);
     }
 
     @Get()
-    @ApiUseTags('ngo')
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
     @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo type name', required: false})
     @ApiResponse({status: 200, type: Ngo, isArray: true})
@@ -44,19 +46,16 @@ export class NgoController {
     }
 
     @Delete()
-    @ApiUseTags('ngo')
     delete() {
     }
 
     @Get('type')
-    @ApiUseTags('ngo')
     @ApiResponse({status: 200, type: NgoType, isArray: true})
     getNgoTypes() {
         return NgoType.find();
     }
 
     @Post('type')
-    @ApiUseTags('ngo')
     async createNgoType(@Body() dto: CreateNgoTypeDto) {
         const type = new NgoType();
         type.name = dto.name;

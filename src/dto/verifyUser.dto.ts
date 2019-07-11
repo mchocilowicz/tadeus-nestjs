@@ -1,8 +1,8 @@
 import { ApiModelProperty } from "@nestjs/swagger";
 
 export class VerifyUserDto {
-    @ApiModelProperty()
+    @ApiModelProperty({required: true})
     readonly phone: string;
-    @ApiModelProperty()
+    @ApiModelProperty({required: true})
     readonly code: number;
 }

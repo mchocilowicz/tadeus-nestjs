@@ -13,4 +13,10 @@ export class CreateNgoDto {
     name: string;
     @ApiModelProperty()
     address: string;
+    @ApiModelProperty()
+    bankNumber: string;
+    @ApiModelProperty()
+    email: string;
+    @ApiModelProperty()
+    phone: string;
 }

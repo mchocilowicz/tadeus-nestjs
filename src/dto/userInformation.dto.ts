@@ -1,10 +1,10 @@
 import { ApiModelProperty } from "@nestjs/swagger";
 
 export class UserInformationDto {
-    @ApiModelProperty()
+    @ApiModelProperty({required: true})
     phone: string;
-    @ApiModelProperty()
+    @ApiModelProperty({required: true})
     name: string;
-    @ApiModelProperty()
+    @ApiModelProperty({required: true})
     email: string;
 }

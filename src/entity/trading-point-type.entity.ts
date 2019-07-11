@@ -1,9 +1,9 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Place } from "./place.entity";
+import { TradingPoint } from "./trading-point.entity";
 import { ApiModelProperty } from "@nestjs/swagger";
 
 @Entity()
-export class PlaceType extends BaseEntity {
+export class TradingPointType extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     @ApiModelProperty()
@@ -13,6 +13,6 @@ export class PlaceType extends BaseEntity {
     @ApiModelProperty()
     name: string;
 
-    @OneToMany(place => Place, place => place.type)
-    places: Place[];
+    @OneToMany(place => TradingPoint, tradingPoint => tradingPoint.type)
+    tradingPoints: TradingPoint[];
 }

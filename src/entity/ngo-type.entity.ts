@@ -15,5 +15,5 @@ export class NgoType extends BaseEntity {
     name: string;
 
     @OneToMany(ngo => Ngo, ngo => ngo.type)
-    ngos: Ngo[];
+    ngoList: Ngo[];
 }

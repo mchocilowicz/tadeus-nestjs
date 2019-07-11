@@ -1,9 +1,9 @@
-import { Body, Controller, Post, Put } from "@nestjs/common";
+import { Body, Controller, NotFoundException, Post, Put } from "@nestjs/common";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { UserInformationDto } from "../../dto/userInformation.dto";
 import { AuthService } from "../auth/auth.service";
 import { RegisterPhoneDto } from "../../dto/registerPhone.dto";
-import { ApiUseTags } from "@nestjs/swagger";
+import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
 
 @Controller()
 export class RegisterController {
@@ -18,6 +18,7 @@ export class RegisterController {
 
     @Post('code')
     @ApiUseTags('register')
+    @ApiResponse({status: 404, type: NotFoundException})
     checkCode(@Body() dto: VerifyUserDto): Promise<void> {
         return this.service.checkCode(dto)
     }

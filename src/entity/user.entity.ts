@@ -3,12 +3,18 @@ import {
     Column,
     CreateDateColumn,
     Entity,
+    JoinColumn,
+    JoinTable,
+    ManyToMany,
+    ManyToOne,
     OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import { Role } from "../common/enum/role";
-import { Place } from "./place.entity";
+import { RoleEnum } from "../common/enum/role.enum";
+import { TradingPoint } from "./trading-point.entity";
+import { Transaction } from "./transaction.entity";
+import { Ngo } from "./ngo.entity";
 
 @Entity()
 export class User extends BaseEntity {
@@ -29,10 +35,18 @@ export class User extends BaseEntity {
     email: string;
 
     @Column('text')
-    role: Role;
+    role: RoleEnum;
 
-    @OneToMany(type => Place, place => place.user)
-    places: Place[];
+    @ManyToMany(type => Ngo)
+    @JoinTable()
+    ngoList: Ngo[];
+
+    @ManyToOne(type => TradingPoint)
+    @JoinColumn()
+    tradingPoint: TradingPoint;
+
+    @OneToMany(type => Transaction, transactions => transactions.ngo)
+    transactions: Transaction[];
 
     @CreateDateColumn()
     createdDate: Date;
@@ -46,9 +60,15 @@ export class User extends BaseEntity {
     @Column()
     registered: boolean = false;
 
-    @Column()
-    qrCode: string;
 
-    @Column()
-    xp: number;
+    @Column({nullable: true})
+    xp: number = 0;
+
+    @Column({nullable: true})
+    donation: number = 0;
+
+    @Column({nullable: true})
+    personal: number = 0;
+
+
 }

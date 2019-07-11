@@ -1,6 +1,10 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
-import { Place } from "./place.entity";
+import { TradingPoint } from "./trading-point.entity";
+import { Ngo } from "./ngo.entity";
+import { TransactionType } from "../common/enum/transaction-type.enum";
+import { BusinessArea } from "./business-area.entity";
+import { Cart } from "./cart.entity";
 
 @Entity()
 export class Transaction extends BaseEntity {
@@ -11,7 +15,7 @@ export class Transaction extends BaseEntity {
     price: number;
 
     @Column()
-    donation: number;
+    value: number;
 
     @Column()
     recipeCode: string;
@@ -19,17 +23,25 @@ export class Transaction extends BaseEntity {
     @Column()
     xp: number;
 
-    @Column({type:'date'})
+    @ManyToOne(type => Ngo, ngo => ngo.transactions)
+    @JoinColumn()
+    ngo: Ngo;
+
+    @ManyToOne(type => BusinessArea)
+    @JoinColumn()
+    cart: Cart;
+
+    @ManyToOne(type => TradingPoint, tradingPoint => tradingPoint.transactions)
+    tradingPoint: TradingPoint;
+
+    @Column({type: 'date'})
     transactionDay;
 
-    // @Column()
-    // user: User;
-    //
-    // @Column()
-    // partner: User;
-    //
-    // @Column()
-    // place: Place;
+    @Column('text')
+    type: TransactionType;
+
+    @ManyToOne(type => User, user => user.transactions)
+    user: User;
 
     @CreateDateColumn()
     createdAt: Date;

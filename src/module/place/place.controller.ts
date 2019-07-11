@@ -1,9 +1,9 @@
 import { BadRequestException, Body, Controller, Delete, Get, Post, Query } from "@nestjs/common";
-import { PlaceType } from "../../entity/place-type.entity";
+import { TradingPointType } from "../../entity/trading-point-type.entity";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { CreatePlaceTypeDto } from "../../dto/create-placeType.dto";
-import { Place } from "../../entity/place.entity";
+import { TradingPoint } from "../../entity/trading-point.entity";
 
 @Controller()
 export class PlaceController {
@@ -17,11 +17,11 @@ export class PlaceController {
     @ApiUseTags('place')
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
     @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place type name', required: false})
-    @ApiResponse({status: 200, type: Place, isArray: true})
+    @ApiResponse({status: 200, type: TradingPoint, isArray: true})
     async getAll(@Query() query: { city: string, placeType: string }) {
-        let sqlQuery = createQueryBuilder('Place')
-            .leftJoinAndSelect('Place.city', 'city')
-            .leftJoinAndSelect('Place.type', 'placeType');
+        let sqlQuery = createQueryBuilder('TradingPoint')
+            .leftJoinAndSelect('TradingPoint.city', 'city')
+            .leftJoinAndSelect('TradingPoint.type', 'placeType');
 
         Object.keys(query).forEach(key => {
             if (query[key]) {
@@ -39,20 +39,20 @@ export class PlaceController {
 
     @Get('type')
     @ApiUseTags('place')
-    @ApiResponse({status: 200, type: PlaceType, isArray: true})
+    @ApiResponse({status: 200, type: TradingPointType, isArray: true})
     getPlaceTypes() {
-        return PlaceType.find()
+        return TradingPointType.find()
     }
 
     @Post('type')
     @ApiUseTags('place')
     async savePlaceType(@Body() dto: CreatePlaceTypeDto) {
-        const type = new PlaceType();
+        const type = new TradingPointType();
         type.name = dto.name;
         try {
             await type.save();
         } catch (e) {
-            throw new BadRequestException("Could not create new Place")
+            throw new BadRequestException("Could not create new TradingPoint")
         }
 
     }

@@ -9,17 +9,23 @@ export class AuthController {
     constructor(private readonly service: AuthService) {
     }
 
-    @Post('phone')
+    @Post('client')
     @ApiUseTags('auth')
     signIn(@Body() phone: PhoneDto): Promise<void> {
         return this.service.signIn(phone);
+    }
+
+    @Post('partner')
+    @ApiUseTags('auth')
+    partnerSignIn(@Body() phone: PhoneDto): Promise<void> {
+        return this.service.partnerSignIn(phone);
     }
 
     @Post('code')
     @ApiUseTags('auth')
     @ApiResponse({status: 200, type: "string"})
     verifyCode(@Body() dto: VerifyUserDto): Promise<string> {
-        return this.service.checkVerificationCode(dto)
+        return this.service.checkVerificationCode(dto);
     }
 
     @Post('anonymous')
