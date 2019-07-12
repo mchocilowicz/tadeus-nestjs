@@ -1,8 +1,9 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { TradingPoint } from "./trading-point.entity";
 import { ApiModelProperty } from "@nestjs/swagger";
 
 @Entity()
+@Unique(["name"])
 export class TradingPointType extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")

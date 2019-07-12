@@ -2,7 +2,6 @@ import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, Pr
 import { User } from "./user.entity";
 import { TradingPoint } from "./trading-point.entity";
 import { Ngo } from "./ngo.entity";
-import { TransactionType } from "../common/enum/transaction-type.enum";
 import { BusinessArea } from "./business-area.entity";
 import { Cart } from "./cart.entity";
 
@@ -15,13 +14,19 @@ export class Transaction extends BaseEntity {
     price: number;
 
     @Column()
-    value: number;
+    donationPercentage: number;
+
+    @Column()
+    donationValue: number;
 
     @Column()
     recipeCode: string;
 
     @Column()
     xp: number;
+
+    @Column()
+    isCorrection: boolean = false;
 
     @ManyToOne(type => Ngo, ngo => ngo.transactions)
     @JoinColumn()
@@ -36,9 +41,6 @@ export class Transaction extends BaseEntity {
 
     @Column({type: 'date'})
     transactionDay;
-
-    @Column('text')
-    type: TransactionType;
 
     @ManyToOne(type => User, user => user.transactions)
     user: User;

@@ -40,7 +40,7 @@ export class TradingPoint extends BaseEntity {
     name: string;
 
     @Column()
-    defaultDonationPercentage: number
+    defaultDonationPercentage: number;
 
     @Column()
     defaultVat: number;

@@ -13,7 +13,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: { id: string }) {
-        const user = await User.findOne({id: payload.id}, {relations: ['ngoList']});
+        const user = await User.findOne({id: payload.id}, {relations: ['ngo', 'virtualCard','tradingPoint']});
         if (!user) {
             throw new UnauthorizedException();
         }

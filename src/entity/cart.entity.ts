@@ -15,8 +15,8 @@ export class Cart extends BaseEntity {
     @OneToMany(type => Transaction, transaction => transaction.cart)
     transactions: Transaction[];
 
-    @Column('date')
-    date;
+    @Column()
+    date: string;
 
     isPaid: boolean = false
 }

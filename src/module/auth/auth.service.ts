@@ -6,6 +6,8 @@ import { PhoneDto } from "../../dto/phone.dto";
 import { JwtService } from "@nestjs/jwt";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { RegisterPhoneDto } from "../../dto/registerPhone.dto";
+import { VirtualCard } from "../../entity/virtual-card.entity";
+const uuidv4 = require('uuid/v4');
 
 @Injectable()
 export class AuthService {
@@ -83,7 +85,13 @@ export class AuthService {
             user.email = dto.email;
             user.name = dto.name;
             user.registered = true;
+            user.xp = 50;
+
+            const virtualCard = new VirtualCard();
+            virtualCard.cardNumber = this.generateVirtualCardNumber();
+
             try {
+                user.virtualCard = await virtualCard.save();
                 await user.save();
             } catch (e) {
                 throw new BadRequestException("Could not create user.")
@@ -101,6 +109,14 @@ export class AuthService {
         } catch (e) {
             throw new BadRequestException('could not create user ')
         }
+    }
+
+    private generateVirtualCardNumber(): string {
+        const result = ['VRC', this.generateCode()];
+        let uuid: string = uuidv4();
+        let list: string[] = uuid.split('-');
+        result.push(list[0], list[list.length -1 ]);
+        return result.join('-');
     }
 
     private generateCode(): number {

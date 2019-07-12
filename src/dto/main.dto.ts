@@ -3,9 +3,9 @@ import { Ngo } from "../entity/ngo.entity";
 
 export class MainDto {
     @ApiModelProperty()
-    donation: number = 0;
+    donationPool: number = 0;
     @ApiModelProperty()
-    personal: number = 0;
+    personalPool: number = 0;
     @ApiModelProperty()
     ngo: Ngo = null;
     @ApiModelProperty()

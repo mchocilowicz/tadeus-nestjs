@@ -53,6 +53,7 @@
     "twilio": "^3.32.0",
     "typeorm": "^0.2.18",
     "typescript": "3.4.3",
+    "uuid": "^3.3.2",
     "winston": "^3.2.1"
   },
   "devDependencies": {

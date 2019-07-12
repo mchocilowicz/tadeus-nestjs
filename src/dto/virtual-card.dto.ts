@@ -2,7 +2,7 @@ import { ApiModelProperty } from "@nestjs/swagger";
 
 export class VirtualCardDto {
     @ApiModelProperty()
-    qrCode: string;
+    code: string;
     @ApiModelProperty()
     cardNumber: string;
 }

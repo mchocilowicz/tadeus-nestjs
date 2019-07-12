@@ -21,7 +21,14 @@ export class ClientController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: MainDto})
     async mainScreen(@Req() req) {
-        return new MainDto();
+        const user: User = req.user;
+        const dto = new MainDto();
+        dto.donationPool = user.donationPool;
+        dto.ngo = user.ngo;
+        dto.donationPool = user.donationPool;
+        dto.collectedMoney = user.collectedMoney;
+        dto.xp = user.xp;
+        return dto
     }
 
     @Post('ngo')
@@ -29,11 +36,13 @@ export class ClientController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     async selectedNgo(@Req() req, @Body() ngo: Ngo) {
         let user: User = req.user;
-        if (user.ngoList) {
-            user.ngoList.push(ngo)
-        } else {
-            user.ngoList = [ngo]
+        if(user.ngoSelectionCount > 2) {
+            throw new BadRequestException("Could not add Ngo. Maximum Ngo selection reached.")
         }
+
+        user.ngo = ngo;
+        user.ngoSelectionCount++;
+
         try {
             await user.save()
         } catch (e) {
@@ -54,7 +63,14 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: VirtualCardDto})
-    virtualCard() {
+    virtualCard(@Req() req) {
+        const card = new VirtualCardDto();
+        let user: User = req.user;
+        let virtualCard = user.virtualCard;
 
+        card.cardNumber = virtualCard.cardNumber;
+        card.code = virtualCard.code;
+
+        return card;
     }
 }
