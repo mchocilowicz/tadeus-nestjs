@@ -1,5 +1,5 @@
 import { ApiModelProperty } from "@nestjs/swagger";
-import { Ngo } from "../entity/ngo.entity";
+import { Ngo } from "../database/entity/ngo.entity";
 
 export class MainDto {
     @ApiModelProperty()

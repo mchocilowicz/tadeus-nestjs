@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
-import { Ngo } from "../../entity/ngo.entity";
+import { BadRequestException, Body, Controller, Get, HttpCode, Post, Req, UseGuards } from "@nestjs/common";
+import { Ngo } from "../../database/entity/ngo.entity";
 import { ApiBearerAuth, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 
 import { Roles } from "../../common/decorators/roles.decorator";
@@ -7,9 +7,10 @@ import { RoleEnum } from "../../common/enum/role.enum";
 import { VirtualCardDto } from "../../dto/virtual-card.dto";
 import { MainDto } from "../../dto/main.dto";
 import { ClientHistoryDto } from "../../dto/client-history.dto";
-import { User } from "../../entity/user.entity";
+import { User } from "../../database/entity/user.entity";
 import { JwtAuthGuard } from "../../common/guards/jwt.guard";
 import { RolesGuard } from "../../common/guards/roles.guard";
+import { createQueryBuilder } from "typeorm";
 
 @Controller()
 @ApiUseTags('client')
@@ -32,17 +33,16 @@ export class ClientController {
     }
 
     @Post('ngo')
+    @HttpCode(200)
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     async selectedNgo(@Req() req, @Body() ngo: Ngo) {
         let user: User = req.user;
-        if(user.ngoSelectionCount > 2) {
+        if (user.ngoSelectionCount > 2) {
             throw new BadRequestException("Could not add Ngo. Maximum Ngo selection reached.")
         }
-
         user.ngo = ngo;
         user.ngoSelectionCount++;
-
         try {
             await user.save()
         } catch (e) {
@@ -55,8 +55,18 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: ClientHistoryDto})
-    history() {
-        return [];
+    async history(@Req() req) {
+        const user: User = req.user;
+
+        let tempUser: User = await createQueryBuilder("User")
+            .where("id = :id", {id: user.id})
+            .leftJoinAndSelect("User.transactions", "transactions")
+            .leftJoinAndSelect("User.donations", "donations").execute();
+
+        return {
+            transactions: tempUser.transactions,
+            donations: tempUser.donations
+        }
     }
 
     @Get('card')

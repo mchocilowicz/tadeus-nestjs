@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { AuthController } from "./auth.controller";
-import { AuthService } from "./auth.service";
+import { LoginController } from "./login.controller";
+import { LoginService } from "./login.service";
 import { SmsService } from "./sms.service";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
@@ -17,9 +17,9 @@ import { JwtStrategy } from "../../common/strategy/jwt.strategy";
             },
         }),
     ],
-    providers: [AuthService, SmsService, JwtStrategy],
-    controllers: [AuthController],
-    exports: [AuthService]
+    providers: [LoginService, SmsService, JwtStrategy],
+    controllers: [LoginController],
+    exports: []
 })
-export class AuthModule {
+export class LoginModule {
 }

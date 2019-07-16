@@ -6,7 +6,7 @@ import * as helmet from 'helmet';
 import * as compression from 'compression';
 import { AppModule } from './module/app/app.module';
 import { join } from 'path';
-import { Const } from "./util/const";
+import { Const } from "./common/util/const";
 import { LoggerService } from "./common/service/logger.service";
 import morgan = require("morgan");
 

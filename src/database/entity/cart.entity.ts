@@ -1,6 +1,16 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { Transaction } from "./transaction.entity";
+import {
+    BaseEntity,
+    Column,
+    CreateDateColumn,
+    Entity,
+    JoinColumn,
+    ManyToOne,
+    OneToMany,
+    PrimaryGeneratedColumn,
+    UpdateDateColumn
+} from "typeorm";
 import { TradingPoint } from "./trading-point.entity";
+import { Transaction } from "./transaction.entity";
 
 
 @Entity()
@@ -15,8 +25,12 @@ export class Cart extends BaseEntity {
     @OneToMany(type => Transaction, transaction => transaction.cart)
     transactions: Transaction[];
 
-    @Column()
-    date: string;
+    @CreateDateColumn()
+    createdAt: Date;
 
+    @UpdateDateColumn()
+    updatedAt: Date;
+
+    @Column()
     isPaid: boolean = false
 }

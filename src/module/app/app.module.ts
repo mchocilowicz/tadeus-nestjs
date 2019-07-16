@@ -4,7 +4,7 @@ import { Connection } from "typeorm";
 import { RouterModule, Routes } from "nest-router";
 import { DashboardModule } from "../dashboard/dashboard.module";
 import { NgoModule } from "../ngo/ngo.module";
-import { AuthModule } from "../auth/auth.module";
+import { LoginModule } from "../login/login.module";
 import { RegisterModule } from "../register/register.module";
 import { CityModule } from "../city/city.module";
 import { PlaceModule } from "../place/place.module";
@@ -12,7 +12,8 @@ import { join } from "path";
 import { ApiModule } from "../api/api.module";
 import { ClientModule } from "../client/client.module";
 import { TransactionModule } from "../transaction/transaction.module";
-import { PassportModule } from "@nestjs/passport";
+import { APP_FILTER } from "@nestjs/core";
+import { TadeusExceptionFilter } from "../../common/filter/tadeus-exception.filter";
 
 const routes: Routes = [
     {
@@ -29,7 +30,7 @@ const routes: Routes = [
             },
             {
                 path: '/login',
-                module: AuthModule,
+                module: LoginModule,
             },
             {
                 path: '/register',
@@ -61,15 +62,12 @@ const routes: Routes = [
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRootAsync({
             useFactory: () => ({
-                // extra: {
-                //     ssl: true
-                // },
                 url: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:6543/tadeus",
                 type: "postgres",
                 entities: [
                     join(__dirname, "../../**/*.entity{.ts,.js}")
                 ],
-                synchronize: true,
+                synchronize: false,
                 logging: true
             })
         }),
@@ -77,12 +75,11 @@ const routes: Routes = [
         DashboardModule,
         NgoModule,
         CityModule,
-        AuthModule,
+        LoginModule,
         PlaceModule,
         RegisterModule,
         ClientModule,
         TransactionModule,
-        PassportModule
     ],
     controllers: [],
     providers: [
@@ -90,16 +87,14 @@ const routes: Routes = [
         //     provide: APP_INTERCEPTOR,
         //     useClass: MorganInterceptor('combined')
         // },
-        // {
-        //     provide: APP_FILTER,
-        //     useClass: TadeusExceptionFilter
-        // }
+        {
+            provide: APP_FILTER,
+            useClass: TadeusExceptionFilter
+        }
     ],
 })
 
 export class AppModule {
     constructor(private readonly connection: Connection) {
-
     }
-
 }

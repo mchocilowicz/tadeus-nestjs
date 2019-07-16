@@ -1,9 +1,9 @@
 import { BadRequestException, Body, Controller, Delete, Get, Post, Query } from "@nestjs/common";
-import { TradingPointType } from "../../entity/trading-point-type.entity";
+import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { CreatePlaceTypeDto } from "../../dto/create-placeType.dto";
-import { TradingPoint } from "../../entity/trading-point.entity";
+import { TradingPoint } from "../../database/entity/trading-point.entity";
 
 @Controller()
 export class PlaceController {

@@ -1,6 +1,6 @@
 import { ApiModelProperty } from "@nestjs/swagger";
-import { Ngo } from "../entity/ngo.entity";
-import { Transaction } from "../entity/transaction.entity";
+import { Ngo } from "../database/entity/ngo.entity";
+import { Transaction } from "../database/entity/transaction.entity";
 
 export class ClientHistoryDto {
     @ApiModelProperty()

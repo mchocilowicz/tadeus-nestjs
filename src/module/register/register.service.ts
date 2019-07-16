@@ -1,22 +1,22 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { User } from "../../entity/user.entity";
-import { VerifyUserDto } from "../../dto/verifyUser.dto";
-import { UserInformationDto } from "../../dto/userInformation.dto";
-import { PhoneDto } from "../../dto/phone.dto";
-import { JwtService } from "@nestjs/jwt";
-import { RoleEnum } from "../../common/enum/role.enum";
 import { RegisterPhoneDto } from "../../dto/registerPhone.dto";
-import { VirtualCard } from "../../entity/virtual-card.entity";
+import { User } from "../../database/entity/user.entity";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { UserInformationDto } from "../../dto/userInformation.dto";
+import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { Role } from "../../database/entity/role.entity";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { VerifyUserDto } from "../../dto/verifyUser.dto";
+
 const uuidv4 = require('uuid/v4');
 
 @Injectable()
-export class AuthService {
-    constructor(private readonly jwtService: JwtService) {
+export class RegisterService {
+    constructor() {
     }
 
     async createUser(phone: RegisterPhoneDto): Promise<void> {
-        let user = await User.findOne({phone: phone.phone});
-        let anonymousUser = await User.findOne({id: phone.anonymousKey});
+        let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
+        let anonymousUser = await User.findOne({id: phone.anonymousKey}, {relations: ['roles']});
         if (user && user.registered) {
             throw new BadRequestException("User with this phone already exists")
         } else {
@@ -30,48 +30,6 @@ export class AuthService {
                 this.registerUser(user)
             }
         }
-    }
-
-    async createAnonymousUser(): Promise<string> {
-        let user = new User();
-        user.role = RoleEnum.ANONYMOUS;
-        let savedUser = await user.save();
-        return this.jwtService.sign({id: savedUser.id})
-    }
-
-    async checkVerificationCode(dto: VerifyUserDto): Promise<string> {
-        let user = await User.findOne({phone: dto.phone});
-        if (!user) {
-            throw new NotFoundException('Verifycation code is invalid')
-        }
-        return this.jwtService.sign({id: user.id})
-    }
-
-    async checkCode(dto: VerifyUserDto) {
-        let user = await User.findOne({phone: dto.phone, code: dto.code});
-        if (!user) {
-            throw new NotFoundException('Verifycation code is invalid')
-        }
-    }
-
-    async partnerSignIn(phone: PhoneDto): Promise<void> {
-        let user = await User.findOne({phone: phone.phone, role: RoleEnum.PARTNER});
-        if (!user) {
-            throw new NotFoundException(`User with phone: ${phone.phone} does not exists`)
-        }
-        user.code = this.generateCode();
-        // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
-        user.save()
-    }
-
-    async signIn(phone: PhoneDto): Promise<void> {
-        let user = await User.findOne({phone: phone.phone, role: RoleEnum.CLIENT});
-        if (!user) {
-            throw new NotFoundException(`User with phone: ${phone.phone} does not exists`)
-        }
-        user.code = this.generateCode();
-        // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
-        user.save()
     }
 
     async fillUserInformation(dto: UserInformationDto): Promise<void> {
@@ -101,7 +59,15 @@ export class AuthService {
     }
 
     private async registerUser(user: User) {
-        user.role = RoleEnum.CLIENT;
+        let role = await Role.findOne({name: RoleEnum.CLIENT});
+        if (!role) {
+            throw new BadRequestException('could not create user')
+        }
+        if (user.roles) {
+            user.roles.push(role);
+        } else {
+            user.roles = [role]
+        }
         user.code = this.generateCode();
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         try {
@@ -111,11 +77,18 @@ export class AuthService {
         }
     }
 
+    async checkCode(dto: VerifyUserDto) {
+        let user = await User.findOne({phone: dto.phone, code: dto.code});
+        if (!user) {
+            throw new NotFoundException('Verifycation code is invalid')
+        }
+    }
+
     private generateVirtualCardNumber(): string {
         const result = ['VRC', this.generateCode()];
         let uuid: string = uuidv4();
         let list: string[] = uuid.split('-');
-        result.push(list[0], list[list.length -1 ]);
+        result.push(list[0], list[list.length - 1]);
         return result.join('-');
     }
 
@@ -125,5 +98,4 @@ export class AuthService {
         // return Math.floor(Math.random() * (max - min + 1)) + min;
         return 1234;
     }
-
 }

@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Post, Query } from "@nestjs/common";
-import { NgoType } from "../../entity/ngo-type.entity";
-import { Ngo } from "../../entity/ngo.entity";
+import { NgoType } from "../../database/entity/ngo-type.entity";
+import { Ngo } from "../../database/entity/ngo.entity";
 import { CreateNgoDto } from "../../dto/create-ngo.dto";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";

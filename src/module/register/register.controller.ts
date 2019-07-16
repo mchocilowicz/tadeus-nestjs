@@ -1,31 +1,35 @@
-import { Body, Controller, NotFoundException, Post, Put } from "@nestjs/common";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { UserInformationDto } from "../../dto/userInformation.dto";
-import { AuthService } from "../auth/auth.service";
 import { RegisterPhoneDto } from "../../dto/registerPhone.dto";
 import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ResponseDto } from "../../dto/response.dto";
+import { RegisterService } from "./register.service";
+import { Body, Controller, HttpCode, Post, Put } from "@nestjs/common";
 
 @Controller()
+@ApiUseTags('register')
 export class RegisterController {
-    constructor(private readonly service: AuthService) {
+    constructor(private readonly service: RegisterService) {
     }
 
     @Post('phone')
-    @ApiUseTags('register')
-    registerPhone(@Body() phone: RegisterPhoneDto): Promise<void> {
-        return this.service.createUser(phone);
+    @HttpCode(200)
+    @ApiResponse({status: 200, type: ResponseDto})
+    async registerPhone(@Body() phone: RegisterPhoneDto) {
+        await this.service.createUser(phone);
     }
 
     @Post('code')
-    @ApiUseTags('register')
-    @ApiResponse({status: 404, type: NotFoundException})
-    checkCode(@Body() dto: VerifyUserDto): Promise<void> {
-        return this.service.checkCode(dto)
+    @HttpCode(200)
+    @ApiResponse({status: 200, type: ResponseDto})
+    async checkCode(@Body() dto: VerifyUserDto) {
+        await this.service.checkCode(dto);
     }
 
     @Put('information')
-    @ApiUseTags('register')
-    fillInformation(@Body() dto: UserInformationDto): Promise<void> {
-        return this.service.fillUserInformation(dto)
+    @HttpCode(200)
+    @ApiResponse({status: 200, type: ResponseDto})
+    async fillInformation(@Body() dto: UserInformationDto) {
+        await this.service.fillUserInformation(dto);
     }
 }

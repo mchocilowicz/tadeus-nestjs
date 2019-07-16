@@ -5,6 +5,7 @@ import {
     Entity,
     JoinColumn,
     JoinTable,
+    ManyToMany,
     ManyToOne,
     OneToMany,
     OneToOne,
@@ -12,21 +13,21 @@ import {
     Unique,
     UpdateDateColumn
 } from "typeorm";
-import { RoleEnum } from "../common/enum/role.enum";
+import { Role } from "./role.entity";
+import { VirtualCard } from "./virtual-card.entity";
+import { Ngo } from "./ngo.entity";
 import { TradingPoint } from "./trading-point.entity";
 import { Transaction } from "./transaction.entity";
-import { Ngo } from "./ngo.entity";
-import { VirtualCard } from "./virtual-card.entity";
 import { Donation } from "./donation.entity";
 
 @Entity()
-@Unique(["phone"])
+@Unique("UNIQUE_USER_PHONE", ["phone"])
 export class User extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column()
+    @Column({nullable: true})
     phone: string;
 
     @Column({nullable: true})
@@ -48,6 +49,9 @@ export class User extends BaseEntity {
     registered: boolean = false;
 
     @Column()
+    active: boolean = false;
+
+    @Column()
     xp: number = 0;
 
     @Column()
@@ -56,11 +60,12 @@ export class User extends BaseEntity {
     @Column()
     personalPool: number = 0;
 
-    @Column('text')
-    role: RoleEnum;
-
     @Column()
     ngoSelectionCount: number = 0;
+
+    @ManyToMany(type => Role)
+    @JoinTable({name: "user_role"})
+    roles: Role[];
 
     @ManyToOne(type => Ngo)
     @JoinTable()

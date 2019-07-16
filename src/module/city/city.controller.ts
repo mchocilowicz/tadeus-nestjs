@@ -1,16 +1,18 @@
-import { BadRequestException, Body, Controller, Get, Post } from "@nestjs/common";
-import { City } from "../../entity/city.entity";
+import { BadRequestException, Body, Controller, Get, HttpCode, Post } from "@nestjs/common";
+import { City } from "../../database/entity/city.entity";
 import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { CreateCityDto } from "../../dto/create-city.dto";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
 
 @Controller()
+@ApiUseTags('city')
 export class CityController {
+
     @Post()
-    @ApiUseTags('city')
-    @ApiResponse({status: 201, type: City})
-    async create(@Body() dto: CreateCityDto): Promise<City> {
+    @HttpCode(200)
+    @ApiResponse({status: 200, type: City})
+    async create(@Body() dto: CreateCityDto) {
         const city = new City();
         city.name = dto.name;
         city.location = dto.location;
@@ -23,9 +25,8 @@ export class CityController {
 
     @Get()
     @Roles(RoleEnum.CLIENT)
-    @ApiUseTags('city')
     @ApiResponse({status: 200, type: City, isArray: true})
-    getAll(): Promise<City[]> {
+    getAll() {
         return City.find()
     }
 }

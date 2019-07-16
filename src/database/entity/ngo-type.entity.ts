@@ -1,10 +1,10 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
-import { TradingPoint } from "./trading-point.entity";
 import { ApiModelProperty } from "@nestjs/swagger";
+import { Ngo } from "./ngo.entity";
 
 @Entity()
 @Unique(["name"])
-export class TradingPointType extends BaseEntity {
+export class NgoType extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     @ApiModelProperty()
@@ -14,6 +14,6 @@ export class TradingPointType extends BaseEntity {
     @ApiModelProperty()
     name: string;
 
-    @OneToMany(place => TradingPoint, tradingPoint => tradingPoint.type)
-    tradingPoints: TradingPoint[];
+    @OneToMany(ngo => Ngo, ngo => ngo.type)
+    ngoList: Ngo[];
 }

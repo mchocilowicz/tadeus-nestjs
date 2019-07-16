@@ -10,9 +10,9 @@ import {
     Unique,
     UpdateDateColumn
 } from "typeorm";
-import { User } from "./user.entity";
 import { TradingPointType } from "./trading-point-type.entity";
 import { City } from "./city.entity";
+import { User } from "./user.entity";
 import { Transaction } from "./transaction.entity";
 import { Cart } from "./cart.entity";
 
@@ -29,7 +29,7 @@ export class TradingPoint extends BaseEntity {
     @OneToMany(type => Cart, cart => cart.tradingPoint)
     cartList: Cart[];
 
-    @ManyToOne(type => TradingPointType)
+    @ManyToOne(type => TradingPointType, {nullable: false})
     @JoinColumn()
     type: TradingPointType;
 
@@ -48,7 +48,7 @@ export class TradingPoint extends BaseEntity {
     @Column()
     defaultSell: number;
 
-    @ManyToOne(type => City)
+    @ManyToOne(type => City, {nullable: false})
     @JoinColumn()
     city: City;
 

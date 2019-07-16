@@ -1,5 +1,5 @@
-import { City } from "../entity/city.entity";
-import { NgoType } from "../entity/ngo-type.entity";
+import { City } from "../database/entity/city.entity";
+import { NgoType } from "../database/entity/ngo-type.entity";
 import { ApiModelProperty } from "@nestjs/swagger";
 
 export class CreateNgoDto {

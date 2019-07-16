@@ -1,7 +1,7 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { Ngo } from "./ngo.entity";
-import { TradingPoint } from "./trading-point.entity";
 import { ApiModelProperty } from "@nestjs/swagger";
+import { TradingPoint } from "./trading-point.entity";
 
 @Entity()
 @Unique(["name"])
@@ -20,8 +20,8 @@ export class City extends BaseEntity {
     location: string;
 
     @OneToMany(ngo => Ngo, ngo => ngo.city)
-    ngo: Ngo[];
+    ngoList: Ngo[];
 
     @OneToMany(place => TradingPoint, place => place.city)
-    place: City[];
+    places: TradingPoint[];
 }
