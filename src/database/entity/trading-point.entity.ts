@@ -61,6 +61,9 @@ export class TradingPoint extends BaseEntity {
     @Column()
     postCode: string;
 
+    @Column()
+    xp: number = 0;
+
     @CreateDateColumn()
     createdDate: Date;
 

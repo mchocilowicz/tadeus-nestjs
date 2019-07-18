@@ -21,13 +21,13 @@ export class RegisterService {
             throw new BadRequestException("User with this phone already exists")
         } else {
             if (anonymousUser) {
-                this.registerUser(anonymousUser)
+                await this.registerUser(anonymousUser)
             } else if (user) {
-                this.registerUser(user)
+                await this.registerUser(user)
             } else {
                 let user = new User();
                 user.phone = phone.phone;
-                this.registerUser(user)
+                await this.registerUser(user)
             }
         }
     }

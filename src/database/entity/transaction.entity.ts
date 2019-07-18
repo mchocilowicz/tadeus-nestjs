@@ -22,7 +22,10 @@ export class Transaction extends BaseEntity {
     recipeCode: string;
 
     @Column()
-    xp: number;
+    userXp: number;
+
+    @Column()
+    tradingPointXp: number;
 
     @Column()
     isCorrection: boolean = false;
