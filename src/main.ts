@@ -5,7 +5,6 @@ import * as rateLimit from 'express-rate-limit';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
 import { AppModule } from './module/app/app.module';
-import { join } from 'path';
 import { Const } from "./common/util/const";
 import { LoggerService } from "./common/service/logger.service";
 import morgan = require("morgan");
@@ -31,10 +30,10 @@ async function bootstrap() {
     }));
     app.use(compression());
     app.use(morgan('combined'));
-    app.useStaticAssets(join(__dirname, '..', 'view/'));
-    app.setBaseViewsDir(join(__dirname, '..', 'view/'));
+    // app.useStaticAssets(join(__dirname, '..', 'view/'));
+    // app.setBaseViewsDir(join(__dirname, '..', 'view/'));
 
-    const port = process.env.PORT ? process.env.PORT : 3000;
+    const port = process.env.PORT ? process.env.PORT : 4000;
 
     await app.listen(port);
 }

@@ -1,0 +1,9 @@
+{
+  "login": {
+    "title": "Zaloguj się",
+    "phone": "Numer telefonu",
+    "code": "Kod SMS",
+    "button": "Dalej",
+    "error": "Błąd"
+  }
+}

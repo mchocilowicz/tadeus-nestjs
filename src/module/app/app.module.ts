@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from "typeorm";
 import { RouterModule, Routes } from "nest-router";
-import { DashboardModule } from "../dashboard/dashboard.module";
+import { DashboardModule } from "../mvc/dashboard.module";
 import { NgoModule } from "../ngo/ngo.module";
 import { LoginModule } from "../login/login.module";
 import { RegisterModule } from "../register/register.module";

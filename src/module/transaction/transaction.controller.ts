@@ -8,8 +8,9 @@ import { RolesGuard } from "../../common/guards/roles.guard";
 import { Cart } from "../../database/entity/cart.entity";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { createQueryBuilder } from "typeorm";
-import { TransactionSuccessDto } from "../../dto/transaction-success.dto";
+import { CorrectionDto, CorrectionSuccessDto, TransactionSuccessDto } from "../../dto/transaction-success.dto";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { ApiResponse } from "@nestjs/swagger";
 
 const moment = require('moment');
 
@@ -19,32 +20,42 @@ export class TransactionController {
     @Post('correction/approve')
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    async transactionA(@Req() req, @Body() dto: { transactionId: string }) {
+    async correctionApprove(@Req() req, @Body() dto: CorrectionDto) {
         let transaction = await Transaction.findOne({id: dto.transactionId});
         transaction.verifiedByUser = true;
         await transaction.save();
     }
 
-    @Get('correction')
+    @Get('corrections')
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    async transactionC(@Req() req) {
+    async correctionClient(@Req() req) {
         let user: User = req.user;
-        return await Transaction.find({user: User, isCorrection: true, verifiedByUser: false})
+        return await Transaction.find({user: user, isCorrection: true, verifiedByUser: false})
     }
 
     @Get('correction/:id')
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    async transactionV(@Req() req, @Param('id') id) {
+    @ApiResponse({status: 200, type: CorrectionSuccessDto})
+    async verifyCorrection(@Req() req, @Param('id') id) {
         let user: User = req.user;
-        return await Transaction.findOne({id: id, tradingPoint: user.tradingPoint});
+        let transaction = await Transaction.findOne({id: id, tradingPoint: user.tradingPoint});
+        if (transaction.verifiedByUser) {
+            const dto = new CorrectionSuccessDto();
+            dto.date = moment().format("YYYY-MM-DD");
+            dto.price = transaction.price;
+            dto.xp = transaction.userXp;
+            return dto;
+        } else {
+            return null;
+        }
     }
 
     @Post('correction')
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    async correction(@Req() req, @Body() dto: { transactionId: string }) {
+    async correction(@Req() req, @Body() dto: CorrectionDto) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;
 
@@ -52,10 +63,12 @@ export class TransactionController {
         let transaction: Transaction = await Transaction.findOne({id: dto.transactionId}, {relations: ['user']});
         let user: User = transaction.user;
 
+        let pool = this.calculateX(transaction.price, transaction.donationPercentage, tradingPoint.defaultVat);
+
         user.xp -= transaction.userXp;
-        user.personalPool -= transaction.price;
-        user.donationPool -= transaction.donationValue;
-        user.collectedMoney -= transaction.price;
+        user.personalPool -= pool / 2;
+        user.donationPool -= pool / 2;
+        user.collectedMoney -= pool;
         transaction.isCorrection = true;
 
         tradingPoint.xp -= transaction.tradingPointXp;
@@ -67,12 +80,12 @@ export class TransactionController {
         } catch (e) {
             throw new BadRequestException("Transakacja sie nie powiodla. Prosze sprobowac ponownie.")
         }
-        return "TADAM";
     }
 
     @Post()
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: TransactionSuccessDto})
     async saveTransaction(@Req() req, @Body() dto: TransactionDto) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;
@@ -99,7 +112,6 @@ export class TransactionController {
             transaction.price = dto.price;
             transaction.recipeCode = 'FV-12345'; // TODO: Auto Create
             transaction.donationPercentage = dto.donationPercentage;
-            transaction.donationValue = dto.price;
 
             const userXp = await this.calculateXpForUser(user, transaction);
             const tradingPointXp = this.calculateTradingPointXp(currentCart);
@@ -109,9 +121,14 @@ export class TransactionController {
             tradingPoint.xp += tradingPointXp;
 
             user.xp += userXp;
-            user.personalPool += dto.price;
-            user.donationPool += dto.price;
-            user.collectedMoney += dto.price;
+
+            let pool = this.calculateX(dto.price, dto.donationPercentage, tradingPoint.defaultVat);
+            let t = this.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.defaultVat);
+
+            transaction.donationValue = t + pool;
+            user.personalPool += pool / 2;
+            user.donationPool += pool / 2;
+            user.collectedMoney += pool;
 
             let savedTransaction = await transaction.save();
             currentCart.transactions.push(savedTransaction);
@@ -125,7 +142,6 @@ export class TransactionController {
             result.price = dto.price;
             result.xp = userXp;
             return result;
-
         } catch (e) {
             throw new BadRequestException("Transakacja sie nie powiodla. Prosze sprobowac ponownie.")
         }
@@ -185,4 +201,24 @@ export class TransactionController {
             return defaultXp;
         }
     }
+
+    calculateX(price: number, donationPercentage: number, defaultVat: number): number {
+        const vat = defaultVat / 100;
+        const netto = (price * vat) / (1 + (vat));
+        const cost = netto * (donationPercentage / 100);
+        return this.roundToTwo(cost);
+    }
+
+    calculateY(price: number, manipulationFee: number, defaultVat: number): number {
+        const vat = defaultVat / 100;
+        const netto = (price * vat) / (1 + (vat));
+        const fee = netto * (manipulationFee / 100);
+        return this.roundToTwo(fee)
+    }
+
+    roundToTwo(num: number): number {
+        // @ts-ignore
+        return Number(Math.round(num + 'e2') + 'e-2');
+    }
+
 }

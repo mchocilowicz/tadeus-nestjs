@@ -1,0 +1,9 @@
+{
+  "login": {
+    "title": "Login",
+    "phone": "Phone number",
+    "code": "Verification code",
+    "button": "Next",
+    "error": "Error"
+  }
+}

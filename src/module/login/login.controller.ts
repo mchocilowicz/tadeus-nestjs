@@ -4,6 +4,7 @@ import { PhoneDto } from "../../dto/phone.dto";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { ResponseDto } from "../../dto/response.dto";
+import { RoleEnum } from "../../common/enum/role.enum";
 
 @Controller()
 @ApiUseTags('login')
@@ -15,13 +16,20 @@ export class LoginController {
     @HttpCode(200)
     @ApiResponse({status: 200, type: ResponseDto})
     async signIn(@Body() phone: PhoneDto) {
-        await this.service.signIn(phone);
+        await this.service.signIn(phone, RoleEnum.CLIENT);
+    }
+
+    @Post('dashboard')
+    @HttpCode(200)
+    @ApiResponse({status: 200, type: ResponseDto})
+    async dashboardSignIn(@Body() phone: PhoneDto) {
+        await this.service.signIn(phone, RoleEnum.ADMIN);
     }
 
     @Post('partner')
     @ApiResponse({status: 200, type: ResponseDto})
     async partnerSignIn(@Body() phone: PhoneDto) {
-        await this.service.partnerSignIn(phone);
+        await this.service.signIn(phone, RoleEnum.PARTNER);
     }
 
     @Post('code')

@@ -34,7 +34,7 @@ export class LoginService {
     }
 
     async checkVerificationCode(dto: VerifyUserDto): Promise<string> {
-        let user = await User.findOne({phone: dto.phone});
+        let user = await User.findOne({phone: dto.phone, code: dto.code});
 
         if (!user) {
             throw new NotFoundException('Verifycation code is invalid')
@@ -42,24 +42,14 @@ export class LoginService {
         return this.jwtService.sign({id: user.id})
     }
 
-    async partnerSignIn(phone: PhoneDto): Promise<void> {
+    async signIn(phone: PhoneDto, role: RoleEnum): Promise<void> {
         let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
-        this.checkUserRights(user, RoleEnum.PARTNER);
         if (!user) {
-            throw new NotFoundException(`User with phone: ${phone.phone} does not exists`)
+            throw new NotFoundException('Użytkownik o podanym numerze nie istnieje.')
         }
+        this.checkUserRights(user, role);
         user.code = this.generateCode();
-        // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
-        await user.save()
-    }
 
-    async signIn(phone: PhoneDto): Promise<void> {
-        let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
-        if (!user) {
-            throw new NotFoundException(`User with phone: ${phone.phone} does not exists`)
-        }
-        this.checkUserRights(user, RoleEnum.CLIENT);
-        user.code = this.generateCode();
         // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         await user.save()
     }
