@@ -8,6 +8,7 @@ import { AppModule } from './module/app/app.module';
 import { Const } from "./common/util/const";
 import { LoggerService } from "./common/service/logger.service";
 import morgan = require("morgan");
+import { i18nMiddleware } from "./common/middleware/i18n.middleware";
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -32,6 +33,8 @@ async function bootstrap() {
     app.use(morgan('combined'));
     // app.useStaticAssets(join(__dirname, '..', 'view/'));
     // app.setBaseViewsDir(join(__dirname, '..', 'view/'));
+
+    app.use(i18nMiddleware);
 
     const port = process.env.PORT ? process.env.PORT : 4000;
 

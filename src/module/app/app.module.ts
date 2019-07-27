@@ -2,7 +2,6 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Connection } from "typeorm";
 import { RouterModule, Routes } from "nest-router";
-import { DashboardModule } from "../mvc/dashboard.module";
 import { NgoModule } from "../ngo/ngo.module";
 import { LoginModule } from "../login/login.module";
 import { RegisterModule } from "../register/register.module";
@@ -14,12 +13,9 @@ import { ClientModule } from "../client/client.module";
 import { TransactionModule } from "../transaction/transaction.module";
 import { APP_FILTER } from "@nestjs/core";
 import { TadeusExceptionFilter } from "../../common/filter/tadeus-exception.filter";
+import { DashboardModule } from "../dashboard/dashboard.module";
 
 const routes: Routes = [
-    {
-        path: '/',
-        module: DashboardModule,
-    },
     {
         path: '/api',
         module: ApiModule,
@@ -51,6 +47,10 @@ const routes: Routes = [
             {
                 path: '/transaction',
                 module: TransactionModule
+            },
+            {
+                path: '/dashboard',
+                module: DashboardModule
             }
         ]
     }
@@ -72,7 +72,6 @@ const routes: Routes = [
             })
         }),
         ApiModule,
-        DashboardModule,
         NgoModule,
         CityModule,
         LoginModule,
@@ -80,6 +79,7 @@ const routes: Routes = [
         RegisterModule,
         ClientModule,
         TransactionModule,
+        DashboardModule
     ],
     controllers: [],
     providers: [

@@ -6,6 +6,7 @@ import { JwtService } from "@nestjs/jwt";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { Role } from "../../database/entity/role.entity";
+import { Status } from "../../common/enum/status.enum";
 
 const uuidv4 = require('uuid/v4');
 
@@ -37,7 +38,7 @@ export class LoginService {
         let user = await User.findOne({phone: dto.phone, code: dto.code});
 
         if (!user) {
-            throw new NotFoundException('Verifycation code is invalid')
+            throw new NotFoundException('invalid_code')
         }
         return this.jwtService.sign({id: user.id})
     }
@@ -45,7 +46,7 @@ export class LoginService {
     async signIn(phone: PhoneDto, role: RoleEnum): Promise<void> {
         let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
         if (!user) {
-            throw new NotFoundException('Użytkownik o podanym numerze nie istnieje.')
+            throw new NotFoundException('user_exists')
         }
         this.checkUserRights(user, role);
         user.code = this.generateCode();
@@ -58,19 +59,19 @@ export class LoginService {
         const result = ['VRC', this.generateCode()];
         let uuid: string = uuidv4();
         let list: string[] = uuid.split('-');
-        result.push(list[0], list[list.length -1 ]);
+        result.push(list[0], list[list.length - 1]);
         return result.join('-');
     }
 
     private generateCode(): number {
-        const min = Math.ceil(1000);
-        const max = Math.floor(9999);
+        // const min = Math.ceil(1000);
+        // const max = Math.floor(9999);
         // return Math.floor(Math.random() * (max - min + 1)) + min;
         return 1234;
     }
 
     private checkUserRights(user: User, role: RoleEnum) {
-        if (!this.checkUserRole(user.roles, role) || user.blocked || !user.active) {
+        if (!this.checkUserRole(user.roles, role) || user.status !== Status.ACTIVE || !user.registered) {
             throw new UnauthorizedException('Konto zostało zablokowane lub nie ma wystarczająco uprawnień.')
         }
     }

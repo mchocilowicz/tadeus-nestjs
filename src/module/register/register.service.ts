@@ -80,7 +80,7 @@ export class RegisterService {
     async checkCode(dto: VerifyUserDto) {
         let user = await User.findOne({phone: dto.phone, code: dto.code});
         if (!user) {
-            throw new NotFoundException('Verifycation code is invalid')
+            throw new NotFoundException('invalid_code')
         }
     }
 

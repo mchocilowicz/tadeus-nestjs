@@ -19,6 +19,7 @@ import { Ngo } from "./ngo.entity";
 import { TradingPoint } from "./trading-point.entity";
 import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
+import { Status } from "../../common/enum/status.enum";
 
 @Entity()
 @Unique("UNIQUE_USER_PHONE", ["phone"])
@@ -43,13 +44,10 @@ export class User extends BaseEntity {
     collectedMoney: number = 0;
 
     @Column()
-    blocked: boolean = false;
-
-    @Column()
     registered: boolean = false;
 
-    @Column()
-    active: boolean = false;
+    @Column({ type: 'text', default: Status.ACTIVE})
+    status: Status;
 
     @Column()
     xp: number = 0;

@@ -18,8 +18,8 @@ import { createQueryBuilder } from "typeorm";
 export class ClientController {
 
     @Get()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    // @Roles(RoleEnum.CLIENT)
+    // @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: MainDto})
     async mainScreen(@Req() req) {
         const user: User = req.user;

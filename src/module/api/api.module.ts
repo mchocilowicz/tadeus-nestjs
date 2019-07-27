@@ -6,10 +6,6 @@ import { TadeusTransformInterceptor } from "../../common/interceptors/tadeus-tra
     imports: [],
     controllers: [],
     providers: [
-        // {
-        //     provide: APP_GUARD,
-        //     useClass: RolesGuard,
-        // },
         {
             provide: APP_INTERCEPTOR,
             useClass: TadeusTransformInterceptor

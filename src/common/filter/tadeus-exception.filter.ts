@@ -22,7 +22,7 @@ export class TadeusExceptionFilter implements ExceptionFilter {
                 .status(HttpStatus.OK)
                 .json({
                     error: true,
-                    message: messageBody.message
+                    message: request.polyglot.phrases[messageBody.message]
                 });
         } else {
             response
@@ -31,9 +31,8 @@ export class TadeusExceptionFilter implements ExceptionFilter {
                     error: true,
                     statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
                     timestamp: new Date().toISOString(),
-                    message: "Proszę skontaktować się z działem Obsługi."
+                    message: request.polyglot.phrases['internal_server_error']
                 });
         }
     }
-
 }
