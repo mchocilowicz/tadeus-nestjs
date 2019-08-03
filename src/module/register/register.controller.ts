@@ -30,6 +30,6 @@ export class RegisterController {
     @HttpCode(200)
     @ApiResponse({status: 200, type: ResponseDto})
     async fillInformation(@Body() dto: UserInformationDto) {
-        await this.service.fillUserInformation(dto);
+        return await this.service.fillUserInformation(dto);
     }
 }

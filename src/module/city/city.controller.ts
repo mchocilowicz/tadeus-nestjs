@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, Param, Post, Put } from "@nestjs/common";
 import { City } from "../../database/entity/city.entity";
 import { ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { CreateCityDto } from "../../dto/create-city.dto";
@@ -15,7 +15,6 @@ export class CityController {
     async create(@Body() dto: CreateCityDto) {
         const city = new City();
         city.name = dto.name;
-        city.location = dto.location;
         try {
             return await city.save()
         } catch (e) {
@@ -29,4 +28,12 @@ export class CityController {
     getAll() {
         return City.find()
     }
+
+    @Put(':id')
+    async updateCity(@Param('id') id: string, @Body() body) {
+        let city = await City.findOne({id: id});
+        city.name = body.name;
+        await city.save()
+    }
+
 }

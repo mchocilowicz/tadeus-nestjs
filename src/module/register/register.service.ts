@@ -6,12 +6,13 @@ import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { Role } from "../../database/entity/role.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
+import { JwtService } from "@nestjs/jwt";
 
 const uuidv4 = require('uuid/v4');
 
 @Injectable()
 export class RegisterService {
-    constructor() {
+    constructor(private readonly jwtService: JwtService) {
     }
 
     async createUser(phone: RegisterPhoneDto): Promise<void> {
@@ -25,14 +26,14 @@ export class RegisterService {
             } else if (user) {
                 await this.registerUser(user)
             } else {
-                let user = new User();
+                user = new User();
                 user.phone = phone.phone;
                 await this.registerUser(user)
             }
         }
     }
 
-    async fillUserInformation(dto: UserInformationDto): Promise<void> {
+    async fillUserInformation(dto: UserInformationDto): Promise<string> {
         let user = await User.findOne({phone: dto.phone});
         if (user === null) {
             throw new NotFoundException('User does not exists.')
@@ -51,6 +52,7 @@ export class RegisterService {
             try {
                 user.virtualCard = await virtualCard.save();
                 await user.save();
+                return this.jwtService.sign({id: user.id})
             } catch (e) {
                 throw new BadRequestException("Could not create user.")
             }
@@ -71,7 +73,7 @@ export class RegisterService {
         user.code = this.generateCode();
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         try {
-            await user.save()
+            await user.save();
         } catch (e) {
             throw new BadRequestException('could not create user ')
         }

@@ -45,10 +45,7 @@ export class TradingPoint extends BaseEntity {
     @Column()
     defaultVat: number;
 
-    @Column()
-    defaultSell: number;
-
-    @Column()
+    @Column({type: "decimal"})
     manipulationFee: number = 0.66;
 
     @ManyToOne(type => City, {nullable: false})

@@ -15,10 +15,6 @@ export class City extends BaseEntity {
     @ApiModelProperty()
     name: string;
 
-    @Column()
-    @ApiModelProperty()
-    location: string;
-
     @OneToMany(ngo => Ngo, ngo => ngo.city)
     ngoList: Ngo[];
 
