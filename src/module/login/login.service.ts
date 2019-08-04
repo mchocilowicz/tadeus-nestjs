@@ -71,7 +71,7 @@ export class LoginService {
     }
 
     private checkUserRights(user: User, role: RoleEnum) {
-        if (!this.checkUserRole(user.roles, role) || user.status !== Status.ACTIVE || !user.registered) {
+        if (!this.checkUserRole(user.roles, role) || user.status !== Status.ACTIVE) {
             throw new UnauthorizedException('Konto zostało zablokowane lub nie ma wystarczająco uprawnień.')
         }
     }
