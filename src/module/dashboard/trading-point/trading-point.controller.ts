@@ -1,77 +1,19 @@
-import {
-    BadRequestException,
-    Body,
-    Controller,
-    Delete,
-    Get,
-    Param,
-    Post,
-    Put,
-    UploadedFile,
-    UseInterceptors
-} from "@nestjs/common";
-import { User } from "../../database/entity/user.entity";
+import { Body, Controller, Delete, Get, Param, Post, Put, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { createQueryBuilder } from "typeorm";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { Status } from "../../common/enum/status.enum";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { City } from "../../database/entity/city.entity";
-import { TradingPointType } from "../../database/entity/trading-point-type.entity";
-import { Role } from "../../database/entity/role.entity";
+import { City } from "../../../database/entity/city.entity";
+import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
+import { User } from "../../../database/entity/user.entity";
+import { Role } from "../../../database/entity/role.entity";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { ApiUseTags } from "@nestjs/swagger";
 
 const xlsx = require('xlsx');
 
 @Controller()
-export class DashboardController {
-
-    @Get('user')
-    async getAllUsers() {
-        const users = await createQueryBuilder("User")
-            .innerJoin("User.roles", 'role', "role.name = :name", {name: RoleEnum.CLIENT})
-            .getMany();
-        return users.map((user: User) => {
-            return {
-                id: user.id,
-                phone: user.phone,
-                name: user.name,
-                email: user.email,
-                xp: user.xp,
-                status: user.status,
-                updatedDate: user.updatedDate
-            }
-        })
-    }
-
-    @Get('user/:id')
-    async getUserById(@Param('id') id: string) {
-        let user = await User.findOne({id: id}, {relations: ['ngo', 'transactions', 'donations']});
-        if (!user) {
-            throw new BadRequestException('Uzytkownik nie istenieje')
-        }
-        return user;
-    }
-
-    @Put('user/:id')
-    async updateUserPhone(@Param('id') id: string, @Body() dto: { phone: string }) {
-        let user = await User.findOne({id: id});
-        if (!user) {
-            throw new BadRequestException('Uzytkownik nie istenieje')
-        }
-        user.phone = dto.phone;
-        await user.save();
-    }
-
-    @Put('user/:id/status')
-    async updateUserStatus(@Param('id') id: string, @Body() dto: { status: Status }) {
-        let user = await User.findOne({id: id});
-        if (!user) {
-            throw new BadRequestException('Uzytkownik nie istenieje')
-        }
-        user.status = dto.status;
-        await user.save();
-    }
-
+@ApiUseTags('dashboard/trading-point')
+export class TradingPointController {
     @Delete('trading-point/:tradePointId')
     deleteTradePoint() {
     }
@@ -79,16 +21,7 @@ export class DashboardController {
     @Post('trading-point')
     async createTradePoint(@Body() dto: any) {
         const point = new TradingPoint();
-        point.city = dto.city;
-        point.type = dto.type;
-        point.name = dto.name;
-        point.address = dto.address;
-        point.defaultDonationPercentage = dto.defaultDonationPercentage;
-        point.defaultVat = dto.defaultVat;
-        point.location = dto.location;
-        point.manipulationFee = dto.manipulationFee;
-        point.postCode = dto.postCode;
-        point.xp = dto.xp;
+        this.mapToBaseEntity(dto, point);
         await point.save()
     }
 
@@ -164,18 +97,9 @@ export class DashboardController {
     }
 
     @Put('trading-point/:tradePointId')
-    async updateTradingPoint(@Body() dto: TradingPoint) {
+    async updateTradingPoint(@Body() dto: any) {
         let point = await TradingPoint.findOne({id: dto.id});
-        point.type = dto.type;
-        point.city = dto.city;
-        point.xp = dto.xp;
-        point.postCode = dto.postCode;
-        point.address = dto.address;
-        point.location = dto.location;
-        point.manipulationFee = dto.manipulationFee;
-        point.defaultVat = dto.defaultVat;
-        point.defaultDonationPercentage = dto.defaultDonationPercentage;
-        point.name = dto.name;
+        this.mapToBaseEntity(dto, point);
         await point.save()
     }
 
@@ -194,5 +118,18 @@ export class DashboardController {
             user.roles = [role];
         }
         await user.save();
+    }
+
+    mapToBaseEntity(dto: any, entity: TradingPoint): void {
+        entity.city = dto.city;
+        entity.type = dto.type;
+        entity.name = dto.name;
+        entity.address = dto.address;
+        entity.defaultDonationPercentage = dto.defaultDonationPercentage;
+        entity.defaultVat = dto.defaultVat;
+        entity.location = dto.location;
+        entity.manipulationFee = dto.manipulationFee;
+        entity.postCode = dto.postCode;
+        entity.xp = dto.xp;
     }
 }

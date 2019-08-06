@@ -13,7 +13,9 @@ import { ClientModule } from "../client/client.module";
 import { TransactionModule } from "../transaction/transaction.module";
 import { APP_FILTER } from "@nestjs/core";
 import { TadeusExceptionFilter } from "../../common/filter/tadeus-exception.filter";
-import { DashboardModule } from "../dashboard/dashboard.module";
+import { UserModule } from "../dashboard/user/user.module";
+import { TradingPointModule } from "../dashboard/trading-point/trading-point.module";
+import { ConfigurationModule } from "../dashboard/configuration/configuration.module";
 
 const routes: Routes = [
     {
@@ -50,7 +52,20 @@ const routes: Routes = [
             },
             {
                 path: '/dashboard',
-                module: DashboardModule
+                children: [
+                    {
+                        path: '/user',
+                        module: UserModule
+                    },
+                    {
+                        path: '/trading-point',
+                        module: TradingPointModule
+                    },
+                    {
+                        path: '/configuration',
+                        module: ConfigurationModule
+                    }
+                ]
             }
         ]
     }
@@ -79,7 +94,9 @@ const routes: Routes = [
         RegisterModule,
         ClientModule,
         TransactionModule,
-        DashboardModule
+        UserModule,
+        TradingPointModule,
+        ConfigurationModule
     ],
     controllers: [],
     providers: [

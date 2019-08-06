@@ -46,7 +46,7 @@ export class User extends BaseEntity {
     @Column()
     registered: boolean = false;
 
-    @Column({ type: 'text', default: Status.ACTIVE})
+    @Column({type: 'text', default: Status.ACTIVE})
     status: Status;
 
     @Column()

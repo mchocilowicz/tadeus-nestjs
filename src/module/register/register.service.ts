@@ -6,13 +6,12 @@ import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { Role } from "../../database/entity/role.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
-import { JwtService } from "@nestjs/jwt";
-
-const uuidv4 = require('uuid/v4');
+import { CodeService } from "../../common/service/code.service";
+import { TadeusJwtService } from "../common/TadeusJwtModule/TadeusJwtService";
 
 @Injectable()
 export class RegisterService {
-    constructor(private readonly jwtService: JwtService) {
+    constructor(private readonly jwtService: TadeusJwtService, private readonly codeService: CodeService) {
     }
 
     async createUser(phone: RegisterPhoneDto): Promise<void> {
@@ -47,12 +46,12 @@ export class RegisterService {
             user.xp = 50;
 
             const virtualCard = new VirtualCard();
-            virtualCard.cardNumber = this.generateVirtualCardNumber();
+            virtualCard.cardNumber = this.codeService.generateVirtualCardNumber();
 
             try {
                 user.virtualCard = await virtualCard.save();
                 await user.save();
-                return this.jwtService.sign({id: user.id})
+                return this.jwtService.signToken({id: user.id})
             } catch (e) {
                 throw new BadRequestException("Could not create user.")
             }
@@ -70,7 +69,7 @@ export class RegisterService {
         } else {
             user.roles = [role]
         }
-        user.code = this.generateCode();
+        user.code = this.codeService.generateSmsCode();
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         try {
             await user.save();
@@ -84,20 +83,5 @@ export class RegisterService {
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
-    }
-
-    private generateVirtualCardNumber(): string {
-        const result = ['VRC', this.generateCode()];
-        let uuid: string = uuidv4();
-        let list: string[] = uuid.split('-');
-        result.push(list[0], list[list.length - 1]);
-        return result.join('-');
-    }
-
-    private generateCode(): number {
-        const min = Math.ceil(1000);
-        const max = Math.floor(9999);
-        // return Math.floor(Math.random() * (max - min + 1)) + min;
-        return 1234;
     }
 }

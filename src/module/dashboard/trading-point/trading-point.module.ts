@@ -1,13 +1,12 @@
 import { Module } from "@nestjs/common";
-import { DashboardController } from "./dashboard.controller";
 import { MulterModule } from "@nestjs/platform-express";
 import { join } from "path";
 import { diskStorage } from "multer";
+import { TradingPointController } from "./trading-point.controller";
 
 const moment = require("moment");
 
 @Module({
-    controllers: [DashboardController],
     imports: [
         MulterModule.register({
             storage: diskStorage({
@@ -20,6 +19,7 @@ const moment = require("moment");
             })
         })
     ],
+    controllers: [TradingPointController]
 })
-export class DashboardModule {
+export class TradingPointModule {
 }

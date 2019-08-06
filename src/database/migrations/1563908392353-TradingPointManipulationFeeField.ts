@@ -1,4 +1,4 @@
-import {MigrationInterface, QueryRunner} from "typeorm";
+import { MigrationInterface, QueryRunner } from "typeorm";
 
 export class TradingPointManipulationFeeField1563908392353 implements MigrationInterface {
 
