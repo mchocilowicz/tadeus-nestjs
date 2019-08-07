@@ -38,6 +38,9 @@ export class Configuration extends BaseEntity {
     @Column()
     nextNgoPaymentDate: Date;
 
+    @Column()
+    type: string = 'MAIN';
+
     @CreateDateColumn()
     createdAt: Date;
 

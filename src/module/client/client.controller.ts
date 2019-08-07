@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Post, Req, UseGuards } from "@nestjs/common";
 import { Ngo } from "../../database/entity/ngo.entity";
-import { ApiBearerAuth, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
@@ -20,6 +20,11 @@ export class ClientController {
     @Get()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     @ApiResponse({status: 200, type: MainDto})
     async mainScreen(@Req() req) {
         const user: User = req.user;
@@ -36,6 +41,11 @@ export class ClientController {
     @HttpCode(200)
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async selectedNgo(@Req() req, @Body() ngo: Ngo) {
         let user: User = req.user;
         if (user.ngoSelectionCount > 2) {
@@ -55,6 +65,11 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: ClientHistoryDto})
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async history(@Req() req) {
         const user: User = req.user;
 
@@ -73,6 +88,11 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: VirtualCardDto})
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     virtualCard(@Req() req) {
         const card = new VirtualCardDto();
         let user: User = req.user;

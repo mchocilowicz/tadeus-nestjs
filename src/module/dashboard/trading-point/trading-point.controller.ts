@@ -7,25 +7,25 @@ import { TradingPointType } from "../../../database/entity/trading-point-type.en
 import { User } from "../../../database/entity/user.entity";
 import { Role } from "../../../database/entity/role.entity";
 import { RoleEnum } from "../../../common/enum/role.enum";
-import { ApiUseTags } from "@nestjs/swagger";
+import { ApiConsumes, ApiImplicitFile, ApiUseTags } from "@nestjs/swagger";
 
 const xlsx = require('xlsx');
 
 @Controller()
 @ApiUseTags('dashboard/trading-point')
 export class TradingPointController {
-    @Delete('trading-point/:tradePointId')
+    @Delete(':tradePointId')
     deleteTradePoint() {
     }
 
-    @Post('trading-point')
+    @Post()
     async createTradePoint(@Body() dto: any) {
         const point = new TradingPoint();
         this.mapToBaseEntity(dto, point);
         await point.save()
     }
 
-    @Get('trading-point')
+    @Get()
     async getAllTradePoints() {
         const tradePoints = await createQueryBuilder('TradingPoint')
             .leftJoinAndSelect('TradingPoint.city', 'city')
@@ -46,7 +46,9 @@ export class TradingPointController {
         })
     }
 
-    @Post("trading-point/upload")
+    @Post("upload")
+    @ApiConsumes('multipart/form-data')
+    @ApiImplicitFile({name: 'file', required: true, description: 'XLSX file with TradingPoint definitions'})
     @UseInterceptors(FileInterceptor('file'))
     async uploadFile(@UploadedFile() file) {
         const workbook = xlsx.readFile(file.path);
@@ -91,19 +93,19 @@ export class TradingPointController {
         await tradePoint.save();
     }
 
-    @Get('trading-point/:id')
+    @Get(':id')
     async getTradePointById(@Param('id') id: string) {
         return await TradingPoint.findOne({id: id}, {relations: ['city', 'type', 'user', 'transactions']})
     }
 
-    @Put('trading-point/:tradePointId')
+    @Put(':tradePointId')
     async updateTradingPoint(@Body() dto: any) {
         let point = await TradingPoint.findOne({id: dto.id});
         this.mapToBaseEntity(dto, point);
         await point.save()
     }
 
-    @Post('trading-point/:tradingPointId/terminal')
+    @Post(':tradingPointId/terminal')
     async assignNewTerminal(@Param('tradingPointId') id: string, @Body() dto: any) {
         let point = await TradingPoint.findOne({id: id});
         let user = await User.findOne({phone: dto.phone});

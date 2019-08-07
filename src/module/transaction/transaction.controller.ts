@@ -10,7 +10,7 @@ import { Transaction } from "../../database/entity/transaction.entity";
 import { createQueryBuilder } from "typeorm";
 import { CorrectionDto, CorrectionSuccessDto, TransactionSuccessDto } from "../../dto/transaction-success.dto";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { ApiResponse } from "@nestjs/swagger";
+import { ApiImplicitHeader, ApiResponse } from "@nestjs/swagger";
 
 const moment = require('moment');
 
@@ -20,6 +20,11 @@ export class TransactionController {
     @Post('correction/approve')
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async correctionApprove(@Req() req, @Body() dto: CorrectionDto) {
         let transaction = await Transaction.findOne({id: dto.transactionId});
         transaction.verifiedByUser = true;
@@ -29,6 +34,11 @@ export class TransactionController {
     @Get('corrections')
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async correctionClient(@Req() req) {
         let user: User = req.user;
         return await Transaction.find({user: user, isCorrection: true, verifiedByUser: false})
@@ -37,6 +47,11 @@ export class TransactionController {
     @Get('correction/:id')
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     @ApiResponse({status: 200, type: CorrectionSuccessDto})
     async verifyCorrection(@Req() req, @Param('id') id) {
         let user: User = req.user;
@@ -55,6 +70,11 @@ export class TransactionController {
     @Post('correction')
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async correction(@Req() req, @Body() dto: CorrectionDto) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;
@@ -86,6 +106,11 @@ export class TransactionController {
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TransactionSuccessDto})
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async saveTransaction(@Req() req, @Body() dto: TransactionDto) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;

@@ -3,7 +3,7 @@ import { NgoType } from "../../database/entity/ngo-type.entity";
 import { Ngo } from "../../database/entity/ngo.entity";
 import { CreateNgoDto } from "../../dto/create-ngo.dto";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { CreateNgoTypeDto } from "../../dto/create-ngoType.dto";
 
 
@@ -12,6 +12,11 @@ import { CreateNgoTypeDto } from "../../dto/create-ngoType.dto";
 export class NgoController {
 
     @Post()
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async create(@Body() dto: CreateNgoDto) {
         console.log(dto);
         const ngo = new Ngo();
@@ -31,6 +36,11 @@ export class NgoController {
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
     @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo type name', required: false})
     @ApiResponse({status: 200, type: Ngo, isArray: true})
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async getAll(@Query() query: { city: string, ngoType: string }) {
         let sqlQuery = createQueryBuilder('Ngo')
             .leftJoinAndSelect('Ngo.city', 'city')
@@ -46,16 +56,31 @@ export class NgoController {
     }
 
     @Delete()
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     delete() {
     }
 
     @Get('type')
     @ApiResponse({status: 200, type: NgoType, isArray: true})
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     getNgoTypes() {
         return NgoType.find();
     }
 
     @Post('type')
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async createNgoType(@Body() dto: CreateNgoTypeDto) {
         const type = new NgoType();
         type.name = dto.name;

@@ -8,6 +8,7 @@ import { RoleEnum } from "../../common/enum/role.enum";
 import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { CodeService } from "../../common/service/code.service";
 import { TadeusJwtService } from "../common/TadeusJwtModule/TadeusJwtService";
+import { Status } from "../../common/enum/status.enum";
 
 @Injectable()
 export class RegisterService {
@@ -18,7 +19,7 @@ export class RegisterService {
         let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
         let anonymousUser = await User.findOne({id: phone.anonymousKey}, {relations: ['roles']});
         if (user && user.registered) {
-            throw new BadRequestException("User with this phone already exists")
+            throw new BadRequestException("user_exists")
         } else {
             if (anonymousUser) {
                 await this.registerUser(anonymousUser)
@@ -35,10 +36,10 @@ export class RegisterService {
     async fillUserInformation(dto: UserInformationDto): Promise<string> {
         let user = await User.findOne({phone: dto.phone});
         if (user === null) {
-            throw new NotFoundException('User does not exists.')
+            throw new NotFoundException('user_not_exists')
         }
-        if (user.registered) {
-            throw new BadRequestException("User is already fully registered")
+        if (user.status === Status.ACTIVE) {
+            throw new BadRequestException("user_active")
         } else {
             user.email = dto.email;
             user.name = dto.name;
@@ -53,7 +54,7 @@ export class RegisterService {
                 await user.save();
                 return this.jwtService.signToken({id: user.id})
             } catch (e) {
-                throw new BadRequestException("Could not create user.")
+                throw new BadRequestException("user_not_created")
             }
         }
 
@@ -62,7 +63,7 @@ export class RegisterService {
     private async registerUser(user: User) {
         let role = await Role.findOne({name: RoleEnum.CLIENT});
         if (!role) {
-            throw new BadRequestException('could not create user')
+            throw new BadRequestException('user_not_created')
         }
         if (user.roles) {
             user.roles.push(role);
@@ -74,7 +75,7 @@ export class RegisterService {
         try {
             await user.save();
         } catch (e) {
-            throw new BadRequestException('could not create user ')
+            throw new BadRequestException('user_not_created')
         }
     }
 

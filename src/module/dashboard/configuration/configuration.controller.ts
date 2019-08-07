@@ -18,7 +18,7 @@ export class ConfigurationController {
 
     @Get()
     async getConfiguration() {
-        return await Configuration.findOne();
+        return await Configuration.findOne({type: 'MAIN'});
     }
 
     @Put()

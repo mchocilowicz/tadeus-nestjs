@@ -8,7 +8,7 @@ import { ApiUseTags } from "@nestjs/swagger";
 @Controller()
 @ApiUseTags('dashboard/user')
 export class UserController {
-    @Get('user')
+    @Get()
     async getAllUsers() {
         const users = await createQueryBuilder("User")
             .innerJoin("User.roles", 'role', "role.name = :name", {name: RoleEnum.CLIENT})
@@ -26,7 +26,7 @@ export class UserController {
         })
     }
 
-    @Get('user/:id')
+    @Get(':id')
     async getUserById(@Param('id') id: string) {
         let user = await User.findOne({id: id}, {relations: ['ngo', 'transactions', 'donations']});
         if (!user) {
@@ -35,7 +35,7 @@ export class UserController {
         return user;
     }
 
-    @Put('user/:id')
+    @Put(':id')
     async updateUserPhone(@Param('id') id: string, @Body() dto: { phone: string }) {
         let user = await User.findOne({id: id});
         if (!user) {
@@ -45,7 +45,7 @@ export class UserController {
         await user.save();
     }
 
-    @Put('user/:id/status')
+    @Put(':id/status')
     async updateUserStatus(@Param('id') id: string, @Body() dto: { status: Status }) {
         let user = await User.findOne({id: id});
         if (!user) {

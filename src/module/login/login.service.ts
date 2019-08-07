@@ -28,7 +28,7 @@ export class LoginService {
 
             return this.jwtService.signToken({id: savedUser.id})
         } catch (e) {
-            throw new BadRequestException("Could not create user.")
+            throw new BadRequestException("user_not_created")
         }
 
     }
@@ -57,7 +57,7 @@ export class LoginService {
 
     private checkUserRights(user: User, role: RoleEnum) {
         if (!this.checkUserRole(user.roles, role) || user.status !== Status.ACTIVE) {
-            throw new UnauthorizedException('Konto zostało zablokowane lub nie ma wystarczająco uprawnień.')
+            throw new UnauthorizedException('account_blocked')
         }
     }
 

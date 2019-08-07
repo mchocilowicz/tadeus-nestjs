@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from "@nestjs/common";
 import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { CreatePlaceTypeDto } from "../../dto/create-placeType.dto";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
 
@@ -13,6 +13,11 @@ export class PlaceController {
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
     @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place type name', required: false})
     @ApiResponse({status: 200, type: TradingPoint, isArray: true})
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async getAll(@Query() query: { city: string, placeType: string }) {
         let sqlQuery = createQueryBuilder('TradingPoint')
             .leftJoinAndSelect('TradingPoint.city', 'city')
@@ -28,12 +33,22 @@ export class PlaceController {
     }
 
     @Get('type')
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     @ApiResponse({status: 200, type: TradingPointType, isArray: true})
     getPlaceTypes() {
         return TradingPointType.find()
     }
 
     @Post('type')
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async savePlaceType(@Body() dto: CreatePlaceTypeDto) {
         const type = new TradingPointType();
         type.name = dto.name;
@@ -45,6 +60,11 @@ export class PlaceController {
     }
 
     @Put('type/:id')
+    @ApiImplicitHeader({
+        name: 'Accept-Language',
+        required: true,
+        description: 'Language of returned Error message. [pl,eng]'
+    })
     async updateType(@Param('id') id: string, @Body() dto: any) {
         const type = await TradingPointType.findOne({id: id});
         type.name = dto.name;
