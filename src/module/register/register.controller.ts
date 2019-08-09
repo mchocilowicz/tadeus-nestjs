@@ -1,10 +1,11 @@
-import { VerifyUserDto } from "../../dto/verifyUser.dto";
-import { UserInformationDto } from "../../dto/userInformation.dto";
-import { RegisterPhoneDto } from "../../dto/registerPhone.dto";
 import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { ResponseDto } from "../../dto/response.dto";
 import { RegisterService } from "./register.service";
-import { Body, Controller, HttpCode, Post, Put } from "@nestjs/common";
+import { Body, Controller, HttpCode, Post, Put, UsePipes } from "@nestjs/common";
+import { TadeusValidationPipe } from "../../common/pipe/tadeus-validation.pipe";
+import { Const } from "../../common/util/const";
+import { NewPhoneRequest } from "../../models/request/new-phone.request";
+import { CodeVerificationRequest } from "../../models/request/code-verification.request";
+import { UserInformationRequest } from "../../models/request/user-Information.request";
 
 @Controller()
 @ApiUseTags('register')
@@ -14,37 +15,38 @@ export class RegisterController {
 
     @Post('phone')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: ResponseDto})
+    @ApiResponse({status: 200, type: null})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async registerPhone(@Body() phone: RegisterPhoneDto) {
+    @UsePipes(TadeusValidationPipe)
+    async registerPhone(@Body() phone: NewPhoneRequest) {
         await this.service.createUser(phone);
     }
 
     @Post('code')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: ResponseDto})
+    @ApiResponse({status: 200, type: null})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async checkCode(@Body() dto: VerifyUserDto) {
+    async checkCode(@Body() dto: CodeVerificationRequest) {
         await this.service.checkCode(dto);
     }
 
     @Put('information')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: ResponseDto})
+    @ApiResponse({status: 200, type: "string", description: "Authorization token"})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async fillInformation(@Body() dto: UserInformationDto) {
+    async fillInformation(@Body() dto: UserInformationRequest) {
         return await this.service.fillUserInformation(dto);
     }
 }

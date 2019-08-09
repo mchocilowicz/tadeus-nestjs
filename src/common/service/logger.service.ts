@@ -4,8 +4,6 @@ import * as chalk from 'chalk';
 import * as PrettyError from 'pretty-error'; // it's really handy to make your life easier
 
 export class LoggerService {
-    private readonly logger: Logger;
-    private readonly prettyError = new PrettyError();
     public static loggerOptions: any = {
         transports: [
             new transports.File({
@@ -20,6 +18,8 @@ export class LoggerService {
             }),
         ],
     };
+    private readonly logger: Logger;
+    private readonly prettyError = new PrettyError();
 
     constructor(private context: string, transport?) {
         this.logger = (winston as any).createLogger(LoggerService.loggerOptions);

@@ -64,35 +64,6 @@ export class TradingPointController {
         }
     }
 
-    private async saveTradingPointRow(row, error: string[]) {
-        let tradePoint: TradingPoint = new TradingPoint();
-        tradePoint.name = row.name;
-        tradePoint.defaultDonationPercentage = row.donationPercentage;
-        tradePoint.defaultVat = row.vat;
-        tradePoint.manipulationFee = row.manipulationFee;
-        tradePoint.location = row.location;
-        tradePoint.address = row.address;
-        tradePoint.postCode = row.postCode;
-        tradePoint.xp = row.xp;
-
-        let city = await City.findOne({name: row.city});
-        if (!city) {
-            let c = new City();
-            c.name = row.city;
-            city = await c.save()
-        }
-        let type = await TradingPointType.findOne({name: row.type});
-        if (!type) {
-            let t = new TradingPointType();
-            t.name = row.type;
-            type = await t.save()
-        }
-
-        tradePoint.city = city;
-        tradePoint.type = type;
-        await tradePoint.save();
-    }
-
     @Get(':id')
     async getTradePointById(@Param('id') id: string) {
         return await TradingPoint.findOne({id: id}, {relations: ['city', 'type', 'user', 'transactions']})
@@ -133,5 +104,34 @@ export class TradingPointController {
         entity.manipulationFee = dto.manipulationFee;
         entity.postCode = dto.postCode;
         entity.xp = dto.xp;
+    }
+
+    private async saveTradingPointRow(row, error: string[]) {
+        let tradePoint: TradingPoint = new TradingPoint();
+        tradePoint.name = row.name;
+        tradePoint.defaultDonationPercentage = row.donationPercentage;
+        tradePoint.defaultVat = row.vat;
+        tradePoint.manipulationFee = row.manipulationFee;
+        tradePoint.location = row.location;
+        tradePoint.address = row.address;
+        tradePoint.postCode = row.postCode;
+        tradePoint.xp = row.xp;
+
+        let city = await City.findOne({name: row.city});
+        if (!city) {
+            let c = new City();
+            c.name = row.city;
+            city = await c.save()
+        }
+        let type = await TradingPointType.findOne({name: row.type});
+        if (!type) {
+            let t = new TradingPointType();
+            t.name = row.type;
+            type = await t.save()
+        }
+
+        tradePoint.city = city;
+        tradePoint.type = type;
+        await tradePoint.save();
     }
 }

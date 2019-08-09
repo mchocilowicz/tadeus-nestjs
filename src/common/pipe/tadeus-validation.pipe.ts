@@ -1,6 +1,9 @@
 import { ArgumentMetadata, Injectable, PipeTransform } from "@nestjs/common";
-import { validate } from "class-validator";
+import { validate, ValidationError } from "class-validator";
 import { plainToClass } from "class-transformer";
+import { TadeusValidationException } from "../exceptions/TadeusValidation.exception";
+
+const _ = require("lodash");
 
 @Injectable()
 export class TadeusValidationPipe implements PipeTransform<any> {
@@ -10,8 +13,9 @@ export class TadeusValidationPipe implements PipeTransform<any> {
         }
         const object = plainToClass(metatype, value);
         const errors = await validate(object);
+        console.log(errors);
         if (errors.length > 0) {
-            console.log(errors.toLocaleString())
+            throw new TadeusValidationException(this.extractErrors(errors))
         }
         return value;
     }
@@ -19,5 +23,14 @@ export class TadeusValidationPipe implements PipeTransform<any> {
     private toValidate(metatype: Function): boolean {
         const types: Function[] = [String, Boolean, Number, Array, Object];
         return !types.includes(metatype);
+    }
+
+    private extractErrors(errors: ValidationError[]): string[] {
+        let constraints = _.map(errors, 'constraints');
+        let errorCodes = [];
+        constraints.forEach(c => {
+            errorCodes.push(_.values(c))
+        });
+        return _.flatten(errorCodes)
     }
 }

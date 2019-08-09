@@ -2,12 +2,48 @@ export const messages = {
     pl: {
         'user_exists': 'Użytkownik o podanym numerze juz istnieje.',
         'internal_server_error': "Proszę skontaktować się z działem Obsługi.",
-        'invalid_code': 'Wprowadzony kod jest niepoprawny'
+        'invalid_code': 'Wprowadzony kod jest niepoprawny',
+        'phone_dash_format': 'Numer telefonu nie moze zawierać znaku "-"',
+        'phone_format': 'Nie poprawny numer telefonu',
+        'phone_required': 'Numer telefonu jest wymagany',
+        'user_not_created': 'Użytkownik nie został stworzony. Wystąpił błą∂',
+        'user_no_exists': 'Użytkonik nie istnieje',
+        'account_blocked': 'Dane konto zostało zablokowane lub jest nieaktywne',
+        'user_active': 'Użytkownik już jest zarejestrowany',
+        'user_ngo_max_reached': 'Liczba możłiwych wybranych Ngo została osiągnięta',
+        'ngo_not_assigned': 'Ngo nie zostało przypisane. Prosimy spróbować później',
+        'city_not_created': 'Miasto nie zostało zapisane',
+        'trading_point_type_not_created': 'Rodzaj punktu handlowego nie został zapisany',
+        'transaction_not_created': 'Tranzakcja sie nie powiodła',
+        'correction_not_created': 'Korekta się nie powiodła',
+        'code_format': 'Kod weryfikujący powinien zawierać tylko liczby',
+        'code_max_value': 'Kod weryfikujący powinien zawierać 4 cyfry',
+        'name_required': 'Imie jest wymagane',
+        'email_required': 'Email jest wymagany',
+        'email_format': 'Zły format adresu email'
     },
     eng: {
         'user_exists': 'User with provided phone already exists.',
         'internal_server_error': "Please contact support.",
-        'invalid_code': 'Provided code is invalid'
+        'invalid_code': 'Provided code is invalid',
+        'phone_dash_format': 'Phone number cannot contains "-"',
+        'phone_format': 'Wrong phone format',
+        'phone_required': 'Phone is required',
+        'user_not_created': 'Could not create user account. Please try again later',
+        'user_no_exists': 'User does not exists',
+        'account_blocked': 'Your account is blocked or suspended',
+        'user_active': 'Your account is already registered',
+        'user_ngo_max_reached': 'Maximum Ngo selection has been reached',
+        'ngo_not_assigned': 'Could not assign Ngo to your account. Please try again later',
+        'city_not_created': 'City could not be saved',
+        'trading_point_type_not_created': 'Trading Point type could not be saved',
+        'transaction_not_created': 'Transaction could not be created',
+        'correction_not_created': 'Correction could not be created',
+        'code_format': 'Only number are allowed in verification code',
+        'code_max_value': 'Verification code should be only from 4 digits',
+        'name_required': 'Name is required',
+        'email_required': 'Email is required',
+        'email_format': 'Wrong email format'
     }
 };
 

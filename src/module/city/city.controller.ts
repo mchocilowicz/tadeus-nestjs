@@ -1,9 +1,9 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Param, Post, Put } from "@nestjs/common";
 import { City } from "../../database/entity/city.entity";
 import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { CreateCityDto } from "../../dto/create-city.dto";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../common/enum/role.enum";
+import { Const } from "../../common/util/const";
+import { CityRequest } from "../../models/request/city.request";
+import { CityResponse } from "../../models/response/city.response";
 
 @Controller()
 @ApiUseTags('city')
@@ -11,29 +11,28 @@ export class CityController {
 
     @Post()
     @HttpCode(200)
-    @ApiResponse({status: 200, type: City})
+    @ApiResponse({status: 200, type: null})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async create(@Body() dto: CreateCityDto) {
+    async create(@Body() dto: CityRequest) {
         const city = new City();
         city.name = dto.name;
         try {
-            return await city.save()
+            await city.save()
         } catch (e) {
-            throw new BadRequestException("Could not create city")
+            throw new BadRequestException("city_not_created")
         }
     }
 
     @Get()
-    @Roles(RoleEnum.CLIENT)
-    @ApiResponse({status: 200, type: City, isArray: true})
+    @ApiResponse({status: 200, type: CityResponse, isArray: true})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     getAll() {
         return City.find()
@@ -41,10 +40,11 @@ export class CityController {
 
     @Put(':id')
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiResponse({status: 200, type: null})
     async updateCity(@Param('id') id: string, @Body() body) {
         let city = await City.findOne({id: id});
         city.name = body.name;

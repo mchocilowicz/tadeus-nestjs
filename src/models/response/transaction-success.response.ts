@@ -1,6 +1,6 @@
 import { ApiModelProperty } from "@nestjs/swagger";
 
-export class TransactionSuccessDto {
+export class TransactionSuccessResponse {
     @ApiModelProperty()
     date: string;
     @ApiModelProperty()
@@ -9,13 +9,12 @@ export class TransactionSuccessDto {
     xp: number;
 }
 
-
-export class CorrectionDto {
+export class CorrectionResponse {
     @ApiModelProperty()
     transactionId: string
 }
 
-export class CorrectionSuccessDto {
+export class CorrectionSuccessResponse {
     @ApiModelProperty()
     date: string;
     @ApiModelProperty()

@@ -1,5 +1,4 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
-import { TransactionDto } from "../../dto/transaction.dto";
 import { User } from "../../database/entity/user.entity";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
@@ -8,24 +7,38 @@ import { RolesGuard } from "../../common/guards/roles.guard";
 import { Cart } from "../../database/entity/cart.entity";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { createQueryBuilder } from "typeorm";
-import { CorrectionDto, CorrectionSuccessDto, TransactionSuccessDto } from "../../dto/transaction-success.dto";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { ApiImplicitHeader, ApiResponse } from "@nestjs/swagger";
+import { Const } from "../../common/util/const";
+import { CalculationService } from "../../common/service/calculation.service";
+import {
+    CorrectionResponse,
+    CorrectionSuccessResponse,
+    TransactionSuccessResponse
+} from "../../models/response/transaction-success.response";
+import { TransactionResponse } from "../../models/response/transaction.response";
 
 const moment = require('moment');
 
 @Controller()
 export class TransactionController {
+    constructor(private readonly calService: CalculationService) {
+    }
 
     @Post('correction/approve')
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async correctionApprove(@Req() req, @Body() dto: CorrectionDto) {
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    async correctionApprove(@Req() req, @Body() dto: CorrectionResponse) {
         let transaction = await Transaction.findOne({id: dto.transactionId});
         transaction.verifiedByUser = true;
         await transaction.save();
@@ -35,9 +48,14 @@ export class TransactionController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
     })
     async correctionClient(@Req() req) {
         let user: User = req.user;
@@ -48,16 +66,21 @@ export class TransactionController {
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @ApiResponse({status: 200, type: CorrectionSuccessDto})
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiResponse({status: 200, type: CorrectionSuccessResponse})
     async verifyCorrection(@Req() req, @Param('id') id) {
         let user: User = req.user;
         let transaction = await Transaction.findOne({id: id, tradingPoint: user.tradingPoint});
         if (transaction.verifiedByUser) {
-            const dto = new CorrectionSuccessDto();
+            const dto = new CorrectionSuccessResponse();
             dto.date = moment().format("YYYY-MM-DD");
             dto.price = transaction.price;
             dto.xp = transaction.userXp;
@@ -71,11 +94,16 @@ export class TransactionController {
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async correction(@Req() req, @Body() dto: CorrectionDto) {
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    async correction(@Req() req, @Body() dto: CorrectionResponse) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;
 
@@ -83,7 +111,7 @@ export class TransactionController {
         let transaction: Transaction = await Transaction.findOne({id: dto.transactionId}, {relations: ['user']});
         let user: User = transaction.user;
 
-        let pool = this.calculateX(transaction.price, transaction.donationPercentage, tradingPoint.defaultVat);
+        let pool = this.calService.calculateX(transaction.price, transaction.donationPercentage, tradingPoint.defaultVat);
 
         user.xp -= transaction.userXp;
         user.personalPool -= pool / 2;
@@ -98,20 +126,25 @@ export class TransactionController {
             await tradingPoint.save();
             await user.save();
         } catch (e) {
-            throw new BadRequestException("Transakacja sie nie powiodla. Prosze sprobowac ponownie.")
+            throw new BadRequestException("correction_not_created")
         }
     }
 
     @Post()
     @Roles(RoleEnum.PARTNER)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: TransactionSuccessDto})
+    @ApiResponse({status: 200, type: TransactionResponse})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async saveTransaction(@Req() req, @Body() dto: TransactionDto) {
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    async saveTransaction(@Req() req, @Body() dto: TransactionResponse) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;
 
@@ -139,7 +172,7 @@ export class TransactionController {
             transaction.donationPercentage = dto.donationPercentage;
 
             const userXp = await this.calculateXpForUser(user, transaction);
-            const tradingPointXp = this.calculateTradingPointXp(currentCart);
+            const tradingPointXp = this.calService.calculateTradingPointXp(currentCart);
 
             transaction.userXp = userXp;
             transaction.tradingPointXp = tradingPointXp;
@@ -147,8 +180,8 @@ export class TransactionController {
 
             user.xp += userXp;
 
-            let pool = this.calculateX(dto.price, dto.donationPercentage, tradingPoint.defaultVat);
-            let t = this.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.defaultVat);
+            let pool = this.calService.calculateX(dto.price, dto.donationPercentage, tradingPoint.defaultVat);
+            let t = this.calService.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.defaultVat);
 
             transaction.donationValue = t + pool;
             user.personalPool += pool / 2;
@@ -162,13 +195,13 @@ export class TransactionController {
             await tradingPoint.save();
             await user.save();
 
-            let result = new TransactionSuccessDto();
+            let result = new TransactionSuccessResponse();
             result.date = "";
             result.price = dto.price;
             result.xp = userXp;
             return result;
         } catch (e) {
-            throw new BadRequestException("Transakacja sie nie powiodla. Prosze sprobowac ponownie.")
+            throw new BadRequestException("transaction_not_created")
         }
     }
 
@@ -182,68 +215,11 @@ export class TransactionController {
             .andWhere('user = :user', {user: user})
             .getMany();
 
-        let previousXp = this.calculate(transactions, currenctTransaction);
+        let previousXp = this.calService.calculate(transactions, currenctTransaction);
         transactions.push(currenctTransaction);
-        let currentXp = this.calculate(transactions, currenctTransaction);
+        let currentXp = this.calService.calculate(transactions, currenctTransaction);
 
         return transactions.length === 0 ? 10 : currentXp - previousXp;
-    }
-
-    private calculate(transactions: any[], currenctTransaction: Transaction): number {
-        let transactionsInSameShop = transactions.filter((t: Transaction) => t.tradingPoint.id === currenctTransaction.tradingPoint.id);
-        let transactionsInOtherShops = transactions.filter((t: Transaction) => t.tradingPoint.id !== currenctTransaction.tradingPoint.id);
-
-        let xp = 0;
-        if (transactionsInSameShop.length !== 0) {
-            xp += 10 * transactionsInSameShop.length;
-        }
-        if (transactionsInOtherShops.length !== 0) {
-            let currentXp = 0;
-            let index = 1;
-            for (let transaction in transactionsInOtherShops) {
-                if (index === 1) {
-                    currentXp += 10;
-                } else {
-                    currentXp += 2 * currentXp;
-                }
-                index++;
-            }
-        }
-        return xp;
-    }
-
-    private calculateTradingPointXp(cart: Cart): number {
-        const defaultXp = 20;
-        if (cart.transactions.length === 0) {
-            return 50;
-        } else if (cart.transactions.length < 20) {
-            return defaultXp;
-        } else if ((cart.transactions.length % 50) === 0) {
-            return defaultXp + 200;
-        } else if ((cart.transactions.length % 20) === 0) {
-            return defaultXp + 50;
-        } else {
-            return defaultXp;
-        }
-    }
-
-    calculateX(price: number, donationPercentage: number, defaultVat: number): number {
-        const vat = defaultVat / 100;
-        const netto = (price * vat) / (1 + (vat));
-        const cost = netto * (donationPercentage / 100);
-        return this.roundToTwo(cost);
-    }
-
-    calculateY(price: number, manipulationFee: number, defaultVat: number): number {
-        const vat = defaultVat / 100;
-        const netto = (price * vat) / (1 + (vat));
-        const fee = netto * (manipulationFee / 100);
-        return this.roundToTwo(fee)
-    }
-
-    roundToTwo(num: number): number {
-        // @ts-ignore
-        return Number(Math.round(num + 'e2') + 'e-2');
     }
 
 }

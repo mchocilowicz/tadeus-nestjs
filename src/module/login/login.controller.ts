@@ -1,10 +1,11 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post, UsePipes } from '@nestjs/common';
 import { LoginService } from "./login.service";
-import { PhoneDto } from "../../dto/phone.dto";
-import { VerifyUserDto } from "../../dto/verifyUser.dto";
 import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { ResponseDto } from "../../dto/response.dto";
 import { RoleEnum } from "../../common/enum/role.enum";
+import { TadeusValidationPipe } from "../../common/pipe/tadeus-validation.pipe";
+import { Const } from "../../common/util/const";
+import { PhoneRequest } from "../../models/request/phone.request";
+import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 
 @Controller()
 @ApiUseTags('login')
@@ -14,56 +15,59 @@ export class LoginController {
 
     @Post('client')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: ResponseDto})
+    @ApiResponse({status: 200, type: null})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async signIn(@Body() phone: PhoneDto) {
+    @UsePipes(TadeusValidationPipe)
+    async signIn(@Body() phone: PhoneRequest) {
         await this.service.signIn(phone, RoleEnum.CLIENT);
     }
 
     @Post('dashboard')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: ResponseDto})
+    @ApiResponse({status: 200, type: null})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async dashboardSignIn(@Body() phone: PhoneDto) {
+    @UsePipes(TadeusValidationPipe)
+    async dashboardSignIn(@Body() phone: PhoneRequest) {
         await this.service.signIn(phone, RoleEnum.ADMIN);
     }
 
     @Post('partner')
-    @ApiResponse({status: 200, type: ResponseDto})
+    @ApiResponse({status: 200, type: null})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async partnerSignIn(@Body() phone: PhoneDto) {
+    @UsePipes(TadeusValidationPipe)
+    async partnerSignIn(@Body() phone: null) {
         await this.service.signIn(phone, RoleEnum.PARTNER);
     }
 
     @Post('code')
-    @ApiResponse({status: 200, type: 'string'})
+    @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    verifyCode(@Body() dto: VerifyUserDto) {
+    verifyCode(@Body() dto: CodeVerificationRequest) {
         return this.service.checkVerificationCode(dto);
     }
 
     @Post('anonymous')
-    @ApiResponse({status: 200, type: "string"})
+    @ApiResponse({status: 200, type: "string", description: 'Authorization Token'})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     createAnonymous() {
         return this.service.createAnonymousUser();

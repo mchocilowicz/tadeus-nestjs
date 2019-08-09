@@ -1,13 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from "../../database/entity/user.entity";
-import { VerifyUserDto } from "../../dto/verifyUser.dto";
-import { PhoneDto } from "../../dto/phone.dto";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { Role } from "../../database/entity/role.entity";
 import { Status } from "../../common/enum/status.enum";
 import { TadeusJwtService } from "../common/TadeusJwtModule/TadeusJwtService";
 import { CodeService } from "../../common/service/code.service";
+import { CodeVerificationRequest } from "../../models/request/code-verification.request";
+import { PhoneRequest } from "../../models/request/phone.request";
 
 @Injectable()
 export class LoginService {
@@ -33,7 +33,7 @@ export class LoginService {
 
     }
 
-    async checkVerificationCode(dto: VerifyUserDto): Promise<string> {
+    async checkVerificationCode(dto: CodeVerificationRequest): Promise<string> {
         let user = await User.findOne({phone: dto.phone, code: dto.code});
 
         if (!user) {
@@ -42,7 +42,7 @@ export class LoginService {
         return this.jwtService.signToken({id: user.id})
     }
 
-    async signIn(phone: PhoneDto, role: RoleEnum): Promise<void> {
+    async signIn(phone: PhoneRequest, role: RoleEnum): Promise<void> {
         let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
         if (!user) {
             console.log(user);

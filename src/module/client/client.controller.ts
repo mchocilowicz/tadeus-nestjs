@@ -1,16 +1,16 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Post, Req, UseGuards } from "@nestjs/common";
 import { Ngo } from "../../database/entity/ngo.entity";
 import { ApiBearerAuth, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
-import { VirtualCardDto } from "../../dto/virtual-card.dto";
-import { MainDto } from "../../dto/main.dto";
-import { ClientHistoryDto } from "../../dto/client-history.dto";
 import { User } from "../../database/entity/user.entity";
 import { JwtAuthGuard } from "../../common/guards/jwt.guard";
 import { RolesGuard } from "../../common/guards/roles.guard";
 import { createQueryBuilder } from "typeorm";
+import { Const } from "../../common/util/const";
+import { MainResponse } from "../../models/response/main.response";
+import { ClientHistoryResponse } from "../../models/response/client-history.response";
+import { VirtualCardResponse } from "../../models/response/virtual-card.response";
 
 @Controller()
 @ApiUseTags('client')
@@ -21,19 +21,25 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @ApiResponse({status: 200, type: MainDto})
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiResponse({status: 200, type: MainResponse})
     async mainScreen(@Req() req) {
         const user: User = req.user;
-        const dto = new MainDto();
+        const dto = new MainResponse();
         dto.donationPool = user.donationPool;
         dto.ngo = user.ngo;
         dto.donationPool = user.donationPool;
         dto.collectedMoney = user.collectedMoney;
         dto.xp = user.xp;
+        dto.name = user.name;
         return dto
     }
 
@@ -42,21 +48,26 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
     })
     async selectedNgo(@Req() req, @Body() ngo: Ngo) {
         let user: User = req.user;
         if (user.ngoSelectionCount > 2) {
-            throw new BadRequestException("Could not add Ngo. Maximum Ngo selection reached.")
+            throw new BadRequestException("user_ngo_max_reached")
         }
         user.ngo = ngo;
         user.ngoSelectionCount++;
         try {
             await user.save()
         } catch (e) {
-            throw new BadRequestException("Could not add Ngo. Please try again later.")
+            throw new BadRequestException("ngo_not_assigned")
         }
 
     }
@@ -64,11 +75,16 @@ export class ClientController {
     @Get('history')
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: ClientHistoryDto})
+    @ApiResponse({status: 200, type: ClientHistoryResponse})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
     })
     async history(@Req() req) {
         const user: User = req.user;
@@ -87,14 +103,19 @@ export class ClientController {
     @Get('card')
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: VirtualCardDto})
+    @ApiResponse({status: 200, type: VirtualCardResponse})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
     })
     virtualCard(@Req() req) {
-        const card = new VirtualCardDto();
+        const card = new VirtualCardResponse();
         let user: User = req.user;
         let virtualCard = user.virtualCard;
 

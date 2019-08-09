@@ -2,8 +2,9 @@ import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } f
 import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { CreatePlaceTypeDto } from "../../dto/create-placeType.dto";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { TradingPointTypeRequest } from "../../models/request/trading-point-type.request";
+import { Const } from "../../common/util/const";
 
 @Controller()
 @ApiUseTags('place')
@@ -14,9 +15,9 @@ export class PlaceController {
     @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place type name', required: false})
     @ApiResponse({status: 200, type: TradingPoint, isArray: true})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     async getAll(@Query() query: { city: string, placeType: string }) {
         let sqlQuery = createQueryBuilder('TradingPoint')
@@ -34,9 +35,9 @@ export class PlaceController {
 
     @Get('type')
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     @ApiResponse({status: 200, type: TradingPointType, isArray: true})
     getPlaceTypes() {
@@ -45,25 +46,25 @@ export class PlaceController {
 
     @Post('type')
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async savePlaceType(@Body() dto: CreatePlaceTypeDto) {
+    async savePlaceType(@Body() dto: TradingPointTypeRequest) {
         const type = new TradingPointType();
         type.name = dto.name;
         try {
             await type.save();
         } catch (e) {
-            throw new BadRequestException("Could not create new TradingPoint")
+            throw new BadRequestException("trading_point_type_not_created")
         }
     }
 
     @Put('type/:id')
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     async updateType(@Param('id') id: string, @Body() dto: any) {
         const type = await TradingPointType.findOne({id: id});

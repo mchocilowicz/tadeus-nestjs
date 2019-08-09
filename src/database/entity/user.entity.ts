@@ -10,7 +10,6 @@ import {
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
-    Unique,
     UpdateDateColumn
 } from "typeorm";
 import { Role } from "./role.entity";
@@ -22,13 +21,12 @@ import { Donation } from "./donation.entity";
 import { Status } from "../../common/enum/status.enum";
 
 @Entity()
-@Unique("UNIQUE_USER_PHONE", ["phone"])
 export class User extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, unique: true})
     phone: string;
 
     @Column({nullable: true})

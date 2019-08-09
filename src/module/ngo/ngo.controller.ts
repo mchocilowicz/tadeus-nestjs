@@ -1,11 +1,11 @@
 import { Body, Controller, Delete, Get, Post, Query } from "@nestjs/common";
 import { NgoType } from "../../database/entity/ngo-type.entity";
 import { Ngo } from "../../database/entity/ngo.entity";
-import { CreateNgoDto } from "../../dto/create-ngo.dto";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { CreateNgoTypeDto } from "../../dto/create-ngoType.dto";
-
+import { NgoRequest } from "../../models/request/ngo.request";
+import { Const } from "../../common/util/const";
+import { NgoTypeRequest } from "../../models/request/ngo-type.request";
 
 @Controller()
 @ApiUseTags('ngo')
@@ -13,11 +13,11 @@ export class NgoController {
 
     @Post()
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async create(@Body() dto: CreateNgoDto) {
+    async create(@Body() dto: NgoRequest) {
         console.log(dto);
         const ngo = new Ngo();
         ngo.address = dto.address;
@@ -34,12 +34,12 @@ export class NgoController {
 
     @Get()
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
-    @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo type name', required: false})
+    @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo-type name', required: false})
     @ApiResponse({status: 200, type: Ngo, isArray: true})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     async getAll(@Query() query: { city: string, ngoType: string }) {
         let sqlQuery = createQueryBuilder('Ngo')
@@ -57,9 +57,9 @@ export class NgoController {
 
     @Delete()
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     delete() {
     }
@@ -67,9 +67,9 @@ export class NgoController {
     @Get('type')
     @ApiResponse({status: 200, type: NgoType, isArray: true})
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     getNgoTypes() {
         return NgoType.find();
@@ -77,16 +77,15 @@ export class NgoController {
 
     @Post('type')
     @ApiImplicitHeader({
-        name: 'Accept-Language',
+        name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
-        description: 'Language of returned Error message. [pl,eng]'
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async createNgoType(@Body() dto: CreateNgoTypeDto) {
+    async createNgoType(@Body() dto: NgoTypeRequest) {
         const type = new NgoType();
         type.name = dto.name;
         try {
-            const a = await createQueryBuilder('NgoType').insert().values(type).execute();
-            console.log(a)
+            await createQueryBuilder('NgoType').insert().values(type).execute();
         } catch (e) {
             console.log(e)
         }

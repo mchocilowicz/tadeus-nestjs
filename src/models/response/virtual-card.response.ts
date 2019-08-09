@@ -1,8 +1,8 @@
 import { ApiModelProperty } from "@nestjs/swagger";
 
-export class CreateCityDto {
+export class VirtualCardResponse {
     @ApiModelProperty()
-    name: string;
+    code: string;
     @ApiModelProperty()
-    location: string;
+    cardNumber: string;
 }

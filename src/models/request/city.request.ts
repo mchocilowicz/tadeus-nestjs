@@ -1,6 +1,6 @@
 import { ApiModelProperty } from "@nestjs/swagger";
 
-export class CreateNgoTypeDto {
-    @ApiModelProperty()
+export class CityRequest {
+    @ApiModelProperty({required: true})
     name: string;
 }

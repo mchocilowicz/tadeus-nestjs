@@ -1,7 +1,9 @@
 import { ApiModelProperty } from "@nestjs/swagger";
-import { Ngo } from "../database/entity/ngo.entity";
+import { Ngo } from "../../database/entity/ngo.entity";
 
-export class MainDto {
+export class MainResponse {
+    @ApiModelProperty()
+    name: string = '';
     @ApiModelProperty()
     donationPool: number = 0;
     @ApiModelProperty()
