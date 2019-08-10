@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Param, Post, Put } from "@nestjs/common";
 import { City } from "../../database/entity/city.entity";
-import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../common/util/const";
 import { CityRequest } from "../../models/request/city.request";
 import { CityResponse } from "../../models/response/city.response";
@@ -17,6 +17,7 @@ export class CityController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiImplicitBody({name: '', type: CityRequest})
     async create(@Body() dto: CityRequest) {
         const city = new City();
         city.name = dto.name;

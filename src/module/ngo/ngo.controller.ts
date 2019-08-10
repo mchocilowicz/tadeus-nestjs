@@ -2,7 +2,7 @@ import { Body, Controller, Delete, Get, Post, Query } from "@nestjs/common";
 import { NgoType } from "../../database/entity/ngo-type.entity";
 import { Ngo } from "../../database/entity/ngo.entity";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { NgoRequest } from "../../models/request/ngo.request";
 import { Const } from "../../common/util/const";
 import { NgoTypeRequest } from "../../models/request/ngo-type.request";
@@ -17,6 +17,7 @@ export class NgoController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiImplicitBody({name: '', type: NgoRequest})
     async create(@Body() dto: NgoRequest) {
         console.log(dto);
         const ngo = new Ngo();
@@ -33,8 +34,8 @@ export class NgoController {
     }
 
     @Get()
-    @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
-    @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo-type name', required: false})
+    @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})
+    @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo-type id', required: false})
     @ApiResponse({status: 200, type: Ngo, isArray: true})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -48,7 +49,7 @@ export class NgoController {
 
         Object.keys(query).forEach(key => {
             if (query[key]) {
-                sqlQuery = sqlQuery.andWhere(`${key}.name = :name`, {name: query[key]})
+                sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
             }
         });
 
@@ -81,6 +82,7 @@ export class NgoController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiImplicitBody({name: '', type: NgoTypeRequest})
     async createNgoType(@Body() dto: NgoTypeRequest) {
         const type = new NgoType();
         type.name = dto.name;

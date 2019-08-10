@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from "@nestjs/common";
 import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { TradingPointTypeRequest } from "../../models/request/trading-point-type.request";
 import { Const } from "../../common/util/const";
@@ -11,8 +11,8 @@ import { Const } from "../../common/util/const";
 export class PlaceController {
 
     @Get()
-    @ApiImplicitQuery({name: 'city', type: "string", description: 'city name', required: false})
-    @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place type name', required: false})
+    @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})
+    @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place-type id', required: false})
     @ApiResponse({status: 200, type: TradingPoint, isArray: true})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -26,7 +26,7 @@ export class PlaceController {
 
         Object.keys(query).forEach(key => {
             if (query[key]) {
-                sqlQuery = sqlQuery.andWhere(`${key}.name = :name`, {name: query[key]})
+                sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
             }
         });
 
@@ -50,6 +50,7 @@ export class PlaceController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiImplicitBody({name: '', type: TradingPointTypeRequest})
     async savePlaceType(@Body() dto: TradingPointTypeRequest) {
         const type = new TradingPointType();
         type.name = dto.name;

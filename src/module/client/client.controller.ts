@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, Post, Req, UseGuards } from "@nestjs/common";
 import { Ngo } from "../../database/entity/ngo.entity";
-import { ApiBearerAuth, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { User } from "../../database/entity/user.entity";
@@ -57,6 +57,7 @@ export class ClientController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiImplicitBody({name: '', type: Ngo})
     async selectedNgo(@Req() req, @Body() ngo: Ngo) {
         let user: User = req.user;
         if (user.ngoSelectionCount > 2) {

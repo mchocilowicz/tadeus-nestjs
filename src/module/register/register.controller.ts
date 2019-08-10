@@ -1,7 +1,6 @@
-import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { RegisterService } from "./register.service";
-import { Body, Controller, HttpCode, Post, Put, UsePipes } from "@nestjs/common";
-import { TadeusValidationPipe } from "../../common/pipe/tadeus-validation.pipe";
+import { Body, Controller, HttpCode, Post, Put } from "@nestjs/common";
 import { Const } from "../../common/util/const";
 import { NewPhoneRequest } from "../../models/request/new-phone.request";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
@@ -21,7 +20,7 @@ export class RegisterController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @UsePipes(TadeusValidationPipe)
+    @ApiImplicitBody({name: '', type: NewPhoneRequest})
     async registerPhone(@Body() phone: NewPhoneRequest) {
         await this.service.createUser(phone);
     }
@@ -34,6 +33,7 @@ export class RegisterController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     async checkCode(@Body() dto: CodeVerificationRequest) {
         await this.service.checkCode(dto);
     }
@@ -46,6 +46,7 @@ export class RegisterController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiImplicitBody({name: '', type: UserInformationRequest})
     async fillInformation(@Body() dto: UserInformationRequest) {
         return await this.service.fillUserInformation(dto);
     }

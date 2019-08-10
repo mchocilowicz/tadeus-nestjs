@@ -23,7 +23,7 @@ export class TadeusExceptionFilter implements ExceptionFilter {
             let messageBody = exception instanceof HttpException ? exception.message : '';
             let messageResponse;
             if (exception instanceof TadeusValidationException) {
-                messageResponse = messageBody.map(m => request.polyglot.phrases[m]).join(',')
+                messageResponse = messageBody.map(m => request.polyglot.phrases[m]).join('|')
             } else {
                 messageResponse = request.polyglot.phrases[messageBody.message]
             }

@@ -1,8 +1,7 @@
-import { Body, Controller, HttpCode, Post, UsePipes } from '@nestjs/common';
+import { Body, Controller, HttpCode, Post } from '@nestjs/common';
 import { LoginService } from "./login.service";
-import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { RoleEnum } from "../../common/enum/role.enum";
-import { TadeusValidationPipe } from "../../common/pipe/tadeus-validation.pipe";
 import { Const } from "../../common/util/const";
 import { PhoneRequest } from "../../models/request/phone.request";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
@@ -21,7 +20,7 @@ export class LoginController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @UsePipes(TadeusValidationPipe)
+    @ApiImplicitBody({name: '', type: PhoneRequest})
     async signIn(@Body() phone: PhoneRequest) {
         await this.service.signIn(phone, RoleEnum.CLIENT);
     }
@@ -34,7 +33,7 @@ export class LoginController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @UsePipes(TadeusValidationPipe)
+    @ApiImplicitBody({name: '', type: PhoneRequest})
     async dashboardSignIn(@Body() phone: PhoneRequest) {
         await this.service.signIn(phone, RoleEnum.ADMIN);
     }
@@ -46,20 +45,9 @@ export class LoginController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @UsePipes(TadeusValidationPipe)
-    async partnerSignIn(@Body() phone: null) {
+    @ApiImplicitBody({name: '', type: PhoneRequest})
+    async partnerSignIn(@Body() phone: PhoneRequest) {
         await this.service.signIn(phone, RoleEnum.PARTNER);
-    }
-
-    @Post('code')
-    @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    verifyCode(@Body() dto: CodeVerificationRequest) {
-        return this.service.checkVerificationCode(dto);
     }
 
     @Post('anonymous')
@@ -71,5 +59,17 @@ export class LoginController {
     })
     createAnonymous() {
         return this.service.createAnonymousUser();
+    }
+
+    @Post('code')
+    @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitBody({name: '', type: CodeVerificationRequest})
+    verifyCode(@Body() dto: CodeVerificationRequest) {
+        return this.service.checkVerificationCode(dto);
     }
 }
