@@ -114,7 +114,7 @@ export class TransactionController {
         let transaction: Transaction = await Transaction.findOne({id: dto.transactionId}, {relations: ['user']});
         let user: User = transaction.user;
 
-        let pool = this.calService.calculateX(transaction.price, transaction.donationPercentage, tradingPoint.defaultVat);
+        let pool = this.calService.calculateX(transaction.price, transaction.donationPercentage, tradingPoint.vat);
 
         user.xp -= transaction.userXp;
         user.personalPool -= pool / 2;
@@ -183,8 +183,8 @@ export class TransactionController {
 
             user.xp += userXp;
 
-            let pool = this.calService.calculateX(dto.price, dto.donationPercentage, tradingPoint.defaultVat);
-            let t = this.calService.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.defaultVat);
+            let pool = this.calService.calculateX(dto.price, dto.donationPercentage, tradingPoint.vat);
+            let t = this.calService.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.vat);
 
             transaction.donationValue = t + pool;
             user.personalPool += pool / 2;
