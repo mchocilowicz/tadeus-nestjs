@@ -6,7 +6,8 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany,
-    PrimaryGeneratedColumn
+    PrimaryGeneratedColumn,
+    Unique
 } from "typeorm";
 import { NgoType } from "./ngo-type.entity";
 import { City } from "./city.entity";
@@ -15,6 +16,7 @@ import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
 
 @Entity()
+@Unique(["name"])
 export class Ngo extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")

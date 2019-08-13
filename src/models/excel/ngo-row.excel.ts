@@ -35,7 +35,7 @@ export class NgoRowExcel {
         message: "excel_email_required"
     })
     @IsEmail({}, {
-        message: "excel_email_ format"
+        message: "excel_email_format"
     })
     email: string;
 
