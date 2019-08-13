@@ -3,7 +3,6 @@ import { IsNotEmpty, IsNumber, IsPhoneNumber, Max, NotContains } from "class-val
 
 export class CodeVerificationRequest {
     @ApiModelProperty({description: 'Phone number', required: true})
-    @ApiModelProperty()
     @IsNotEmpty({
         message: "phone_required"
     })

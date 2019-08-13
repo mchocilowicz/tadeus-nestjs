@@ -5,10 +5,10 @@ export class Configuration extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column()
+    @Column({type: 'decimal'})
     minNgoTransfer: number;
 
-    @Column()
+    @Column({type: 'decimal'})
     minPersonalPool: number;
 
     @Column()

@@ -38,7 +38,7 @@ export class User extends BaseEntity {
     @Column({nullable: true})
     email: string;
 
-    @Column()
+    @Column({type: 'decimal'})
     collectedMoney: number = 0;
 
     @Column()
@@ -50,10 +50,10 @@ export class User extends BaseEntity {
     @Column()
     xp: number = 0;
 
-    @Column()
+    @Column({type: 'decimal'})
     donationPool: number = 0;
 
-    @Column()
+    @Column({type: 'decimal'})
     personalPool: number = 0;
 
     @Column()

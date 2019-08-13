@@ -9,13 +9,13 @@ export class Transaction extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
-    @Column()
+    @Column({type: 'decimal'})
     price: number;
 
-    @Column()
+    @Column({type: 'decimal'})
     donationPercentage: number;
 
-    @Column()
+    @Column({type: 'decimal'})
     donationValue: number;
 
     @Column()

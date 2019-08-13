@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Post, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, Logger, Post, Req, UseGuards } from "@nestjs/common";
 import { Ngo } from "../../database/entity/ngo.entity";
 import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator";
@@ -16,6 +16,7 @@ import { VirtualCardResponse } from "../../models/response/virtual-card.response
 @ApiUseTags('client')
 @ApiBearerAuth()
 export class ClientController {
+    private readonly logger = new Logger(ClientController.name);
 
     @Get()
     @Roles(RoleEnum.CLIENT)
@@ -34,7 +35,6 @@ export class ClientController {
     async mainScreen(@Req() req) {
         const user: User = req.user;
         const dto = new MainResponse();
-        dto.donationPool = user.donationPool;
         dto.ngo = user.ngo;
         dto.donationPool = user.donationPool;
         dto.collectedMoney = user.collectedMoney;
@@ -70,7 +70,6 @@ export class ClientController {
         } catch (e) {
             throw new BadRequestException("ngo_not_assigned")
         }
-
     }
 
     @Get('history')

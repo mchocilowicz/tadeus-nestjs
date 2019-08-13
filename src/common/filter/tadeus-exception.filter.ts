@@ -1,5 +1,6 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
 import { TadeusValidationException } from "../exceptions/TadeusValidation.exception";
+import { ExcelException } from "../exceptions/excel.exception";
 
 @Catch()
 export class TadeusExceptionFilter implements ExceptionFilter {
@@ -24,6 +25,8 @@ export class TadeusExceptionFilter implements ExceptionFilter {
             let messageResponse;
             if (exception instanceof TadeusValidationException) {
                 messageResponse = messageBody.map(m => request.polyglot.phrases[m]).join('|')
+            } else if (exception instanceof ExcelException) {
+                messageResponse = messageBody.map(m => request.polyglot.t(m.message, {row: m.row}))
             } else {
                 messageResponse = request.polyglot.phrases[messageBody.message]
             }

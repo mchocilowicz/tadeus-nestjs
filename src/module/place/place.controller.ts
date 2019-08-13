@@ -1,14 +1,14 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Put, Query } from "@nestjs/common";
+import { Controller, Get, Logger, Query } from "@nestjs/common";
 import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { TradingPointTypeRequest } from "../../models/request/trading-point-type.request";
 import { Const } from "../../common/util/const";
 
 @Controller()
 @ApiUseTags('place')
 export class PlaceController {
+    private readonly logger = new Logger(PlaceController.name);
 
     @Get()
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})
@@ -42,34 +42,5 @@ export class PlaceController {
     @ApiResponse({status: 200, type: TradingPointType, isArray: true})
     getPlaceTypes() {
         return TradingPointType.find()
-    }
-
-    @Post('type')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: TradingPointTypeRequest})
-    async savePlaceType(@Body() dto: TradingPointTypeRequest) {
-        const type = new TradingPointType();
-        type.name = dto.name;
-        try {
-            await type.save();
-        } catch (e) {
-            throw new BadRequestException("trading_point_type_not_created")
-        }
-    }
-
-    @Put('type/:id')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    async updateType(@Param('id') id: string, @Body() dto: any) {
-        const type = await TradingPointType.findOne({id: id});
-        type.name = dto.name;
-        await type.save()
     }
 }

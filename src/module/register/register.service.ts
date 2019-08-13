@@ -1,5 +1,5 @@
 import { User } from "../../database/entity/user.entity";
-import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { Role } from "../../database/entity/role.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
@@ -8,9 +8,12 @@ import { TadeusJwtService } from "../common/TadeusJwtModule/TadeusJwtService";
 import { NewPhoneRequest } from "../../models/request/new-phone.request";
 import { UserInformationRequest } from "../../models/request/user-Information.request";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
+import { handleException } from "../../common/util/functions";
 
 @Injectable()
 export class RegisterService {
+    private readonly logger = new Logger(RegisterService.name);
+
     constructor(private readonly jwtService: TadeusJwtService, private readonly codeService: CodeService) {
     }
 
@@ -53,7 +56,7 @@ export class RegisterService {
                 await user.save();
                 return this.jwtService.signToken({id: user.id})
             } catch (e) {
-                throw new BadRequestException("user_not_created")
+                handleException(e, 'user', this.logger)
             }
         }
 
@@ -81,7 +84,7 @@ export class RegisterService {
         try {
             await user.save();
         } catch (e) {
-            throw new BadRequestException('user_not_created')
+            handleException(e, 'user', this.logger)
         }
     }
 }

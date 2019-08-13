@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Logger, Param, Post, Req, UseGuards } from "@nestjs/common";
 import { User } from "../../database/entity/user.entity";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
@@ -17,11 +17,14 @@ import {
     TransactionSuccessResponse
 } from "../../models/response/transaction-success.response";
 import { TransactionResponse } from "../../models/response/transaction.response";
+import { handleException } from "../../common/util/functions";
 
 const moment = require('moment');
 
 @Controller()
 export class TransactionController {
+    private readonly logger = new Logger(TransactionController.name);
+
     constructor(private readonly calService: CalculationService) {
     }
 
@@ -126,7 +129,7 @@ export class TransactionController {
             await tradingPoint.save();
             await user.save();
         } catch (e) {
-            throw new BadRequestException("correction_not_created")
+            handleException(e, 'correction', this.logger)
         }
     }
 
@@ -201,7 +204,7 @@ export class TransactionController {
             result.xp = userXp;
             return result;
         } catch (e) {
-            throw new BadRequestException("transaction_not_created")
+            handleException(e, 'transaction', this.logger)
         }
     }
 

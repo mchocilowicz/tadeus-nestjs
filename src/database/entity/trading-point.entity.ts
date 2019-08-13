@@ -39,11 +39,11 @@ export class TradingPoint extends BaseEntity {
     @Column()
     name: string;
 
-    @Column()
-    defaultDonationPercentage: number;
+    @Column({type: "decimal"})
+    donationPercentage: number;
 
-    @Column()
-    defaultVat: number;
+    @Column({type: "decimal"})
+    vat: number;
 
     @Column({type: "decimal"})
     manipulationFee: number = 0.66;

@@ -1,13 +1,15 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Param, Post, Put } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Logger, Param, Post, Put } from "@nestjs/common";
 import { City } from "../../database/entity/city.entity";
 import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../common/util/const";
 import { CityRequest } from "../../models/request/city.request";
 import { CityResponse } from "../../models/response/city.response";
+import { handleException } from "../../common/util/functions";
 
 @Controller()
 @ApiUseTags('city')
 export class CityController {
+    private readonly logger = new Logger(CityController.name);
 
     @Post()
     @HttpCode(200)
@@ -24,7 +26,7 @@ export class CityController {
         try {
             await city.save()
         } catch (e) {
-            throw new BadRequestException("city_not_created")
+            handleException(e, 'city', this.logger)
         }
     }
 
