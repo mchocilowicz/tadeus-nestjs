@@ -24,9 +24,9 @@ export class TadeusExceptionFilter implements ExceptionFilter {
             let messageBody = exception instanceof HttpException ? exception.message : '';
             let messageResponse;
             if (exception instanceof TadeusValidationException) {
-                messageResponse = messageBody.map(m => request.polyglot.phrases[m]).join('|')
+                messageResponse = request.polyglot.phrases[messageBody]
             } else if (exception instanceof ExcelException) {
-                messageResponse = messageBody.map(m => request.polyglot.t(m.message, {row: m.row}))
+                messageResponse = request.polyglot.t(messageBody.message, {row: messageBody.row})
             } else {
                 messageResponse = request.polyglot.phrases[messageBody.message]
             }

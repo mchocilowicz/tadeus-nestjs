@@ -8,7 +8,9 @@ export class NgoRequest {
     @ApiModelProperty({required: true})
     type: NgoType;
     @ApiModelProperty({required: true})
-    location: string;
+    latitude: number;
+    @ApiModelProperty({required: true})
+    longitude: number;
     @ApiModelProperty({required: true})
     name: string;
     @ApiModelProperty({required: true})

@@ -2,7 +2,7 @@ import { IsAlpha, IsNotEmpty, IsNumber } from "class-validator";
 
 export default class TradingPointExcelRow {
     @IsNotEmpty({
-        message: "excel_name_required"
+        message: "excel_data_required"
     })
     @IsAlpha({
         message: "excel_name_format"
@@ -10,7 +10,7 @@ export default class TradingPointExcelRow {
     name: string;
 
     @IsNotEmpty({
-        message: "excel_type_required"
+        message: "excel_data_required"
     })
     @IsAlpha({
         message: "excel_type_format"
@@ -18,7 +18,7 @@ export default class TradingPointExcelRow {
     type: string;
 
     @IsNotEmpty({
-        message: "excel_donation_required"
+        message: "excel_data_required"
     })
     @IsNumber({}, {
         message: "excel_donation_format"
@@ -26,7 +26,7 @@ export default class TradingPointExcelRow {
     donationPercentage: number;
 
     @IsNotEmpty({
-        message: "excel_vat_required"
+        message: "excel_data_required"
     })
     @IsNumber({}, {
         message: "excel_vat_format"
@@ -39,22 +39,27 @@ export default class TradingPointExcelRow {
     manipulationFee: number;
 
     @IsNotEmpty({
-        message: "excel_location_required"
+        message: "excel_data_required"
     })
-    location: string;
+    longitude: number;
 
     @IsNotEmpty({
-        message: "excel_address_required"
+        message: "excel_data_required"
+    })
+    latitude: number;
+
+    @IsNotEmpty({
+        message: "excel_data_required"
     })
     address: string;
 
     @IsNotEmpty({
-        message: "excel_post_code_required"
+        message: "excel_data_required"
     })
     postCode: string;
 
     @IsNotEmpty({
-        message: "excel_xp_required"
+        message: "excel_data_required"
     })
     @IsNumber({}, {
         message: "excel_xp_format"
@@ -62,7 +67,7 @@ export default class TradingPointExcelRow {
     xp: number;
 
     @IsNotEmpty({
-        message: "excel_city_required"
+        message: "excel_data_required"
     })
     @IsAlpha({
         message: "excel_city_format"
@@ -75,7 +80,8 @@ export default class TradingPointExcelRow {
         this.donationPercentage = row.donationPercentage ? row.donationPercentage : null;
         this.vat = row.vat ? row.vat : null;
         this.manipulationFee = row.manipulationFee ? row.manipulationFee : 0.66;
-        this.location = row.location ? row.location : null;
+        this.latitude = row.latitude ? row.latitude : null;
+        this.longitude = row.longitude ? row.longitude : null;
         this.address = row.address ? row.address : null;
         this.postCode = row.postCode ? row.postCode : null;
         this.xp = row.xp ? row.xp : null;

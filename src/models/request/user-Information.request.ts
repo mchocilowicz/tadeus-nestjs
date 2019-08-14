@@ -11,7 +11,7 @@ export class UserInformationRequest {
     phone: string;
 
     @IsNotEmpty({
-        message: "name_required"
+        message: "user_data_required"
     })
     @IsAlpha({
         message: "name_format"
@@ -21,7 +21,7 @@ export class UserInformationRequest {
 
     @ApiModelProperty({required: true})
     @IsNotEmpty({
-        message: "email_required"
+        message: "user_data_required"
     })
     @IsEmail({}, {
         message: "email_format"

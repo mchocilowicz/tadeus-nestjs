@@ -22,8 +22,10 @@ export class ConfigurationController {
     }
 
     @Put()
-    updateConfiguration() {
-
+    async updateConfiguration(@Body() dto: any) {
+        let config = await Configuration.findOne({type: 'MAIN'});
+        this.mapDtoToEntity(dto, config);
+        await config.save();
     }
 
     mapDtoToEntity(dto: any, config: Configuration) {

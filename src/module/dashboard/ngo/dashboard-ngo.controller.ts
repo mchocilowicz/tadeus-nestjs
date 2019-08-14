@@ -28,7 +28,8 @@ export class DashboardNgoController {
         console.log(dto);
         const ngo = new Ngo();
         ngo.city = dto.city;
-        ngo.location = dto.location;
+        ngo.latitude = dto.latitude;
+        ngo.longitude = dto.longitude;
         ngo.name = dto.name;
         ngo.type = dto.type;
         ngo.bankNumber = dto.bankNumber;
@@ -94,7 +95,12 @@ export class DashboardNgoController {
         ngo.email = row.email;
         ngo.verified = row.verified;
         ngo.verificationDate = row.verificationDate;
-        ngo.location = row.location;
+        ngo.longitude = row.longitude;
+        ngo.latitude = row.latitude;
+        ngo.coordinate = {
+            type: 'Point',
+
+        };
         ngo.name = row.name;
         try {
             await ngo.save();
@@ -118,6 +124,8 @@ export class DashboardNgoController {
             'Account number': 'accountNumber',
             'Phone': 'phone',
             'E-mail': 'email',
+            'Latitude': 'latitude',
+            'Longitude': 'longitude',
             'Verified': 'verified',
             'Verification Date': 'verificationDate',
             'Location': 'location',

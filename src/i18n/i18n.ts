@@ -1,7 +1,7 @@
 export const messages = {
     pl: {
         // bledy walidacji
-
+        'user_data_required': 'Imie oraz E-mail są wymagane',
         // bledy sql
         'user_exists': 'Użytkownik o podanym numerze juz istnieje.',
         'internal_server_error': "Proszę skontaktować się z działem Obsługi.",
@@ -27,33 +27,23 @@ export const messages = {
         'email_format': 'Zły format adresu email',
         'ngo_type_unique_name': 'Typ ngo o takiej nazwie juz istnieje',
         //excel
-        'excel_name_required': 'Rzad nr %{row} - Nazwa jest wymagana.',
+        'excel_data_required': 'Rzad nr %{row} - Wszystkie pola muszą mieć wartość.',
         'excel_name_format': 'Rzad nr %{row} - Nazwa jest w zlym formacie.',
-        'excel_type_required': 'Rzad nr %{row} - Typ jest wymagany.',
         'excel_type_format': 'Rzad nr %{row} - Typ jest w zlym formacie.',
-        'excel_donation_required': 'Rzad nr %{row} - Dotacja jest wymagana.',
         'excel_donation_format': 'Rzad nr %{row} - Wartość Dotacji musi byc liczba.',
-        'excel_default_vat_required': 'Rzad nr %{row} - Wartość Vat jest wymagana.',
         'excel_default_vat_format': 'Rzad nr %{row} - Wartość Vat musi byc liczba.',
         'excel_manipulation_fee_format': 'Rzad nr %{row} - Wartość Manipulacyjna musi byc liczba.',
-        'excel_location_required': 'Rzad nr %{row} - Lokalizacja jest wymagana.',
-        'excel_address_required': 'Rzad nr %{row} - Address jest wymagany.',
-        'excel_post_code_required': 'Rzad nr %{row} - Kod pocztowy jest wymagany.',
-        'excel_xp_required': 'Rzad nr %{row} - Xp jest wymagany.',
         'excel_xp_format': 'Rzad nr %{row} - Xp musi byc liczba.',
-        'excel_city_required': 'Rzad nr %{row} - Miasto jest wymagane.',
         'excel_city_format': 'Rzad nr %{row} - Miasto musi skladac sie z liter.',
-        'excel_account_number_required': 'Rzad nr %{row} - Numer konta bankowego jest wymanagy.',
         'excel_account_number_format': 'Rzad nr %{row} - Numer bankowy powinien zawierac tylko liczby.',
-        'excel_phone_required': 'Rzad nr %{row} - Numer telefonu jest wymagany.',
         'excel_phone_format': 'Rzad nr %{row} - Numer telefonu jest w złym formacie.',
-        'excel_email_required': 'Rzad nr %{row} - E-mail jest wymagany',
         'excel_email_format': 'Rzad nr %{row} - E-mail jest w zlym formacie',
-        'excel_verified_required': 'Rzad nr %{row} - Weryfikacja jest wymagana',
         'excel_verified_format': 'Rzad nr %{row} - Weryfikacja powinna byc true lub false',
         'excel_verification_date_format': 'Rzad nr %{row} - Data weryfikacji jest w złym formacie',
     },
     eng: {
+        'user_data_required': 'Name and E-mail is required',
+
         'user_exists': 'User with provided phone already exists.',
         'internal_server_error': "Please contact support.",
         'invalid_code': 'Provided code is invalid',
@@ -79,31 +69,19 @@ export const messages = {
         'ngo_type_unique_name': 'Ngo type with given name already exists',
 
         // EXCEL :
-        'excel_name_required': 'Rzad nr %{row} - Nazwa jest wymagana.',
+        'excel_data_required': 'Row number %{row} - All data is required.',
         'excel_name_format': 'Rzad nr %{row} - Nazwa jest w zlym formacie.',
-        'excel_type_required': 'Rzad nr %{row} - Typ jest wymagany.',
         'excel_type_format': 'Rzad nr %{row} - Typ jest w zlym formacie.',
-        'excel_city_required': 'Rzad nr %{row} - Miasto jest wymagane.',
         'excel_city_format': 'Rzad nr %{row} - Miasto musi skladac sie z liter.',
-        'excel_location_required': 'Rzad nr %{row} - Lokalizacja jest wymagana.',
         // - Trading-point
-        'excel_donation_required': 'Rzad nr %{row} - Dotacja jest wymagana.',
         'excel_donation_format': 'Rzad nr %{row} - Wartość Dotacji musi byc liczba.',
-        'excel_vat_required': 'Rzad nr %{row} - Wartość Vat jest wymagana.',
         'excel_vat_format': 'Rzad nr %{row} - Wartość Vat musi byc liczba.',
         'excel_manipulation_fee_format': 'Rzad nr %{row} - Wartość Manipulacyjna musi byc liczba.',
-        'excel_address_required': 'Rzad nr %{row} - Address jest wymagany.',
-        'excel_post_code_required': 'Rzad nr %{row} - Kod pocztowy jest wymagany.',
-        'excel_xp_required': 'Rzad nr %{row} - Xp jest wymagany.',
         'excel_xp_format': 'Rzad nr %{row} - Xp musi byc liczba.',
         // - Ngo
-        'excel_account_number_required': 'Rzad nr %{row} - Numer konta bankowego jest wymanagy.',
         'excel_account_number_format': 'Rzad nr %{row} - Numer bankowy powinien zawierac tylko liczby.',
-        'excel_phone_required': 'Rzad nr %{row} - Numer telefonu jest wymagany.',
         'excel_phone_format': 'Rzad nr %{row} - Numer telefonu jest w złym formacie.',
-        'excel_email_required': 'Rzad nr %{row} - E-mail jest wymagany',
         'excel_email_format': 'Rzad nr %{row} - E-mail jest w zlym formacie',
-        'excel_verified_required': 'Rzad nr %{row} - Weryfikacja jest wymagana',
         'excel_verified_format': 'Rzad nr %{row} - Weryfikacja powinna byc true lub false',
         'excel_verification_date_format': 'Rzad nr %{row} - Data weryfikacji jest w złym formacie',
     }

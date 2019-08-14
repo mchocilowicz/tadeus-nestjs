@@ -1,5 +1,6 @@
 import {
     BaseEntity,
+    BeforeInsert,
     Column,
     CreateDateColumn,
     Entity,
@@ -52,8 +53,18 @@ export class TradingPoint extends BaseEntity {
     @JoinColumn()
     city: City;
 
-    @Column()
-    location: string;
+    @Column({type: "decimal"})
+    longitude: number;
+
+    @Column({type: "decimal"})
+    latitude: number;
+
+    @Column("geometry", {
+        nullable: true,
+        spatialFeatureType: "Point",
+        srid: 4326
+    })
+    coordinate: object;
 
     @Column()
     address: string;
@@ -69,4 +80,13 @@ export class TradingPoint extends BaseEntity {
 
     @UpdateDateColumn()
     updatedDate: Date;
+
+
+    @BeforeInsert()
+    assignPointData() {
+        this.coordinate = {
+            type: "Point",
+            coordinates: [this.longitude, this.latitude]
+        };
+    }
 }

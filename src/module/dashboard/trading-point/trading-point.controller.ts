@@ -139,7 +139,8 @@ export class TradingPointController {
         entity.address = dto.address;
         entity.donationPercentage = dto.donationPercentage;
         entity.vat = dto.vat;
-        entity.location = dto.location;
+        entity.longitude = dto.longitude;
+        entity.latitude = dto.latitude;
         entity.manipulationFee = dto.manipulationFee;
         entity.postCode = dto.postCode;
         entity.xp = dto.xp;
@@ -160,7 +161,8 @@ export class TradingPointController {
         tradePoint.donationPercentage = row.donationPercentage;
         tradePoint.vat = row.vat;
         tradePoint.manipulationFee = row.manipulationFee ? row.manipulationFee : 0.66;
-        tradePoint.location = row.location;
+        tradePoint.latitude = row.latitude;
+        tradePoint.longitude = row.longitude;
         tradePoint.address = row.address;
         tradePoint.postCode = row.postCode;
         tradePoint.xp = row.xp;
@@ -202,7 +204,8 @@ export class TradingPointController {
             'Donation Percentage': 'donationPercentage',
             'Vat': 'vat',
             'Manipulation fee': 'manipulationFee',
-            'Location': 'location',
+            'Latitude': 'latitude',
+            'Longitude': 'longitude',
             'Address': 'address',
             'Post code': 'postCode',
             'Xp': 'xp',

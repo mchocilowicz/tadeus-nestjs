@@ -27,5 +27,5 @@ export function extractErrors(errors: ValidationError[]): string[] {
     constraints.forEach(c => {
         errorCodes.push(_.values(c))
     });
-    return _.flatten(errorCodes)
+    return _.uniq(_.flatten(errorCodes))[0]
 }

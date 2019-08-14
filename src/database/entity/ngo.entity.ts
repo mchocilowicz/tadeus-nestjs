@@ -1,5 +1,6 @@
 import {
     BaseEntity,
+    BeforeInsert,
     Column,
     CreateDateColumn,
     Entity,
@@ -37,8 +38,18 @@ export class Ngo extends BaseEntity {
     @Column({nullable: true})
     verificationDate: Date;
 
-    @Column()
-    location: string;
+    @Column({type: "decimal"})
+    longitude: number;
+
+    @Column({type: "decimal"})
+    latitude: number;
+
+    @Column("geometry", {
+        nullable: true,
+        spatialFeatureType: "Point",
+        srid: 4326
+    })
+    coordinate: object;
 
     @Column()
     name: string;
@@ -70,5 +81,13 @@ export class Ngo extends BaseEntity {
     donations: Donation[];
 
     @CreateDateColumn()
-    creationDate: Date
+    creationDate: Date;
+
+    @BeforeInsert()
+    assignPointData() {
+        this.coordinate = {
+            type: "Point",
+            coordinates: [this.longitude, this.latitude]
+        };
+    }
 }

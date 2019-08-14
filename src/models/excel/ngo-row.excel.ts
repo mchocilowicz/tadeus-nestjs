@@ -2,7 +2,7 @@ import { IsAlpha, IsBoolean, IsDate, IsEmail, IsNotEmpty, IsNumberString, IsPhon
 
 export class NgoRowExcel {
     @IsNotEmpty({
-        message: "excel_name_required"
+        message: "excel_data_required"
     })
     @IsAlpha({
         message: "excel_name_format"
@@ -10,7 +10,7 @@ export class NgoRowExcel {
     name: string;
 
     @IsNotEmpty({
-        message: "excel_type_required"
+        message: "excel_data_required"
     })
     @IsAlpha({
         message: "excel_type_format"
@@ -18,7 +18,7 @@ export class NgoRowExcel {
     type: string;
 
     @IsNotEmpty({
-        message: "excel_account_number_required"
+        message: "excel_data_required"
     })
     @IsNumberString({
         message: 'excel_account_number_format'
@@ -26,13 +26,13 @@ export class NgoRowExcel {
     accountNumber: number;
 
     @IsNotEmpty({
-        message: "excel_phone_required"
+        message: "excel_data_required"
     })
     @IsPhoneNumber('PL', {message: 'excel_phone_format'})
     phone: string;
 
     @IsNotEmpty({
-        message: "excel_email_required"
+        message: "excel_data_required"
     })
     @IsEmail({}, {
         message: "excel_email_format"
@@ -40,7 +40,7 @@ export class NgoRowExcel {
     email: string;
 
     @IsNotEmpty({
-        message: "excel_verified_required"
+        message: "excel_data_required"
     })
     @IsBoolean({
         message: "excel_verified_format"
@@ -48,9 +48,14 @@ export class NgoRowExcel {
     verified: boolean;
 
     @IsNotEmpty({
-        message: "excel_location_required"
+        message: "excel_data_required"
     })
-    location: string;
+    latitude: number;
+
+    @IsNotEmpty({
+        message: "excel_data_required"
+    })
+    longitude: number;
 
     @IsDate({
         message: 'excel_verification_date_format'
@@ -58,7 +63,7 @@ export class NgoRowExcel {
     verificationDate: Date;
 
     @IsNotEmpty({
-        message: "excel_city_required"
+        message: "excel_data_required"
     })
     @IsAlpha({
         message: "excel_city_format"
@@ -73,7 +78,8 @@ export class NgoRowExcel {
         this.phone = row.phone ? row.phone : null;
         this.verified = row.verified ? row.verified : null;
         this.verificationDate = row.verificationDate ? row.verificationDate : null;
-        this.location = row.location ? row.location : null;
+        this.longitude = row.longitude ? row.longitude : null;
+        this.latitude = row.latitude ? row.latitude : null;
         this.city = row.city ? row.city : null;
     }
 }
