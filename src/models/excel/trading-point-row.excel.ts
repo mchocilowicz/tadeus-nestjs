@@ -4,16 +4,10 @@ export default class TradingPointExcelRow {
     @IsNotEmpty({
         message: "excel_data_required"
     })
-    @IsAlpha({
-        message: "excel_name_format"
-    })
     name: string;
 
     @IsNotEmpty({
         message: "excel_data_required"
-    })
-    @IsAlpha({
-        message: "excel_type_format"
     })
     type: string;
 
@@ -80,8 +74,8 @@ export default class TradingPointExcelRow {
         this.donationPercentage = row.donationPercentage ? row.donationPercentage : null;
         this.vat = row.vat ? row.vat : null;
         this.manipulationFee = row.manipulationFee ? row.manipulationFee : 0.66;
-        this.latitude = row.latitude ? row.latitude : null;
-        this.longitude = row.longitude ? row.longitude : null;
+        this.latitude = row.latitude ? Number(row.latitude) : null;
+        this.longitude = row.longitude ? Number(row.longitude) : null;
         this.address = row.address ? row.address : null;
         this.postCode = row.postCode ? row.postCode : null;
         this.xp = row.xp ? row.xp : null;

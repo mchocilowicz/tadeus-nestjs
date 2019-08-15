@@ -10,7 +10,7 @@ const moment = require("moment");
     imports: [
         MulterModule.register({
             storage: diskStorage({
-                destination: join(__dirname, '../../..', 'upload'),
+                destination: join(__dirname, '../../../..', 'upload'),
                 filename: (req, file, cb) => {
                     const newFileName = moment(new Date()).format("YYYYMMDDHHmmss");
 

@@ -35,7 +35,7 @@ export class LoginController {
     })
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async dashboardSignIn(@Body() phone: PhoneRequest) {
-        await this.service.signIn(phone, RoleEnum.ADMIN);
+        await this.service.signIn(phone, RoleEnum.DASHBOARD);
     }
 
     @Post('partner')
@@ -47,7 +47,7 @@ export class LoginController {
     })
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async partnerSignIn(@Body() phone: PhoneRequest) {
-        await this.service.signIn(phone, RoleEnum.PARTNER);
+        await this.service.signIn(phone, RoleEnum.TERMINAL);
     }
 
     @Post('anonymous')

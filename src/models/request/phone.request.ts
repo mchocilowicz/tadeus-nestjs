@@ -8,6 +8,7 @@ export class PhoneRequest {
         message: "phone_required"
     })
     @IsPhoneNumber('PL', {message: 'phone_format'})
-    @NotContains("-", {message: 'phone_dash_format'})
+    @NotContains("-", {message: 'phone_format'})
+    @NotContains(" ", {message: 'phone_format'})
     phone: string
 }

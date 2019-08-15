@@ -8,7 +8,8 @@ export class NewPhoneRequest {
         message: "phone_required"
     })
     @IsPhoneNumber('PL', {message: 'phone_format'})
-    @NotContains("-", {message: 'phone_dash_format'})
+    @NotContains("-", {message: 'phone_format'})
+    @NotContains(" ", {message: 'phone_format'})
     phone: string;
     @IsOptional()
     @ApiModelProperty({description: 'Key obtained while creating Anonymous User'})

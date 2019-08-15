@@ -44,6 +44,9 @@ export class Ngo extends BaseEntity {
     @Column({type: "decimal"})
     latitude: number;
 
+    @Column({nullable: true})
+    distance: number;
+
     @Column("geometry", {
         nullable: true,
         spatialFeatureType: "Point",
@@ -56,6 +59,9 @@ export class Ngo extends BaseEntity {
 
     @Column()
     address: string;
+
+    @Column()
+    postCode: string;
 
     @Column({nullable: true})
     totalDonation: number = 0;

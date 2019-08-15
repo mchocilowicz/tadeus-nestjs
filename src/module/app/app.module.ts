@@ -16,6 +16,7 @@ import { TadeusExceptionFilter } from "../../common/filter/tadeus-exception.filt
 import { UserModule } from "../dashboard/user/user.module";
 import { TradingPointModule } from "../dashboard/trading-point/trading-point.module";
 import { ConfigurationModule } from "../dashboard/configuration/configuration.module";
+import { DashboardNgoModule } from "../dashboard/ngo/dashboard-ngo.module";
 
 const routes: Routes = [
     {
@@ -64,6 +65,10 @@ const routes: Routes = [
                     {
                         path: '/configuration',
                         module: ConfigurationModule
+                    },
+                    {
+                        path: '/ngo',
+                        module: DashboardNgoModule
                     }
                 ]
             }
@@ -96,7 +101,8 @@ const routes: Routes = [
         TransactionModule,
         UserModule,
         TradingPointModule,
-        ConfigurationModule
+        ConfigurationModule,
+        DashboardNgoModule
     ],
     controllers: [],
     providers: [

@@ -68,11 +68,8 @@ export class DashboardNgoController {
         let data = this.mapRowColumns(row);
         let validationErrors = await validate(row);
         if (validationErrors.length > 0) {
-            let codes = extractErrors(validationErrors);
-            let f = codes.map((c) => {
-                return {row: index, message: c}
-            });
-            throw new ExcelException(f);
+            let code = extractErrors(validationErrors);
+            throw new ExcelException({row: index, message: code});
         }
         let ngo = new Ngo();
         let city = await City.findOne({name: data.city});
@@ -90,18 +87,16 @@ export class DashboardNgoController {
         }
         ngo.city = city;
         ngo.type = type;
-        ngo.bankNumber = row.accountNumber;
-        ngo.phone = row.phone;
-        ngo.email = row.email;
-        ngo.verified = row.verified;
-        ngo.verificationDate = row.verificationDate;
-        ngo.longitude = row.longitude;
-        ngo.latitude = row.latitude;
-        ngo.coordinate = {
-            type: 'Point',
-
-        };
-        ngo.name = row.name;
+        ngo.bankNumber = data.accountNumber;
+        ngo.phone = data.phone;
+        ngo.email = data.email;
+        ngo.verified = data.verified;
+        ngo.verificationDate = data.verificationDate;
+        ngo.longitude = data.longitude;
+        ngo.latitude = data.latitude;
+        ngo.name = data.name;
+        ngo.address = data.address;
+        ngo.postCode = data.postCode;
         try {
             await ngo.save();
         } catch (e) {
@@ -128,8 +123,9 @@ export class DashboardNgoController {
             'Longitude': 'longitude',
             'Verified': 'verified',
             'Verification Date': 'verificationDate',
-            'Location': 'location',
             'City': 'city',
+            'Address': 'address',
+            'Post Code': 'postCode'
         };
         const newRow = {};
         Object.keys(columnMapping).forEach(key => newRow[columnMapping[key]] = row[key]);

@@ -90,7 +90,7 @@ export class TradingPointController {
     async assignNewTerminal(@Param('tradingPointId') id: string, @Body() dto: any) {
         let point = await TradingPoint.findOne({id: id});
         let user = await User.findOne({phone: dto.phone});
-        const role = await Role.findOne({name: RoleEnum.PARTNER});
+        const role = await Role.findOne({name: RoleEnum.TERMINAL});
         if (user) {
             user.tradingPoint = point;
             user.roles.push(role);
@@ -150,11 +150,8 @@ export class TradingPointController {
         const row: TradingPointExcelRow = this.mapRowColumns(excelRow);
         let validationErrors = await validate(row);
         if (validationErrors.length > 0) {
-            let codes = extractErrors(validationErrors);
-            let f = codes.map((c) => {
-                return {row: index, message: c}
-            });
-            throw new ExcelException(f);
+            let code = extractErrors(validationErrors);
+            throw new ExcelException({row: index, message: code});
         }
         let tradePoint: TradingPoint = new TradingPoint();
         tradePoint.name = row.name;
@@ -198,7 +195,7 @@ export class TradingPointController {
     }
 
     private mapRowColumns(row) {
-        const a = {
+        const columnMapping = {
             'Name': 'name',
             'Type': 'type',
             'Donation Percentage': 'donationPercentage',
@@ -212,7 +209,7 @@ export class TradingPointController {
             'City': 'city',
         };
         const newRow = {};
-        Object.keys(a).forEach(key => newRow[a[key]] = row[key]);
+        Object.keys(columnMapping).forEach(key => newRow[columnMapping[key]] = row[key]);
         return new TradingPointExcelRow(newRow);
     }
 }

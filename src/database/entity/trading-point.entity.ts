@@ -59,6 +59,9 @@ export class TradingPoint extends BaseEntity {
     @Column({type: "decimal"})
     latitude: number;
 
+    @Column({nullable: true})
+    distance: number;
+
     @Column("geometry", {
         nullable: true,
         spatialFeatureType: "Point",
