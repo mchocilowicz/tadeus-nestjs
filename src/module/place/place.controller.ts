@@ -38,7 +38,7 @@ export class PlaceController {
             };
             sqlQuery = sqlQuery.addSelect(a, 'TradingPoint_distance');
             sqlQuery = sqlQuery.andWhere(`${a} > 0`)
-                .orderBy(c)
+                .orderBy(c).limit(10);
         }
 
         Object.keys(query).forEach(key => {

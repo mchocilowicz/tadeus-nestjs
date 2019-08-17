@@ -134,7 +134,7 @@ export class TransactionController {
     }
 
     @Post()
-    @Roles(RoleEnum.PARTNER)
+    @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TransactionResponse})
     @ApiImplicitHeader({
@@ -147,17 +147,17 @@ export class TransactionController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    async saveTransaction(@Req() req, @Body() dto: TransactionResponse) {
+    async saveTransaction(@Req() req, @Body() dto: { price, donationPercentage, clientCode }) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;
 
         let currentCart: Cart = await Cart.findOne({tradingPoint: partner.tradingPoint}, {relations: ['transactions']});
-        let user: User = await createQueryBuilder('User')
-            .leftJoinAndSelect('User.virtualCard', 'virtualCard')
+        let user: any = await createQueryBuilder('User')
+            .leftJoin('User.virtualCard', 'virtualCard')
             .leftJoinAndSelect('User.ngo', 'ngo')
-            .where('virtualCard.code = :code', {code: dto.clientCode}).execute();
+            .where('virtualCard.code = :code', {code: dto.clientCode}).getOne();
 
-        if (!currentCart.id) {
+        if (!currentCart) {
             currentCart = new Cart();
             currentCart.transactions = [];
         }
@@ -167,7 +167,6 @@ export class TransactionController {
             }
             let transaction: Transaction = new Transaction();
             transaction.user = user;
-            transaction.cart = currentCart;
             transaction.ngo = user.ngo;
             transaction.tradingPoint = partner.tradingPoint;
             transaction.price = dto.price;
@@ -179,7 +178,7 @@ export class TransactionController {
 
             transaction.userXp = userXp;
             transaction.tradingPointXp = tradingPointXp;
-            tradingPoint.xp += tradingPointXp;
+            tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
 
             user.xp += userXp;
 
@@ -187,9 +186,9 @@ export class TransactionController {
             let t = this.calService.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.vat);
 
             transaction.donationValue = t + pool;
-            user.personalPool += pool / 2;
-            user.donationPool += pool / 2;
-            user.collectedMoney += pool;
+            user.personalPool = (pool / 2) + Number(user.personalPool);
+            user.donationPool = (pool / 2) + Number(user.donationPool);
+            user.collectedMoney = pool + Number(user.collectedMoney);
 
             let savedTransaction = await transaction.save();
             currentCart.transactions.push(savedTransaction);
@@ -199,7 +198,7 @@ export class TransactionController {
             await user.save();
 
             let result = new TransactionSuccessResponse();
-            result.date = "";
+            result.date = moment().format('YYYY-MM-DD');
             result.price = dto.price;
             result.xp = userXp;
             return result;
@@ -210,19 +209,19 @@ export class TransactionController {
 
 
     private async calculateXpForUser(user: User, currenctTransaction: Transaction): Promise<number> {
-        let transactions = await createQueryBuilder("Transaction")
-            .leftJoinAndSelect("Transaction.user", 'user')
-            .leftJoinAndSelect('Transaction.tradingPoint', 'tradingPoint')
-            .where('Transaction.createdAt > :date', {date: moment().subtract(1, 'days').toISOString()})
-            .andWhere('Transaction.isCorrection = false')
-            .andWhere('user = :user', {user: user})
+        let transactions = await createQueryBuilder("Transaction", 'transaction')
+            .leftJoinAndSelect("transaction.user", 'user')
+            .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
+            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .andWhere('transaction.isCorrection = false')
+            .andWhere('user.id = :user', {user: user.id})
             .getMany();
 
-        let previousXp = this.calService.calculate(transactions, currenctTransaction);
+        let previousXp = user.xp;
         transactions.push(currenctTransaction);
-        let currentXp = this.calService.calculate(transactions, currenctTransaction);
+        let currentXp = this.calService.calculate(transactions, currenctTransaction) + previousXp;
 
-        return transactions.length === 0 ? 10 : currentXp - previousXp;
+        return transactions.length === 1 ? 10 : currentXp - previousXp;
     }
 
 }

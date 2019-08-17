@@ -2,28 +2,31 @@ import { Injectable } from "@nestjs/common";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { Cart } from "../../database/entity/cart.entity";
 
+const _ = require('lodash');
+
 @Injectable()
 export class CalculationService {
 
     calculate(transactions: any[], currenctTransaction: Transaction): number {
         let transactionsInSameShop = transactions.filter((t: Transaction) => t.tradingPoint.id === currenctTransaction.tradingPoint.id);
-        let transactionsInOtherShops = transactions.filter((t: Transaction) => t.tradingPoint.id !== currenctTransaction.tradingPoint.id);
+        let transactionsInOtherShops = _.uniqBy(transactions.filter((t: Transaction) => t.tradingPoint.id !== currenctTransaction.tradingPoint.id), 'tradingPoint.id');
 
         let xp = 0;
-        if (transactionsInSameShop.length !== 0) {
-            xp += 10 * transactionsInSameShop.length;
+        if (transactionsInSameShop.length > 2) {
+            return 10;
         }
-        if (transactionsInOtherShops.length !== 0) {
+        if (transactionsInOtherShops.length > 0) {
             let currentXp = 0;
             let index = 1;
             for (let transaction in transactionsInOtherShops) {
                 if (index === 1) {
-                    currentXp += 10;
+                    currentXp = 20;
                 } else {
                     currentXp += 2 * currentXp;
                 }
                 index++;
             }
+            xp += currentXp;
         }
         return xp;
     }

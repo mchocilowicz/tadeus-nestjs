@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Logger, Param, Post, Put, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { NgoRequest } from "../../../models/request/ngo.request";
@@ -161,5 +161,17 @@ export class DashboardNgoController {
         } catch (e) {
             handleException(e, 'ngo_type', this.logger)
         }
+    }
+
+    @Put('type/:id')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    async updateType(@Param('id') id: string, @Body() dto: any) {
+        const type = await NgoType.findOne({id: id});
+        type.name = dto.name;
+        await type.save()
     }
 }

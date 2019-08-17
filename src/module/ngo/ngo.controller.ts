@@ -39,6 +39,7 @@ export class NgoController {
             sqlQuery = sqlQuery.addSelect(a, 'Ngo_distance');
             sqlQuery = sqlQuery.andWhere(`${a} > 0`)
                 .orderBy(c)
+                .limit(10);
         }
 
         Object.keys(query).forEach(key => {
