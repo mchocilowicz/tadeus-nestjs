@@ -1,5 +1,5 @@
 import { ApiModelProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumberString, IsPhoneNumber, MaxLength, NotContains } from "class-validator";
+import { IsNotEmpty, IsNumberString, IsPhoneNumber, MaxLength, MinLength, NotContains } from "class-validator";
 
 export class CodeVerificationRequest {
     @ApiModelProperty({description: 'Phone number', required: true})
@@ -13,5 +13,6 @@ export class CodeVerificationRequest {
     @ApiModelProperty({required: true})
     @IsNumberString({message: 'code_format'})
     @MaxLength(4, {message: 'code_max_value'})
+    @MinLength(4, {message: 'code_max_value'})
     readonly code: number;
 }
