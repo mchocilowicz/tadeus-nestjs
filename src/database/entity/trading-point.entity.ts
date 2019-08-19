@@ -16,6 +16,7 @@ import { City } from "./city.entity";
 import { User } from "./user.entity";
 import { Transaction } from "./transaction.entity";
 import { Cart } from "./cart.entity";
+import { Payment } from "./payment.entity";
 
 @Entity()
 @Unique(["name"])
@@ -24,11 +25,17 @@ export class TradingPoint extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
+    @Column()
+    ID: string;
+
     @OneToMany(type => User, user => user.tradingPoint)
     user: User[];
 
     @OneToMany(type => Cart, cart => cart.tradingPoint)
     cartList: Cart[];
+
+    @OneToMany(type => Payment, payment => payment.tradingPoint)
+    payments: Payment[];
 
     @ManyToOne(type => TradingPointType, {nullable: false})
     @JoinColumn()
@@ -77,6 +84,12 @@ export class TradingPoint extends BaseEntity {
 
     @Column()
     xp: number = 0;
+
+    @Column({default: true})
+    active: boolean;
+
+    @Column({nullable: true})
+    closedDate: Date;
 
     @CreateDateColumn()
     createdDate: Date;

@@ -7,6 +7,7 @@ import {
     JoinColumn,
     ManyToOne,
     OneToMany,
+    OneToOne,
     PrimaryGeneratedColumn,
     Unique
 } from "typeorm";
@@ -15,6 +16,7 @@ import { City } from "./city.entity";
 import { User } from "./user.entity";
 import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
+import { Card } from "./card.entity";
 
 @Entity()
 @Unique(["name"])
@@ -22,6 +24,9 @@ export class Ngo extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     id: string;
+
+    @Column()
+    ID: string;
 
     @Column()
     bankNumber: string;
@@ -68,6 +73,10 @@ export class Ngo extends BaseEntity {
 
     @Column({nullable: true})
     lastDonation: number = 0;
+
+    @OneToOne(type => Card)
+    @JoinColumn()
+    card: Card;
 
     @ManyToOne(type => City, {nullable: false})
     @JoinColumn()

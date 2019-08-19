@@ -9,6 +9,9 @@ export class Transaction extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
+    @Column()
+    ID: string;
+
     @Column({type: 'decimal'})
     price: number;
 
@@ -17,9 +20,6 @@ export class Transaction extends BaseEntity {
 
     @Column({type: 'decimal'})
     donationValue: number;
-
-    @Column()
-    recipeCode: string;
 
     @Column()
     userXp: number;

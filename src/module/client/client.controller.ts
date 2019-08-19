@@ -11,12 +11,19 @@ import { Const } from "../../common/util/const";
 import { MainResponse } from "../../models/response/main.response";
 import { ClientHistoryResponse } from "../../models/response/client-history.response";
 import { VirtualCardResponse } from "../../models/response/virtual-card.response";
+import { Donation } from "../../database/entity/donation.entity";
+import { CodeService } from "../../common/service/code.service";
+import { DonationEnum } from "../../common/enum/donation.enum";
 
 @Controller()
 @ApiUseTags('client')
 @ApiBearerAuth()
 export class ClientController {
     private readonly logger = new Logger(ClientController.name);
+
+    constructor(private readonly codeService: CodeService) {
+    }
+
 
     @Get()
     @Roles(RoleEnum.CLIENT)
@@ -89,10 +96,12 @@ export class ClientController {
     async history(@Req() req) {
         const user: User = req.user;
 
-        let tempUser: User = await createQueryBuilder("User")
-            .where("id = :id", {id: user.id})
+        let tempUser: any = await createQueryBuilder("User")
             .leftJoinAndSelect("User.transactions", "transactions")
-            .leftJoinAndSelect("User.donations", "donations").execute();
+            .leftJoinAndSelect("User.donations", "donations")
+            .leftJoinAndSelect("donations.ngo", 'ngo')
+            .where("User.id = :id", {id: user.id})
+            .getOne();
 
         return {
             transactions: tempUser.transactions,
@@ -117,11 +126,34 @@ export class ClientController {
     virtualCard(@Req() req) {
         const card = new VirtualCardResponse();
         let user: User = req.user;
-        let virtualCard = user.virtualCard;
-
-        card.cardNumber = virtualCard.cardNumber;
+        let virtualCard = user.card;
         card.code = virtualCard.code;
-
+        card.cardNumber = virtualCard.ID;
         return card;
+    }
+
+    @Post('donation')
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    async createDonation(@Req() req: any) {
+        let user: User = req.user;
+        const donation: Donation = new Donation();
+        donation.ID = this.codeService.generateDonationID();
+        donation.invoiceNumber = 'TODO';
+        donation.type = DonationEnum.NGO;
+        donation.price = Math.random();
+        donation.user = user;
+        donation.ngo = user.ngo;
+        await donation.save()
     }
 }

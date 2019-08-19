@@ -1,6 +1,6 @@
 import { User } from "../../database/entity/user.entity";
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { Card } from "../../database/entity/card.entity";
 import { Role } from "../../database/entity/role.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { CodeService } from "../../common/service/code.service";
@@ -9,6 +9,7 @@ import { NewPhoneRequest } from "../../models/request/new-phone.request";
 import { UserInformationRequest } from "../../models/request/user-Information.request";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { handleException } from "../../common/util/functions";
+import { CardEnum } from "../../common/enum/card.enum";
 
 @Injectable()
 export class RegisterService {
@@ -48,11 +49,12 @@ export class RegisterService {
             user.registered = true;
             user.xp = 50;
 
-            const virtualCard = new VirtualCard();
-            virtualCard.cardNumber = this.codeService.generateVirtualCardNumber();
+            const card = new Card();
+            card.ID = this.codeService.generateVirtualCardNumber();
+            card.type = CardEnum.VIRTUAL;
 
             try {
-                user.virtualCard = await virtualCard.save();
+                user.card = await card.save();
                 await user.save();
                 return this.jwtService.signToken({id: user.id})
             } catch (e) {
@@ -79,11 +81,13 @@ export class RegisterService {
         } else {
             user.roles = [role]
         }
+        user.ID = this.codeService.generateUserNumber();
         user.code = this.codeService.generateSmsCode();
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         try {
             await user.save();
         } catch (e) {
+            console.log(e);
             handleException(e, 'user', this.logger)
         }
     }

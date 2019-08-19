@@ -14,6 +14,9 @@ export class TradingPointType extends BaseEntity {
     @ApiModelProperty()
     name: string;
 
+    @Column()
+    code: number;
+
     @OneToMany(place => TradingPoint, tradingPoint => tradingPoint.type)
     tradingPoints: TradingPoint[];
 }

@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import { TradingPoint } from "./trading-point.entity";
 import { Transaction } from "./transaction.entity";
+import { Payment } from "./payment.entity";
 
 
 @Entity()
@@ -24,6 +25,9 @@ export class Cart extends BaseEntity {
 
     @OneToMany(type => Transaction, transaction => transaction.cart)
     transactions: Transaction[];
+
+    @OneToMany(type => Payment, payment => payment.cart)
+    payments: Payment[];
 
     @CreateDateColumn()
     createdAt: Date;

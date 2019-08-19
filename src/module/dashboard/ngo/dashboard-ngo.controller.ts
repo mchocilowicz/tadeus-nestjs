@@ -12,10 +12,16 @@ import { NgoRowExcel } from "../../../models/excel/ngo-row.excel";
 import { validate } from "class-validator";
 import { ExcelException } from "../../../common/exceptions/excel.exception";
 import { City } from "../../../database/entity/city.entity";
+import { Card } from "../../../database/entity/card.entity";
+import { CardEnum } from "../../../common/enum/card.enum";
+import { CodeService } from "../../../common/service/code.service";
 
 @Controller()
 export class DashboardNgoController {
     private readonly logger = new Logger(DashboardNgoController.name);
+
+    constructor(private readonly codeService: CodeService) {
+    }
 
     @Post()
     @ApiImplicitHeader({
@@ -35,6 +41,10 @@ export class DashboardNgoController {
         ngo.bankNumber = dto.bankNumber;
         ngo.email = dto.email;
         ngo.phone = dto.phone;
+        ngo.ID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
+        let card = new Card();
+        card.type = CardEnum.PHYSICAL;
+        card.ID = this.codeService.generatePhysicalCardNumber(ngo.ID);
         try {
             await createQueryBuilder('Ngo').insert().values(ngo).execute();
         } catch (e) {
@@ -64,6 +74,50 @@ export class DashboardNgoController {
         this.logger.log("Ended to process excel file with NGO");
     }
 
+    @Get(':ngoId')
+    getNgoById(@Param('ngoId') ngoId: string) {
+        return Ngo.findOne({id: ngoId}, {relations: ['city', 'type', 'transactions', 'donations']})
+    }
+
+    @Delete()
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    delete() {
+    }
+
+    @Post('type')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitBody({name: '', type: NgoTypeRequest})
+    async createNgoType(@Body() dto: NgoTypeRequest) {
+        const type = new NgoType();
+        type.name = dto.name;
+        type.code = await this.getNgoCode();
+        try {
+            await createQueryBuilder('NgoType').insert().values(type).execute();
+        } catch (e) {
+            handleException(e, 'ngo_type', this.logger)
+        }
+    }
+
+    @Put('type/:id')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    async updateType(@Param('id') id: string, @Body() dto: any) {
+        const type = await NgoType.findOne({id: id});
+        type.name = dto.name;
+        await type.save()
+    }
+
     private async saveNgoRow(row: any, index: number, errors: object[]) {
         let data = this.mapRowColumns(row);
         let validationErrors = await validate(row);
@@ -83,6 +137,7 @@ export class DashboardNgoController {
         if (!type) {
             type = new NgoType();
             type.name = data.type;
+            type.code = await this.getNgoCode();
             type = await type.save();
         }
         ngo.city = city;
@@ -97,7 +152,12 @@ export class DashboardNgoController {
         ngo.name = data.name;
         ngo.address = data.address;
         ngo.postCode = data.postCode;
+        ngo.ID = this.codeService.generateNgoNumber(type.code, this.codeService.generateNumber());
         try {
+            let ngoCard = new Card();
+            ngoCard.type = CardEnum.PHYSICAL;
+            ngoCard.ID = this.codeService.generatePhysicalCardNumber(ngo.ID);
+            ngo.card = await ngoCard.save();
             await ngo.save();
         } catch (e) {
             if (e instanceof QueryFailedError) {
@@ -132,46 +192,20 @@ export class DashboardNgoController {
         return new NgoRowExcel(newRow);
     }
 
-    @Get(':ngoId')
-    getNgoById(@Param('ngoId') ngoId: string) {
-        return Ngo.findOne({id: ngoId}, {relations: ['city', 'type', 'transactions', 'donations']})
-    }
+    private async getNgoCode() {
+        let code = null;
 
-    @Delete()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    delete() {
-    }
-
-    @Post('type')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: NgoTypeRequest})
-    async createNgoType(@Body() dto: NgoTypeRequest) {
-        const type = new NgoType();
-        type.name = dto.name;
-        try {
-            await createQueryBuilder('NgoType').insert().values(type).execute();
-        } catch (e) {
-            handleException(e, 'ngo_type', this.logger)
+        while (!code) {
+            const a = this.createCode(100, 1000);
+            const b = await NgoType.findOne({code: a});
+            if (!b) {
+                code = a;
+            }
         }
+        return code;
     }
 
-    @Put('type/:id')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    async updateType(@Param('id') id: string, @Body() dto: any) {
-        const type = await NgoType.findOne({id: id});
-        type.name = dto.name;
-        await type.save()
+    private createCode(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min) + min);
     }
 }

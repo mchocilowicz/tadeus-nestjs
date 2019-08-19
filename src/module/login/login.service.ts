@@ -1,13 +1,14 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from "../../database/entity/user.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
-import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { Card } from "../../database/entity/card.entity";
 import { Role } from "../../database/entity/role.entity";
 import { Status } from "../../common/enum/status.enum";
 import { TadeusJwtService } from "../common/TadeusJwtModule/TadeusJwtService";
 import { CodeService } from "../../common/service/code.service";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { PhoneRequest } from "../../models/request/phone.request";
+import { CardEnum } from "../../common/enum/card.enum";
 
 @Injectable()
 export class LoginService {
@@ -19,11 +20,12 @@ export class LoginService {
         let role = await Role.findOne({name: RoleEnum.ANONYMOUS});
         user.roles = [role];
 
-        const virtualCard = new VirtualCard();
-        virtualCard.cardNumber = this.codeService.generateVirtualCardNumber();
-
+        const virtualCard = new Card();
+        virtualCard.ID = this.codeService.generateVirtualCardNumber();
+        virtualCard.type = CardEnum.VIRTUAL;
+        user.ID = this.codeService.generateUserNumber();
         try {
-            user.virtualCard = await virtualCard.save();
+            user.card = await virtualCard.save();
             let savedUser = await user.save();
 
             return this.jwtService.signToken({id: savedUser.id})
@@ -64,5 +66,4 @@ export class LoginService {
     private checkUserRole(userRoles: Role[], role: RoleEnum): boolean {
         return userRoles.some(r => r.name === role)
     }
-
 }

@@ -18,6 +18,7 @@ import {
 } from "../../models/response/transaction-success.response";
 import { TransactionResponse } from "../../models/response/transaction.response";
 import { handleException } from "../../common/util/functions";
+import { CodeService } from "../../common/service/code.service";
 
 const moment = require('moment');
 
@@ -25,7 +26,7 @@ const moment = require('moment');
 export class TransactionController {
     private readonly logger = new Logger(TransactionController.name);
 
-    constructor(private readonly calService: CalculationService) {
+    constructor(private readonly calService: CalculationService, private readonly codeService: CodeService) {
     }
 
     @Post('correction/approve')
@@ -153,9 +154,9 @@ export class TransactionController {
 
         let currentCart: Cart = await Cart.findOne({tradingPoint: partner.tradingPoint}, {relations: ['transactions']});
         let user: any = await createQueryBuilder('User')
-            .leftJoin('User.virtualCard', 'virtualCard')
+            .leftJoin('User.card', 'card')
             .leftJoinAndSelect('User.ngo', 'ngo')
-            .where('virtualCard.code = :code', {code: dto.clientCode}).getOne();
+            .where('card.code = :code', {code: dto.clientCode}).getOne();
 
         if (!currentCart) {
             currentCart = new Cart();
@@ -166,11 +167,11 @@ export class TransactionController {
                 currentCart = await currentCart.save();
             }
             let transaction: Transaction = new Transaction();
+            transaction.ID = this.codeService.generateTransactionID();
             transaction.user = user;
             transaction.ngo = user.ngo;
             transaction.tradingPoint = partner.tradingPoint;
             transaction.price = dto.price;
-            transaction.recipeCode = 'FV-12345'; // TODO: Auto Create
             transaction.donationPercentage = dto.donationPercentage;
 
             const userXp = await this.calculateXpForUser(user, transaction);

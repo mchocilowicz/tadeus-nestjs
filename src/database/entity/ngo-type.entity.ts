@@ -11,6 +11,9 @@ export class NgoType extends BaseEntity {
     id: string;
 
     @Column()
+    code: number;
+
+    @Column()
     @ApiModelProperty()
     name: string;
 

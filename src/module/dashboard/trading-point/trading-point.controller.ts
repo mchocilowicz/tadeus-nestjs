@@ -14,11 +14,15 @@ import { ExcelException } from "../../../common/exceptions/excel.exception";
 import TradingPointExcelRow from "../../../models/excel/trading-point-row.excel";
 import { Const } from "../../../common/util/const";
 import { TradingPointTypeRequest } from "../../../models/request/trading-point-type.request";
+import { CodeService } from "../../../common/service/code.service";
 
 @Controller()
 @ApiUseTags('dashboard/trading-point')
 export class TradingPointController {
     private readonly logger = new Logger(TradingPointController.name);
+
+    constructor(private readonly codeService: CodeService) {
+    }
 
     @Delete(':tradePointId')
     deleteTradePoint() {
@@ -28,6 +32,7 @@ export class TradingPointController {
     async createTradePoint(@Body() dto: any) {
         const point = new TradingPoint();
         this.mapToBaseEntity(dto, point);
+        point.ID = this.codeService.generateTradingPointNumber(dto.type.code);
         await point.save()
     }
 
@@ -57,6 +62,7 @@ export class TradingPointController {
     @ApiImplicitFile({name: 'file', required: true, description: 'XLSX file with TradingPoint definitions'})
     @UseInterceptors(FileInterceptor('file'))
     async uploadTradingPointsWithFile(@UploadedFile() file) {
+        console.log(file);
         const xlsx = require('xlsx');
         const workbook = xlsx.readFile(file.path);
         const sheetNames = workbook.SheetNames;
@@ -97,9 +103,12 @@ export class TradingPointController {
         } else {
             user = new User();
             user.tradingPoint = point;
+            user.ID = this.codeService.generateUserNumber();
             user.phone = dto.phone;
             user.roles = [role];
         }
+        let terminalCount = await User.count({tradingPoint: point});
+        user.terminalID = this.codeService.generateTerminalNumber(terminalCount);
         await user.save();
     }
 
@@ -113,6 +122,7 @@ export class TradingPointController {
     async savePlaceType(@Body() dto: TradingPointTypeRequest) {
         const type = new TradingPointType();
         type.name = dto.name;
+        type.code = await this.getTypeCode();
         try {
             await type.save();
         } catch (e) {
@@ -172,16 +182,19 @@ export class TradingPointController {
         }
         let type = await TradingPointType.findOne({name: row.type});
         if (!type) {
-            let t = new TradingPointType();
-            t.name = row.type;
-            type = await t.save()
+            type = new TradingPointType();
+            type.name = row.type;
+            type.code = await this.getTypeCode();
+            type = await type.save()
         }
 
         tradePoint.city = city;
         tradePoint.type = type;
+        tradePoint.ID = this.codeService.generateTradingPointNumber(type.code);
         try {
             await tradePoint.save();
         } catch (e) {
+            console.log(e);
             if (e instanceof QueryFailedError) {
                 let error: any = e;
                 if (error.code === '23505') {
@@ -211,5 +224,21 @@ export class TradingPointController {
         const newRow = {};
         Object.keys(columnMapping).forEach(key => newRow[columnMapping[key]] = row[key]);
         return new TradingPointExcelRow(newRow);
+    }
+
+    private async getTypeCode(): Promise<number> {
+        let code = null;
+        while (!code) {
+            const a = this.createCode(100, 1000);
+            const b = await TradingPointType.findOne({code: a});
+            if (!b) {
+                code = a;
+            }
+        }
+        return code
+    }
+
+    private createCode(min: number, max: number) {
+        return Math.floor(Math.random() * (max - min) + min);
     }
 }

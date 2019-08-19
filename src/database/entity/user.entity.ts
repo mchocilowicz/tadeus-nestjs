@@ -13,18 +13,21 @@ import {
     UpdateDateColumn
 } from "typeorm";
 import { Role } from "./role.entity";
-import { VirtualCard } from "./virtual-card.entity";
 import { Ngo } from "./ngo.entity";
 import { TradingPoint } from "./trading-point.entity";
 import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
 import { Status } from "../../common/enum/status.enum";
+import { Card } from "./card.entity";
 
 @Entity()
 export class User extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     id: string;
+
+    @Column()
+    ID: string;
 
     @Column({nullable: true, unique: true})
     phone: string;
@@ -59,6 +62,9 @@ export class User extends BaseEntity {
     @Column()
     ngoSelectionCount: number = 0;
 
+    @Column({nullable: true})
+    terminalID: string;
+
     @ManyToMany(type => Role)
     @JoinTable({name: "user_role"})
     roles: Role[];
@@ -77,9 +83,9 @@ export class User extends BaseEntity {
     @OneToMany(type => Donation, donation => donation.user)
     donations: Donation[];
 
-    @OneToOne(type => VirtualCard)
+    @OneToOne(type => Card)
     @JoinColumn()
-    virtualCard: VirtualCard;
+    card: Card;
 
     @CreateDateColumn()
     createdDate: Date;
