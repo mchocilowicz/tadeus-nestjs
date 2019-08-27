@@ -31,12 +31,10 @@ export class CryptoService {
         return decrypted.toString();
     }
 
-    //md5
     md5Tokne(text: string): string {
         return crypto.createHash(process.env.TADEUS_TOKEN).update(text).digest("hex");
     }
 
-    // sha512
     sweet(text: string): string {
         return crypto.pbkdf2Sync(text, process.env.TADEUS_SALT,
             1000, 64, process.env.TADEUS_CRYPTO).toString(`hex`);
