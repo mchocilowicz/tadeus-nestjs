@@ -36,5 +36,8 @@ export class Cart extends BaseEntity {
     updatedAt: Date;
 
     @Column()
-    isPaid: boolean = false
+    isPaid: boolean = false;
+
+    @Column({nullable: true})
+    paymentDate: Date;
 }

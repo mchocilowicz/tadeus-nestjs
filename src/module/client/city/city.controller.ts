@@ -1,13 +1,14 @@
 import { Body, Controller, Get, HttpCode, Logger, Param, Post, Put } from "@nestjs/common";
-import { City } from "../../database/entity/city.entity";
 import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { CityRequest } from "../../models/request/city.request";
-import { CityResponse } from "../../models/response/city.response";
-import { handleException } from "../../common/util/functions";
+import { Const } from "../../../common/util/const";
+import { CityRequest } from "../../../models/request/city.request";
+import { City } from "../../../database/entity/city.entity";
+import { handleException } from "../../../common/util/functions";
+import { CityResponse } from "../../../models/response/city.response";
+
 
 @Controller()
-@ApiUseTags('city')
+@ApiUseTags('client/city')
 export class CityController {
     private readonly logger = new Logger(CityController.name);
 

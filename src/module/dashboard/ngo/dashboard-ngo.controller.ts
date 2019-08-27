@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Logger, Param, Post, Put, UploadedFile, UseInterceptors } from "@nestjs/common";
-import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader } from "@nestjs/swagger";
+import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { NgoRequest } from "../../../models/request/ngo.request";
 import { Ngo } from "../../../database/entity/ngo.entity";
@@ -17,6 +17,7 @@ import { CardEnum } from "../../../common/enum/card.enum";
 import { CodeService } from "../../../common/service/code.service";
 
 @Controller()
+@ApiUseTags('dashboard/ngo')
 export class DashboardNgoController {
     private readonly logger = new Logger(DashboardNgoController.name);
 

@@ -1,5 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, Logger, Post, Req, UseGuards } from "@nestjs/common";
-import { Ngo } from "../../database/entity/ngo.entity";
+import { Body, Controller, Get, HttpCode, Logger, Post, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
@@ -11,23 +10,64 @@ import { Const } from "../../common/util/const";
 import { MainResponse } from "../../models/response/main.response";
 import { ClientHistoryResponse } from "../../models/response/client-history.response";
 import { VirtualCardResponse } from "../../models/response/virtual-card.response";
-import { Donation } from "../../database/entity/donation.entity";
 import { CodeService } from "../../common/service/code.service";
-import { DonationEnum } from "../../common/enum/donation.enum";
+import { PhoneRequest } from "../../models/request/phone.request";
+import { CodeVerificationRequest } from "../../models/request/code-verification.request";
+import { LoginService } from "../common/login.service";
+
 
 @Controller()
-@ApiUseTags('client')
 @ApiBearerAuth()
 export class ClientController {
     private readonly logger = new Logger(ClientController.name);
 
-    constructor(private readonly codeService: CodeService) {
+    constructor(private readonly codeService: CodeService, private readonly service: LoginService) {
+    }
+
+    @Post('signIn')
+    @ApiUseTags('client/auth')
+    @HttpCode(200)
+    @ApiResponse({status: 200, type: null})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitBody({name: '', type: PhoneRequest})
+    async signIn(@Body() phone: PhoneRequest) {
+        await this.service.signIn(phone, RoleEnum.CLIENT);
+    }
+
+    @Post('anonymous')
+    @ApiUseTags('client/auth')
+    @ApiResponse({status: 200, type: "string", description: 'Authorization Token'})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    createAnonymous() {
+        return this.service.createAnonymousUser();
+    }
+
+    @Post('code')
+    @ApiUseTags('client/auth')
+    @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitBody({name: '', type: CodeVerificationRequest})
+    verifyCode(@Body() dto: CodeVerificationRequest) {
+        return this.service.checkVerificationCode(dto);
     }
 
 
     @Get()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiUseTags('client')
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -39,6 +79,7 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiResponse({status: 200, type: MainResponse})
+    @ApiUseTags('client')
     async mainScreen(@Req() req) {
         const user: User = req.user;
         const dto = new MainResponse();
@@ -48,35 +89,6 @@ export class ClientController {
         dto.xp = user.xp;
         dto.name = user.name;
         return dto
-    }
-
-    @Post('ngo')
-    @HttpCode(200)
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiImplicitBody({name: '', type: Ngo})
-    async selectedNgo(@Req() req, @Body() ngo: Ngo) {
-        let user: User = req.user;
-        if (user.ngoSelectionCount > 2) {
-            throw new BadRequestException("user_ngo_max_reached")
-        }
-        user.ngo = ngo;
-        user.ngoSelectionCount++;
-        try {
-            await user.save()
-        } catch (e) {
-            throw new BadRequestException("ngo_not_assigned")
-        }
     }
 
     @Get('history')
@@ -93,6 +105,7 @@ export class ClientController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiUseTags('client')
     async history(@Req() req) {
         const user: User = req.user;
 
@@ -123,6 +136,7 @@ export class ClientController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiUseTags('client')
     virtualCard(@Req() req) {
         const card = new VirtualCardResponse();
         let user: User = req.user;
@@ -130,30 +144,5 @@ export class ClientController {
         card.code = virtualCard.code;
         card.cardNumber = virtualCard.ID;
         return card;
-    }
-
-    @Post('donation')
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    async createDonation(@Req() req: any) {
-        let user: User = req.user;
-        const donation: Donation = new Donation();
-        donation.ID = this.codeService.generateDonationID();
-        donation.invoiceNumber = 'TODO';
-        donation.type = DonationEnum.NGO;
-        donation.price = Math.random();
-        donation.user = user;
-        donation.ngo = user.ngo;
-        await donation.save()
     }
 }

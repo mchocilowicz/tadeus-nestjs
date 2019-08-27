@@ -65,6 +65,9 @@ export class User extends BaseEntity {
     @Column({nullable: true})
     terminalID: string;
 
+    @Column({nullable: true})
+    token: string;
+
     @ManyToMany(type => Role)
     @JoinTable({name: "user_role"})
     roles: Role[];

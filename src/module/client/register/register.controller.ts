@@ -1,13 +1,15 @@
 import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { RegisterService } from "./register.service";
 import { Body, Controller, HttpCode, Post, Put } from "@nestjs/common";
-import { Const } from "../../common/util/const";
-import { NewPhoneRequest } from "../../models/request/new-phone.request";
-import { CodeVerificationRequest } from "../../models/request/code-verification.request";
-import { UserInformationRequest } from "../../models/request/user-Information.request";
+import { Const } from "../../../common/util/const";
+import { NewPhoneRequest } from "../../../models/request/new-phone.request";
+import { CodeVerificationRequest } from "../../../models/request/code-verification.request";
+import { UserInformationRequest } from "../../../models/request/user-Information.request";
+
+const axios = require('axios');
 
 @Controller()
-@ApiUseTags('register')
+@ApiUseTags('client/register')
 export class RegisterController {
     constructor(private readonly service: RegisterService) {
     }

@@ -3,18 +3,16 @@ import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 import { JwtStrategy } from "../../../common/strategy/jwt.strategy";
 import { TadeusJwtService } from "./TadeusJwtService";
+import { CryptoService } from "../../../common/service/crypto.service";
 
 @Module({
     imports: [
         PassportModule.register({defaultStrategy: 'jwt'}),
         JwtModule.register({
-            secretOrPrivateKey: 'secretKey',
-            signOptions: {
-                expiresIn: 3600,
-            },
+            secretOrPrivateKey: process.env.TADEUS_JWT_EVEREST,
         }),
     ],
-    providers: [JwtStrategy, TadeusJwtService],
+    providers: [JwtStrategy, TadeusJwtService, CryptoService],
     exports: [TadeusJwtService]
 })
 export class TadeusJwtModule {

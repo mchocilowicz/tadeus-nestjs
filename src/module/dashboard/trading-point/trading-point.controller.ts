@@ -108,7 +108,7 @@ export class TradingPointController {
             user.roles = [role];
         }
         let terminalCount = await User.count({tradingPoint: point});
-        user.terminalID = this.codeService.generateTerminalNumber(terminalCount);
+        user.terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
         await user.save();
     }
 

@@ -1,69 +1,33 @@
 import { Body, Controller, Get, Logger, Param, Post, Req, UseGuards } from "@nestjs/common";
-import { User } from "../../database/entity/user.entity";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { Cart } from "../../database/entity/cart.entity";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { createQueryBuilder } from "typeorm";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { ApiImplicitHeader, ApiResponse } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { CalculationService } from "../../common/service/calculation.service";
+import { CalculationService } from "../../../common/service/calculation.service";
+import { CodeService } from "../../../common/service/code.service";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
 import {
     CorrectionResponse,
     CorrectionSuccessResponse,
     TransactionSuccessResponse
-} from "../../models/response/transaction-success.response";
-import { TransactionResponse } from "../../models/response/transaction.response";
-import { handleException } from "../../common/util/functions";
-import { CodeService } from "../../common/service/code.service";
+} from "../../../models/response/transaction-success.response";
+import { Transaction } from "../../../database/entity/transaction.entity";
+import { User } from "../../../database/entity/user.entity";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { TransactionResponse } from "../../../models/response/transaction.response";
+import { handleException } from "../../../common/util/functions";
+import { Cart } from "../../../database/entity/cart.entity";
+import { createQueryBuilder } from "typeorm";
 
 const moment = require('moment');
 
 @Controller()
+@ApiUseTags("partner/transaction")
 export class TransactionController {
     private readonly logger = new Logger(TransactionController.name);
 
     constructor(private readonly calService: CalculationService, private readonly codeService: CodeService) {
-    }
-
-    @Post('correction/approve')
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    async correctionApprove(@Req() req, @Body() dto: CorrectionResponse) {
-        let transaction = await Transaction.findOne({id: dto.transactionId});
-        transaction.verifiedByUser = true;
-        await transaction.save();
-    }
-
-    @Get('corrections')
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    async correctionClient(@Req() req) {
-        let user: User = req.user;
-        return await Transaction.find({user: user, isCorrection: true, verifiedByUser: false})
     }
 
     @Get('correction/:id')
@@ -95,7 +59,7 @@ export class TransactionController {
     }
 
     @Post('correction')
-    @Roles(RoleEnum.PARTNER)
+    @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -152,7 +116,11 @@ export class TransactionController {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.tradingPoint;
 
-        let currentCart: Cart = await Cart.findOne({tradingPoint: partner.tradingPoint}, {relations: ['transactions']});
+        let currentCart: Cart = await Cart.findOne({
+            tradingPoint: partner.tradingPoint,
+            isPaid: false,
+            paymentDate: null
+        }, {relations: ['transactions']});
         let user: any = await createQueryBuilder('User')
             .leftJoin('User.card', 'card')
             .leftJoinAndSelect('User.ngo', 'ngo')
@@ -218,11 +186,8 @@ export class TransactionController {
             .andWhere('user.id = :user', {user: user.id})
             .getMany();
 
-        let previousXp = user.xp;
         transactions.push(currenctTransaction);
-        let currentXp = this.calService.calculate(transactions, currenctTransaction) + previousXp;
-
-        return transactions.length === 1 ? 10 : currentXp - previousXp;
+        return this.calService.calculate(transactions, currenctTransaction.tradingPoint, user.xp)
     }
 
 }

@@ -1,14 +1,60 @@
-import { Controller, Get, Logger, Query } from "@nestjs/common";
-import { NgoType } from "../../database/entity/ngo-type.entity";
-import { Ngo } from "../../database/entity/ngo.entity";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    Logger,
+    Post,
+    Query,
+    Req,
+    UseGuards
+} from "@nestjs/common";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
+import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { Ngo } from "../../../database/entity/ngo.entity";
+import { Const } from "../../../common/util/const";
+import { NgoType } from "../../../database/entity/ngo-type.entity";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { User } from "../../../database/entity/user.entity";
+
 
 @Controller()
-@ApiUseTags('ngo')
+@ApiUseTags('client/ngo')
 export class NgoController {
     private readonly logger = new Logger(NgoController.name);
+
+    @Post()
+    @HttpCode(200)
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiImplicitBody({name: '', type: Ngo})
+    async selectedNgo(@Req() req, @Body() ngo: Ngo) {
+        let user: User = req.user;
+        if (user.ngoSelectionCount > 2) {
+            throw new BadRequestException("user_ngo_max_reached")
+        }
+        user.ngo = ngo;
+        user.ngoSelectionCount++;
+        try {
+            await user.save()
+        } catch (e) {
+            throw new BadRequestException("ngo_not_assigned")
+        }
+    }
 
     @Get()
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})

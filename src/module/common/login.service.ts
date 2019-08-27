@@ -1,19 +1,25 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
+import { CodeService } from "../../common/service/code.service";
 import { User } from "../../database/entity/user.entity";
+import { Role } from "../../database/entity/role.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { Card } from "../../database/entity/card.entity";
-import { Role } from "../../database/entity/role.entity";
-import { Status } from "../../common/enum/status.enum";
-import { TadeusJwtService } from "../common/TadeusJwtModule/TadeusJwtService";
-import { CodeService } from "../../common/service/code.service";
+import { CardEnum } from "../../common/enum/card.enum";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { PhoneRequest } from "../../models/request/phone.request";
-import { CardEnum } from "../../common/enum/card.enum";
+import { Status } from "../../common/enum/status.enum";
+import { CryptoService } from "../../common/service/crypto.service";
+
+const crypto = require('crypto');
 
 @Injectable()
 export class LoginService {
-    constructor(private readonly jwtService: TadeusJwtService, private readonly codeService: CodeService) {
+    constructor(private readonly jwtService: TadeusJwtService,
+                private readonly codeService: CodeService,
+                private readonly cryptoService: CryptoService) {
     }
+
 
     async createAnonymousUser(): Promise<string> {
         let user = new User();
@@ -28,7 +34,12 @@ export class LoginService {
             user.card = await virtualCard.save();
             let savedUser = await user.save();
 
-            return this.jwtService.signToken({id: savedUser.id})
+            let token = this.cryptoService.generateToken(savedUser.id);
+            savedUser.token = token;
+
+            let userId = this.cryptoService.encryptId(savedUser.id);
+
+            return this.jwtService.signToken({id: userId})
         } catch (e) {
             throw new BadRequestException("user_not_created")
         }
@@ -41,13 +52,18 @@ export class LoginService {
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
-        return this.jwtService.signToken({id: user.id})
+        let token = this.cryptoService.generateToken(user.id);
+        user.token = token;
+
+        let userId = this.cryptoService.encryptId(user.id);
+
+        await user.save();
+        return this.jwtService.signToken({id: userId})
     }
 
     async signIn(phone: PhoneRequest, role: RoleEnum): Promise<void> {
         let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
         if (!user) {
-            console.log(user);
             throw new NotFoundException('user_no_exists')
         }
         this.checkUserRights(user, role);

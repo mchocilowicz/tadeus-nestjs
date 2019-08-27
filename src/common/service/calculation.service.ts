@@ -1,19 +1,21 @@
 import { Injectable } from "@nestjs/common";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { Cart } from "../../database/entity/cart.entity";
+import { TradingPoint } from "../../database/entity/trading-point.entity";
 
 const _ = require('lodash');
 
 @Injectable()
 export class CalculationService {
 
-    calculate(transactions: any[], currenctTransaction: Transaction): number {
-        let transactionsInSameShop = transactions.filter((t: Transaction) => t.tradingPoint.id === currenctTransaction.tradingPoint.id);
-        let transactionsInOtherShops = _.uniqBy(transactions.filter((t: Transaction) => t.tradingPoint.id !== currenctTransaction.tradingPoint.id), 'tradingPoint.id');
+    calculate(transactions: any[], tradingPoint: TradingPoint, lastUserXp: number): number {
+        let transactionsInSameShop = transactions.filter((t: Transaction) => t.tradingPoint.id === tradingPoint.id);
+        let transactionsInOtherShops = _.uniqBy(transactions.filter((t: Transaction) => t.tradingPoint.id !== tradingPoint.id), 'tradingPoint.id');
 
         let xp = 0;
-        if (transactionsInSameShop.length > 2) {
-            return 10;
+
+        if (transactionsInSameShop.length > 1) {
+            xp += 10;
         }
         if (transactionsInOtherShops.length > 0) {
             let currentXp = 0;
@@ -22,13 +24,14 @@ export class CalculationService {
                 if (index === 1) {
                     currentXp = 20;
                 } else {
-                    currentXp += 2 * currentXp;
+                    currentXp = 2 * currentXp;
                 }
                 index++;
             }
             xp += currentXp;
         }
-        return xp;
+        let nexXp = xp + lastUserXp;
+        return transactions.length === 1 ? 10 : nexXp - lastUserXp;
     }
 
     calculateTradingPointXp(cart: Cart): number {

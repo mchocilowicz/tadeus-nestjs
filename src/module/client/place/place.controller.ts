@@ -1,12 +1,12 @@
 import { Controller, Get, Logger, Query } from "@nestjs/common";
-import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { Const } from "../../common/util/const";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { Const } from "../../../common/util/const";
+import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
 
 @Controller()
-@ApiUseTags('place')
+@ApiUseTags('client/place')
 export class PlaceController {
     private readonly logger = new Logger(PlaceController.name);
 

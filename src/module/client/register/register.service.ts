@@ -1,15 +1,16 @@
-import { User } from "../../database/entity/user.entity";
 import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { Card } from "../../database/entity/card.entity";
-import { Role } from "../../database/entity/role.entity";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { CodeService } from "../../common/service/code.service";
-import { TadeusJwtService } from "../common/TadeusJwtModule/TadeusJwtService";
-import { NewPhoneRequest } from "../../models/request/new-phone.request";
-import { UserInformationRequest } from "../../models/request/user-Information.request";
-import { CodeVerificationRequest } from "../../models/request/code-verification.request";
-import { handleException } from "../../common/util/functions";
-import { CardEnum } from "../../common/enum/card.enum";
+import { TadeusJwtService } from "../../common/TadeusJwtModule/TadeusJwtService";
+import { CodeService } from "../../../common/service/code.service";
+import { NewPhoneRequest } from "../../../models/request/new-phone.request";
+import { User } from "../../../database/entity/user.entity";
+import { UserInformationRequest } from "../../../models/request/user-Information.request";
+import { handleException } from "../../../common/util/functions";
+import { CodeVerificationRequest } from "../../../models/request/code-verification.request";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { Role } from "../../../database/entity/role.entity";
+import { Card } from "../../../database/entity/card.entity";
+import { CardEnum } from "../../../common/enum/card.enum";
+
 
 @Injectable()
 export class RegisterService {

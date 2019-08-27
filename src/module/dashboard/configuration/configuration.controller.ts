@@ -1,7 +1,9 @@
 import { Body, Controller, Get, Post } from "@nestjs/common";
 import { Configuration } from "../../../database/entity/configuration.entity";
+import { ApiUseTags } from "@nestjs/swagger";
 
 @Controller()
+@ApiUseTags('dashboard/configuration')
 export class ConfigurationController {
 
     @Post()
