@@ -17,7 +17,6 @@ import { LoginService } from "../common/login.service";
 
 
 @Controller()
-@ApiBearerAuth()
 export class ClientController {
     private readonly logger = new Logger(ClientController.name);
 
@@ -79,6 +78,7 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiResponse({status: 200, type: MainResponse})
+    @ApiBearerAuth()
     @ApiUseTags('client')
     async mainScreen(@Req() req) {
         const user: User = req.user;
@@ -106,6 +106,7 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiUseTags('client')
+    @ApiBearerAuth()
     async history(@Req() req) {
         const user: User = req.user;
 
@@ -137,6 +138,7 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiUseTags('client')
+    @ApiBearerAuth()
     virtualCard(@Req() req) {
         const card = new VirtualCardResponse();
         let user: User = req.user;
