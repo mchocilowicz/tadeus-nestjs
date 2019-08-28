@@ -6,6 +6,7 @@ import { Donation } from "../../../database/entity/donation.entity";
 import { DonationEnum } from "../../../common/enum/donation.enum";
 import { CodeService } from "../../../common/service/code.service";
 import { Ngo } from "../../../database/entity/ngo.entity";
+import { getConnection } from "typeorm";
 
 @Controller()
 @ApiUseTags('client/donation')
@@ -37,9 +38,11 @@ export class DonationController {
         donation.ID = this.codeService.generateDonationID();
         let price = user.personalPool;
         donation.price = price;
-        await donation.save();
-        user.personalPool -= price;
-        await user.save();
+        await getConnection().transaction(async entityManager => {
+            await entityManager.save(donation);
+            user.personalPool -= price;
+            await entityManager.save(user);
+        })
     }
 
     @Post(":ngoId")
@@ -66,9 +69,11 @@ export class DonationController {
         donation.ID = this.codeService.generateDonationID();
         let price = user.personalPool;
         donation.price = price;
-        await donation.save();
-        user.personalPool -= price;
-        await user.save();
+        await getConnection().transaction(async entityManager => {
+            await entityManager.save(donation);
+            user.personalPool -= price;
+            await entityManager.save(user);
+        })
     }
 
     @Post("tadeus")

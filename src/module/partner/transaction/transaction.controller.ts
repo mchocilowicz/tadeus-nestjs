@@ -18,7 +18,7 @@ import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { TransactionResponse } from "../../../models/response/transaction.response";
 import { handleException } from "../../../common/util/functions";
 import { Cart } from "../../../database/entity/cart.entity";
-import { createQueryBuilder } from "typeorm";
+import { createQueryBuilder, getConnection } from "typeorm";
 
 const moment = require('moment');
 
@@ -90,9 +90,12 @@ export class TransactionController {
         tradingPoint.xp -= transaction.tradingPointXp;
 
         try {
-            await transaction.save();
-            await tradingPoint.save();
-            await user.save();
+            await getConnection().transaction(async entityManager => {
+                await entityManager.save(transaction);
+                await entityManager.save(tradingPoint);
+                await entityManager.save(user);
+            })
+
         } catch (e) {
             handleException(e, 'correction', this.logger)
         }
@@ -131,9 +134,6 @@ export class TransactionController {
             currentCart.transactions = [];
         }
         try {
-            if (!currentCart.id) {
-                currentCart = await currentCart.save();
-            }
             let transaction: Transaction = new Transaction();
             transaction.ID = this.codeService.generateTransactionID();
             transaction.user = user;
@@ -159,12 +159,18 @@ export class TransactionController {
             user.donationPool = (pool / 2) + Number(user.donationPool);
             user.collectedMoney = pool + Number(user.collectedMoney);
 
-            let savedTransaction = await transaction.save();
-            currentCart.transactions.push(savedTransaction);
+            await getConnection().transaction(async entityManager => {
+                if (!currentCart.id) {
+                    currentCart = await entityManager.save(currentCart);
+                }
 
-            await currentCart.save();
-            await tradingPoint.save();
-            await user.save();
+                let savedTransaction = await entityManager.save(transaction);
+                currentCart.transactions.push(savedTransaction);
+
+                await entityManager.save(currentCart);
+                await entityManager.save(tradingPoint);
+                await entityManager.save(user);
+            });
 
             let result = new TransactionSuccessResponse();
             result.date = moment().format('YYYY-MM-DD');

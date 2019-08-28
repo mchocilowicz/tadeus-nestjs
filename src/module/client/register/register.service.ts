@@ -10,6 +10,7 @@ import { RoleEnum } from "../../../common/enum/role.enum";
 import { Role } from "../../../database/entity/role.entity";
 import { Card } from "../../../database/entity/card.entity";
 import { CardEnum } from "../../../common/enum/card.enum";
+import { getConnection } from "typeorm";
 
 
 @Injectable()
@@ -55,8 +56,10 @@ export class RegisterService {
             card.type = CardEnum.VIRTUAL;
 
             try {
-                user.card = await card.save();
-                await user.save();
+                await getConnection().transaction(async entityManager => {
+                    user.card = await entityManager.save(card);
+                    await entityManager.save(user);
+                });
                 return this.jwtService.signToken({id: user.id})
             } catch (e) {
                 handleException(e, 'user', this.logger)

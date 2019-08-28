@@ -10,8 +10,7 @@ import { CodeVerificationRequest } from "../../models/request/code-verification.
 import { PhoneRequest } from "../../models/request/phone.request";
 import { Status } from "../../common/enum/status.enum";
 import { CryptoService } from "../../common/service/crypto.service";
-
-const crypto = require('crypto');
+import { getConnection } from "typeorm";
 
 @Injectable()
 export class LoginService {
@@ -31,14 +30,18 @@ export class LoginService {
         virtualCard.type = CardEnum.VIRTUAL;
         user.ID = this.codeService.generateUserNumber();
         try {
-            user.card = await virtualCard.save();
-            let savedUser = await user.save();
+            let userId;
+            await getConnection().transaction(async entityManager => {
+                user.card = await entityManager.save(virtualCard);
+                let savedUser = await entityManager.save(user);
 
-            let token = this.cryptoService.generateToken(savedUser.id);
-            savedUser.token = token;
+                let token = this.cryptoService.generateToken(savedUser.id);
+                userId = this.cryptoService.encryptId(savedUser.id);
 
-            let userId = this.cryptoService.encryptId(savedUser.id);
+                savedUser.token = token;
 
+                await entityManager.save(savedUser);
+            });
             return this.jwtService.signToken({id: userId})
         } catch (e) {
             throw new BadRequestException("user_not_created")
