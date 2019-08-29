@@ -158,6 +158,7 @@ export class TransactionController {
             user.personalPool = (pool / 2) + Number(user.personalPool);
             user.donationPool = (pool / 2) + Number(user.donationPool);
             user.collectedMoney = pool + Number(user.collectedMoney);
+            transaction.terminalID = partner.terminalID;
 
             await getConnection().transaction(async entityManager => {
                 if (!currentCart.id) {

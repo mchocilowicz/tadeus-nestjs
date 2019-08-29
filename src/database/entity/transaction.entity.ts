@@ -33,6 +33,9 @@ export class Transaction extends BaseEntity {
     @Column()
     verifiedByUser: boolean = false;
 
+    @Column({nullable: true})
+    terminalID: string;
+
     @ManyToOne(type => Ngo, ngo => ngo.transactions)
     @JoinColumn()
     ngo: Ngo;

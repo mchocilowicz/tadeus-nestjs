@@ -1,5 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from "@nestjs/common";
+import {
+    ApiBearerAuth,
+    ApiImplicitBody,
+    ApiImplicitHeader,
+    ApiImplicitQuery,
+    ApiResponse,
+    ApiUseTags
+} from "@nestjs/swagger";
 import { Const } from "../../common/util/const";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { PhoneRequest } from "../../models/request/phone.request";
@@ -73,5 +80,35 @@ export class PartnerController {
             postCode: partner.postCode,
             xp: partner.xp
         }
+    }
+
+    @Get('history')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @Roles(RoleEnum.TERMINAL)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
+    @ApiImplicitQuery({name: 'terminal', type: "string", description: 'Terminal ID', required: false})
+    async getPartnerHistory(@Req() req: any, @Query() query: { terminal: string }) {
+        let point = req.user.tradingPoint;
+
+        let sqlQuery = createQueryBuilder('Transaction')
+            .leftJoinAndSelect('Transaction.tradingPoint', 'tradingPoint')
+            .where('tradingPoint.id = :id', {id: point.id});
+
+        if (query && query.terminal) {
+            sqlQuery = sqlQuery.andWhere('Transaction.terminalID = :terminal', {terminal: query.terminal})
+        }
+
+        return sqlQuery.orderBy('Terminal.createdAt', 'DESC').getMany()
+
     }
 }

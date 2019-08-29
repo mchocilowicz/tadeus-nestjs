@@ -15,6 +15,7 @@ import TradingPointExcelRow from "../../../models/excel/trading-point-row.excel"
 import { Const } from "../../../common/util/const";
 import { TradingPointTypeRequest } from "../../../models/request/trading-point-type.request";
 import { CodeService } from "../../../common/service/code.service";
+import { Transaction } from "../../../database/entity/transaction.entity";
 
 @Controller()
 @ApiUseTags('dashboard/trading-point')
@@ -108,7 +109,15 @@ export class TradingPointController {
             user.roles = [role];
         }
         let terminalCount = await User.count({tradingPoint: point});
-        user.terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+        let terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+
+        let transactionCount = await Transaction.count({terminalID: terminalID});
+        while (transactionCount !== 0) {
+            terminalCount += 1;
+            terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+            transactionCount = await Transaction.count({terminalID: terminalID});
+        }
+        user.terminalID = terminalID;
         await user.save();
     }
 
