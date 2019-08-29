@@ -1,5 +1,4 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Ngo } from "./ngo.entity";
 import { TradingPoint } from "./trading-point.entity";
 import { User } from "./user.entity";
 import { Cart } from "./cart.entity";
@@ -35,10 +34,6 @@ export class Transaction extends BaseEntity {
 
     @Column({nullable: true})
     terminalID: string;
-
-    @ManyToOne(type => Ngo, ngo => ngo.transactions)
-    @JoinColumn()
-    ngo: Ngo;
 
     @ManyToOne(type => Cart, cart => cart.transactions)
     @JoinColumn()

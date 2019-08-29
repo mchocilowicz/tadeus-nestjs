@@ -137,7 +137,6 @@ export class TransactionController {
             let transaction: Transaction = new Transaction();
             transaction.ID = this.codeService.generateTransactionID();
             transaction.user = user;
-            transaction.ngo = user.ngo;
             transaction.tradingPoint = partner.tradingPoint;
             transaction.price = dto.price;
             transaction.donationPercentage = dto.donationPercentage;

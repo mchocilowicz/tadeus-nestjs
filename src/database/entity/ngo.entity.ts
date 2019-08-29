@@ -14,7 +14,6 @@ import {
 import { NgoType } from "./ngo-type.entity";
 import { City } from "./city.entity";
 import { User } from "./user.entity";
-import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
 import { Card } from "./card.entity";
 
@@ -85,9 +84,6 @@ export class Ngo extends BaseEntity {
     @ManyToOne(type => NgoType, {nullable: false})
     @JoinColumn()
     type: NgoType;
-
-    @OneToMany(type => Transaction, transactions => transactions.ngo)
-    transactions: Transaction[];
 
     @OneToMany(type => User, user => user.ngo)
     user: User[];
