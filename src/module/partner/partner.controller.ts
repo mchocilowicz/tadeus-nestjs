@@ -22,6 +22,7 @@ import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { Role } from "../../database/entity/role.entity";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { CodeService } from "../../common/service/code.service";
+import { Step } from "../../common/enum/status.enum";
 
 const _ = require('lodash');
 
@@ -113,11 +114,18 @@ export class PartnerController {
         if (query && query.terminal) {
             sqlQuery = sqlQuery.andWhere('Transaction.terminalID = :terminal', {terminal: query.terminal})
         }
-        let transactions = await sqlQuery.orderBy('Terminal.createdAt', 'DESC').getMany();
-        const o = _.groupBy(transactions, 'createdAt');
-        const chunkedKeys = _.chunk(Object.keys(o), 7);
+        try {
+            let transactions = await sqlQuery
+                .orderBy('Transaction.createdAt', 'DESC')
+                .getMany();
+            const o = _.groupBy(transactions, 'createdAt');
+            const chunkedKeys = _.chunk(Object.keys(o), 7);
 
-        return chunkedKeys.map(key => _.flatten(key.map(k => o[k])))
+            return chunkedKeys.map(key => _.flatten(key.map(k => o[k])))
+        } catch (e) {
+            console.log(e)
+        }
+
     }
 
     @Get('terminal')
@@ -136,11 +144,10 @@ export class PartnerController {
     @ApiBearerAuth()
     async getPartnerTerminals(@Req() req: any) {
         let terminal = req.user;
-
         let terminals = await createQueryBuilder('User')
-            .leftJoinAndSelect('User.tradingPint', 'tradingPoint')
+            .leftJoinAndSelect('User.tradingPoint', 'tradingPoint')
             .where('tradingPoint.id = :id', {id: terminal.tradingPoint.id})
-            .andWhere('User.id <> :userId', {userId: terminal.id})
+            .andWhere('User.id != :userId', {userId: terminal.id})
             .getMany();
         return {
             phone: terminal.phone,
@@ -151,9 +158,23 @@ export class PartnerController {
                 }
             })
         }
+
     }
 
     @Post('terminal')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @Roles(RoleEnum.TERMINAL)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async assignNewTerminal(@Req() req: any, @Body() dto: PhoneRequest) {
         let point = req.user.tradingPoint;
@@ -179,6 +200,7 @@ export class PartnerController {
             transactionCount = await Transaction.count({terminalID: terminalID});
         }
         user.terminalID = terminalID;
+        user.step = Step.SIGN_IN;
         await user.save();
     }
 
