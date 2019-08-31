@@ -18,11 +18,17 @@ import { Roles } from "../../common/decorators/roles.decorator";
 import { JwtAuthGuard } from "../../common/guards/jwt.guard";
 import { RolesGuard } from "../../common/guards/roles.guard";
 import { PartnerDetailsResponse } from "../../models/response/partner-details.response";
+import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { Role } from "../../database/entity/role.entity";
+import { Transaction } from "../../database/entity/transaction.entity";
+import { CodeService } from "../../common/service/code.service";
+
+const _ = require('lodash');
 
 @Controller()
 @ApiUseTags('partner/auth',)
 export class PartnerController {
-    constructor(private readonly service: LoginService) {
+    constructor(private readonly service: LoginService, private readonly codeService: CodeService) {
     }
 
     @Post('code')
@@ -107,8 +113,73 @@ export class PartnerController {
         if (query && query.terminal) {
             sqlQuery = sqlQuery.andWhere('Transaction.terminalID = :terminal', {terminal: query.terminal})
         }
+        let transactions = await sqlQuery.orderBy('Terminal.createdAt', 'DESC').getMany();
+        const o = _.groupBy(transactions, 'createdAt');
+        const chunkedKeys = _.chunk(Object.keys(o), 7);
 
-        return sqlQuery.orderBy('Terminal.createdAt', 'DESC').getMany()
-
+        return chunkedKeys.map(key => _.flatten(key.map(k => o[k])))
     }
+
+    @Get('terminal')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @Roles(RoleEnum.TERMINAL)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
+    async getPartnerTerminals(@Req() req: any) {
+        let terminal = req.user;
+
+        let terminals = await createQueryBuilder('User')
+            .leftJoinAndSelect('User.tradingPint', 'tradingPoint')
+            .where('tradingPoint.id = :id', {id: terminal.tradingPoint.id})
+            .andWhere('User.id <> :userId', {userId: terminal.id})
+            .getMany();
+        return {
+            phone: terminal.phone,
+            terminals: terminals.map((t: any) => {
+                return {
+                    phone: t.phone,
+                    step: t.step
+                }
+            })
+        }
+    }
+
+    @Post('terminal')
+    @ApiImplicitBody({name: '', type: PhoneRequest})
+    async assignNewTerminal(@Req() req: any, @Body() dto: PhoneRequest) {
+        let point = req.user.tradingPoint;
+        let user = await User.findOne({phone: dto.phone});
+        const role = await Role.findOne({name: RoleEnum.TERMINAL});
+        if (user) {
+            user.tradingPoint = point;
+            user.roles.push(role);
+        } else {
+            user = new User();
+            user.tradingPoint = point;
+            user.ID = this.codeService.generateUserNumber();
+            user.phone = dto.phone;
+            user.roles = [role];
+        }
+        let terminalCount = await User.count({tradingPoint: point});
+        let terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+
+        let transactionCount = await Transaction.count({terminalID: terminalID});
+        while (transactionCount !== 0) {
+            terminalCount += 1;
+            terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+            transactionCount = await Transaction.count({terminalID: terminalID});
+        }
+        user.terminalID = terminalID;
+        await user.save();
+    }
+
 }

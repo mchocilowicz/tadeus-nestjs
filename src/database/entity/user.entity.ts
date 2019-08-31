@@ -17,7 +17,7 @@ import { Ngo } from "./ngo.entity";
 import { TradingPoint } from "./trading-point.entity";
 import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
-import { Status } from "../../common/enum/status.enum";
+import { Status, Step } from "../../common/enum/status.enum";
 import { Card } from "./card.entity";
 
 @Entity()
@@ -49,6 +49,9 @@ export class User extends BaseEntity {
 
     @Column({type: 'text', default: Status.ACTIVE})
     status: Status;
+
+    @Column({type: 'text', nullable: true})
+    step: Step;
 
     @Column()
     xp: number = 0;

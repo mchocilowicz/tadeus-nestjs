@@ -8,7 +8,7 @@ import { Card } from "../../database/entity/card.entity";
 import { CardEnum } from "../../common/enum/card.enum";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { PhoneRequest } from "../../models/request/phone.request";
-import { Status } from "../../common/enum/status.enum";
+import { Status, Step } from "../../common/enum/status.enum";
 import { CryptoService } from "../../common/service/crypto.service";
 import { getConnection } from "typeorm";
 
@@ -59,7 +59,7 @@ export class LoginService {
         user.token = token;
 
         let userId = this.cryptoService.encryptId(user.id);
-
+        user.step = Step.ACTOVE;
         await user.save();
         return this.jwtService.signToken({id: userId})
     }
@@ -71,7 +71,7 @@ export class LoginService {
         }
         this.checkUserRights(user, role);
         user.code = this.codeService.generateSmsCode();
-
+        user.step = Step.CODE;
         // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         await user.save()
     }
