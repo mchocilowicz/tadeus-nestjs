@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Connection } from "typeorm";
 import { RouterModule, Routes } from "nest-router";
 import { join } from "path";
 import { ApiModule } from "../api/api.module";
@@ -17,6 +16,7 @@ import { NgoModule } from "../client/ngo/ngo.module";
 import { PlaceModule } from "../client/place/place.module";
 import { TransactionModule } from "../partner/transaction/transaction.module";
 import { PartnerModule } from "../partner/partner.module";
+import { TerminalModule } from "../partner/terminal/terminal.module";
 
 const routes: Routes = [
     {
@@ -53,6 +53,10 @@ const routes: Routes = [
                         path: '/transaction',
                         module: TransactionModule
                     },
+                    {
+                        path: '/terminal',
+                        module: TerminalModule
+                    }
                 ]
             },
             {
@@ -106,7 +110,8 @@ const routes: Routes = [
         TradingPointModule,
         ConfigurationModule,
         DashboardNgoModule,
-        PartnerModule
+        PartnerModule,
+        TerminalModule
     ],
     controllers: [],
     providers: [
@@ -122,6 +127,4 @@ const routes: Routes = [
 })
 
 export class AppModule {
-    constructor(private readonly connection: Connection) {
-    }
 }
