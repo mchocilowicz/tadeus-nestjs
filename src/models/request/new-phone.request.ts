@@ -1,16 +1,8 @@
 import { ApiModelProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsOptional, IsPhoneNumber, NotContains } from "class-validator";
+import { IsOptional } from "class-validator";
+import { PhoneRequest } from "./phone.request";
 
-export class NewPhoneRequest {
-    @ApiModelProperty({description: 'Phone number', required: true})
-    @ApiModelProperty()
-    @IsNotEmpty({
-        message: "phone_required"
-    })
-    @IsPhoneNumber('PL', {message: 'phone_format'})
-    @NotContains("-", {message: 'phone_format'})
-    @NotContains(" ", {message: 'phone_format'})
-    phone: string;
+export class NewPhoneRequest extends PhoneRequest {
     @IsOptional()
     @ApiModelProperty({description: 'Key obtained while creating Anonymous User'})
     anonymousKey: string;

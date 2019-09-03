@@ -21,7 +21,8 @@ export class RegisterService {
     }
 
     async createUser(phone: NewPhoneRequest): Promise<void> {
-        let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
+        let phoneNumber = phone.phonePrefix + phone.phone;
+        let user = await User.findOne({phone: phoneNumber}, {relations: ['roles']});
         let anonymousUser = await User.findOne({id: phone.anonymousKey}, {relations: ['roles']});
         if (user && user.registered) {
             throw new BadRequestException("user_active")
@@ -32,14 +33,15 @@ export class RegisterService {
                 await this.registerUser(user)
             } else {
                 user = new User();
-                user.phone = phone.phone;
+                user.phone = phoneNumber;
                 await this.registerUser(user)
             }
         }
     }
 
     async fillUserInformation(dto: UserInformationRequest): Promise<string> {
-        let user = await User.findOne({phone: dto.phone});
+        let phoneNumber = dto.phonePrefix + dto.phone;
+        let user = await User.findOne({phone: phoneNumber});
         if (user === null) {
             throw new NotFoundException('user_not_exists')
         }
@@ -69,7 +71,8 @@ export class RegisterService {
     }
 
     async checkCode(dto: CodeVerificationRequest) {
-        let user = await User.findOne({phone: dto.phone, code: dto.code});
+        let phoneNumber = dto.phonePrefix + dto.phone;
+        let user = await User.findOne({phone: phoneNumber, code: dto.code});
         if (!user) {
             throw new NotFoundException('invalid_code')
         }

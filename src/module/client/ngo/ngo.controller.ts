@@ -10,7 +10,7 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { createQueryBuilder } from "typeorm";
+import { createQueryBuilder, getConnection } from "typeorm";
 import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Ngo } from "../../../database/entity/ngo.entity";
 import { Const } from "../../../common/util/const";
@@ -20,12 +20,18 @@ import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
 import { User } from "../../../database/entity/user.entity";
+import { Donation } from "../../../database/entity/donation.entity";
+import { DonationEnum } from "../../../common/enum/donation.enum";
+import { CodeService } from "../../../common/service/code.service";
 
 
 @Controller()
 @ApiUseTags('client/ngo')
 export class NgoController {
     private readonly logger = new Logger(NgoController.name);
+
+    constructor(private readonly codeService: CodeService) {
+    }
 
     @Post()
     @HttpCode(200)
@@ -46,13 +52,27 @@ export class NgoController {
         let user: User = req.user;
         if (user.ngoSelectionCount > 2) {
             throw new BadRequestException("user_ngo_max_reached")
-        }
-        user.ngo = ngo;
-        user.ngoSelectionCount++;
-        try {
-            await user.save()
-        } catch (e) {
-            throw new BadRequestException("ngo_not_assigned")
+        } else if (user.ngoSelectionCount === 1) {
+            const donation = new Donation();
+            donation.type = DonationEnum.NGO;
+            donation.price = user.donationPool;
+            user.donationPool -= user.donationPool;
+            donation.user = user;
+            donation.ngo = user.ngo;
+            donation.ID = this.codeService.generateDonationID();
+            user.ngo = ngo;
+            await getConnection().transaction(async entityManager => {
+                await entityManager.save(donation);
+                await entityManager.save(user);
+            });
+        } else {
+            user.ngo = ngo;
+            user.ngoSelectionCount++;
+            try {
+                await user.save()
+            } catch (e) {
+                throw new BadRequestException("ngo_not_assigned")
+            }
         }
     }
 

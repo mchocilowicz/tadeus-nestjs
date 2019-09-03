@@ -40,6 +40,12 @@ export const messages = {
         'excel_email_format': 'Rzad nr %{row} - E-mail jest w zlym formacie',
         'excel_verified_format': 'Rzad nr %{row} - Weryfikacja powinna byc true lub false',
         'excel_verification_date_format': 'Rzad nr %{row} - Data weryfikacji jest w złym formacie',
+
+        'partner_bad_qr': 'Zeskanowany QR kod nie należy do systemu Tadeus',
+        'partner_bad_phone': 'Podany numer nie został zarejestrowany w systemie Tadeus',
+
+        'phone_prefix_not_exists': 'Podany prefix telefonu nie jest obsługiwany',
+        'phone_prefix_required': 'Prefix telefonu jest wymagany'
     },
     eng: {
         'user_data_required': 'Name and E-mail is required',
@@ -84,6 +90,11 @@ export const messages = {
         'excel_email_format': 'Rzad nr %{row} - E-mail jest w zlym formacie',
         'excel_verified_format': 'Rzad nr %{row} - Weryfikacja powinna byc true lub false',
         'excel_verification_date_format': 'Rzad nr %{row} - Data weryfikacji jest w złym formacie',
+
+        'partner_bad_qr': 'Scanned QR code does not belong to Tadeus system',
+        'partner_bad_phone': 'Provided number was not registered in Tadeus system',
+        'phone_prefix_not_exists': 'Provided phone prefix is not supported by Tadeus system',
+        'phone_prefix_required': 'Phone prefix is required'
     }
 };
 

@@ -1,15 +1,8 @@
 import { ApiModelProperty } from "@nestjs/swagger";
-import { IsAlpha, IsEmail, IsNotEmpty, IsPhoneNumber, NotContains } from "class-validator";
+import { IsAlpha, IsEmail, IsNotEmpty } from "class-validator";
+import { PhoneRequest } from "./phone.request";
 
-export class UserInformationRequest {
-    @ApiModelProperty({description: 'Phone number', required: true})
-    @IsNotEmpty({
-        message: "phone_required"
-    })
-    @IsPhoneNumber('PL', {message: 'phone_format'})
-    @NotContains("-", {message: 'phone_dash_format'})
-    phone: string;
-
+export class UserInformationRequest extends PhoneRequest {
     @IsNotEmpty({
         message: "user_data_required"
     })

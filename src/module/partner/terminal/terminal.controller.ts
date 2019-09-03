@@ -5,7 +5,7 @@ import { Roles } from "../../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
-import { createQueryBuilder } from "typeorm";
+import { createQueryBuilder, getConnection } from "typeorm";
 import { PhoneRequest } from "../../../models/request/phone.request";
 import { User } from "../../../database/entity/user.entity";
 import { Role } from "../../../database/entity/role.entity";
@@ -112,6 +112,20 @@ export class TerminalController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
     async deleteTerminal(@Param('id') id: string) {
-        await User.delete({id: id});
+        let transactions = await createQueryBuilder('Transaction')
+            .leftJoinAndSelect('Transaction.user', 'user')
+            .where('user.id = :id', {id: id})
+            .getMany();
+        if (transactions.length > 0) {
+            transactions.forEach((t: any) => {
+                t.user = null;
+            });
+            await getConnection().transaction(async entityManager => {
+                await entityManager.save(transactions);
+                await User.delete({id: id});
+            })
+        } else {
+            await User.delete({id: id});
+        }
     }
 }

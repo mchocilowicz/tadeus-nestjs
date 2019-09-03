@@ -50,13 +50,13 @@ export class LoginService {
     }
 
     async checkVerificationCode(dto: CodeVerificationRequest): Promise<string> {
-        let user = await User.findOne({phone: dto.phone, code: dto.code});
+        let phoneNumber = dto.phonePrefix + dto.phone;
+        let user = await User.findOne({phone: phoneNumber, code: dto.code});
 
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
-        let token = this.cryptoService.generateToken(user.id);
-        user.token = token;
+        user.token = this.cryptoService.generateToken(user.id);
 
         let userId = this.cryptoService.encryptId(user.id);
         user.step = Step.ACTOVE;
@@ -65,7 +65,8 @@ export class LoginService {
     }
 
     async signIn(phone: PhoneRequest, role: RoleEnum): Promise<void> {
-        let user = await User.findOne({phone: phone.phone}, {relations: ['roles']});
+        let phoneNumber = phone.phonePrefix + phone.phone;
+        let user = await User.findOne({phone: phoneNumber}, {relations: ['roles']});
         if (!user) {
             throw new NotFoundException('user_no_exists')
         }

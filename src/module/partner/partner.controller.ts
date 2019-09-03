@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Post, Query, Req, UseGuards } from "@nestjs/common";
 import {
     ApiBearerAuth,
     ApiImplicitBody,
@@ -22,7 +22,7 @@ import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { CodeService } from "../../common/service/code.service";
 
-const _ = require('lodash');
+const moment = require('moment');
 
 @Controller()
 export class PartnerController {
@@ -119,14 +119,70 @@ export class PartnerController {
             let transactions = await sqlQuery
                 .orderBy('Transaction.createdAt', 'DESC')
                 .getMany();
-            const o = _.groupBy(transactions, 'createdAt');
-            const chunkedKeys = _.chunk(Object.keys(o), 7);
+            let d = [];
+            if (transactions.length > 0) {
+                let lastTransaction: any = transactions[transactions.length - 1];
+                const lastDate = moment(lastTransaction.createdAt);
+                const lastMonday = lastDate.weekday(-6);
+                let end = moment();
+                let start = moment().weekday(1);
 
-            return chunkedKeys.map(key => _.flatten(key.map(k => o[k])))
+                while (start.isSameOrAfter(lastMonday)) {
+                    const from = start.format(Const.DATE_FORMAT);
+                    const to = end.format(Const.DATE_FORMAT);
+
+                    let t = transactions.filter((e: any) => moment(moment(e.createdAt).format(Const.DATE_FORMAT)).isBetween(from, to, null, '[]'));
+                    if (t.length > 0) {
+                        d.push(t);
+                    }
+                    start = moment(to).subtract(1, "days").weekday(-6);
+                    end = moment(from).subtract(1, 'days');
+                }
+            }
+            return d;
         } catch (e) {
             console.log(e)
         }
 
+    }
+
+    @Get('verify')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @Roles(RoleEnum.TERMINAL)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
+    @ApiUseTags('partner')
+    @ApiImplicitQuery({name: 'card', type: "string", description: 'Card code', required: false})
+    @ApiImplicitQuery({name: 'phone', type: "string", description: 'Phone number', required: false})
+    async verifyClient(@Query() query: { card: string, phone: string }) {
+        let sqlQuery = createQueryBuilder('User', 'user');
+
+        if (query.card) {
+            let user = await sqlQuery
+                .leftJoinAndSelect('user.card', 'card')
+                .where('card.code = :code', {code: query.card}).getOne();
+            if (!user) {
+                throw new BadRequestException('partner_bad_qr')
+            }
+        } else if (query.phone) {
+            let user = sqlQuery
+                .where('user.phone = :phone', {phone: query.phone})
+                .getOne();
+            if (!user) {
+                throw new BadRequestException('partner_bad_phone')
+            }
+        } else {
+            throw new BadRequestException('user_no_exists')
+        }
     }
 
 }
