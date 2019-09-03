@@ -70,8 +70,9 @@ export class TerminalController {
     @ApiBearerAuth()
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async assignNewTerminal(@Req() req: any, @Body() dto: PhoneRequest) {
+        let phoneNumber = dto.phonePrefix + dto.phone;
         let point = req.user.tradingPoint;
-        let user = await User.findOne({phone: dto.phone});
+        let user = await User.findOne({phone: phoneNumber});
         const role = await Role.findOne({name: RoleEnum.TERMINAL});
         if (user) {
             user.tradingPoint = point;
@@ -80,7 +81,7 @@ export class TerminalController {
             user = new User();
             user.tradingPoint = point;
             user.ID = this.codeService.generateUserNumber();
-            user.phone = dto.phone;
+            user.phone = phoneNumber;
             user.roles = [role];
         }
         let terminalCount = await User.count({tradingPoint: point});
