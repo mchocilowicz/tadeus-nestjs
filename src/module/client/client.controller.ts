@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Logger, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
@@ -14,6 +14,7 @@ import { CodeService } from "../../common/service/code.service";
 import { PhoneRequest } from "../../models/request/phone.request";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { LoginService } from "../common/login.service";
+import { Transaction } from "../../database/entity/transaction.entity";
 
 
 @Controller()
@@ -59,7 +60,7 @@ export class ClientController {
     })
     @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
-        return this.service.checkVerificationCode(dto);
+        return this.service.checkClientCode(dto);
     }
 
 
@@ -83,10 +84,11 @@ export class ClientController {
     async mainScreen(@Req() req) {
         const user: User = req.user;
         const dto = new MainResponse();
-        dto.ngo = user.ngo;
-        dto.donationPool = user.donationPool;
-        dto.collectedMoney = user.collectedMoney;
-        dto.xp = user.xp;
+
+        dto.ngo = user.details.ngo;
+        dto.donationPool = user.card.donationPool;
+        dto.collectedMoney = user.details.collectedMoney;
+        dto.xp = user.details.xp;
         dto.name = user.name;
         return dto
     }
@@ -146,5 +148,48 @@ export class ClientController {
         card.code = virtualCard.code;
         card.cardNumber = virtualCard.ID;
         return card;
+    }
+
+
+    @Get('correction')
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: []})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiUseTags('client')
+    @ApiBearerAuth()
+    async getCorrections(@Req() req: any) {
+        return await Transaction.find({user: req.user, isCorrection: true})
+    }
+
+    @Put('correction/:id')
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: []})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiUseTags('client')
+    @ApiBearerAuth()
+    async approveCorrection(@Param('id') id: string) {
+        let t = await Transaction.findOne({id: id});
+        t.verifiedByUser = true;
+        await t.save()
     }
 }

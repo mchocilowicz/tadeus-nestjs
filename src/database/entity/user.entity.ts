@@ -5,29 +5,24 @@ import {
     Entity,
     JoinColumn,
     JoinTable,
-    ManyToMany,
     ManyToOne,
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import { Role } from "./role.entity";
-import { Ngo } from "./ngo.entity";
-import { TradingPoint } from "./trading-point.entity";
 import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
-import { Status, Step } from "../../common/enum/status.enum";
-import { Card } from "./card.entity";
+import { Account } from "./account.entity";
+import { UserDetails } from "./user-details.entity";
+import { Terminal } from "./terminal.entity";
+import { VirtualCard } from "./virtual-card.entity";
 
 @Entity()
 export class User extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
     id: string;
-
-    @Column()
-    ID: string;
 
     @Column({nullable: true, unique: true})
     phone: string;
@@ -36,52 +31,17 @@ export class User extends BaseEntity {
     name: string;
 
     @Column({nullable: true})
-    code: number;
-
-    @Column({nullable: true})
     email: string;
 
-    @Column({type: 'decimal'})
-    collectedMoney: number = 0;
+    @Column({default: false})
+    registered: boolean;
 
-    @Column()
-    registered: boolean = false;
+    @Column({default: false})
+    isAnonymous: boolean;
 
-    @Column({type: 'text', default: Status.ACTIVE})
-    status: Status;
-
-    @Column({type: 'text', nullable: true})
-    step: Step;
-
-    @Column()
-    xp: number = 0;
-
-    @Column({type: 'decimal'})
-    donationPool: number = 0;
-
-    @Column({type: 'decimal'})
-    personalPool: number = 0;
-
-    @Column()
-    ngoSelectionCount: number = 0;
-
-    @Column({nullable: true})
-    terminalID: string;
-
-    @Column({nullable: true})
-    token: string;
-
-    @ManyToMany(type => Role)
-    @JoinTable({name: "user_role"})
-    roles: Role[];
-
-    @ManyToOne(type => Ngo)
+    @ManyToOne(type => Account)
     @JoinTable()
-    ngo: Ngo;
-
-    @ManyToOne(type => TradingPoint)
-    @JoinColumn()
-    tradingPoint: TradingPoint;
+    accounts: Account[];
 
     @OneToMany(type => Transaction, transactions => transactions.user)
     transactions: Transaction[];
@@ -89,13 +49,21 @@ export class User extends BaseEntity {
     @OneToMany(type => Donation, donation => donation.user)
     donations: Donation[];
 
-    @OneToOne(type => Card)
+    @ManyToOne(type => Terminal)
     @JoinColumn()
-    card: Card;
+    terminal: Terminal;
+
+    @ManyToOne(type => UserDetails)
+    @JoinColumn()
+    details: UserDetails;
+
+    @OneToOne(type => VirtualCard)
+    @JoinColumn()
+    card: VirtualCard;
 
     @CreateDateColumn()
-    createdDate: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    updatedDate: Date;
+    updatedAt: Date;
 }

@@ -12,9 +12,8 @@ import { NgoRowExcel } from "../../../models/excel/ngo-row.excel";
 import { validate } from "class-validator";
 import { ExcelException } from "../../../common/exceptions/excel.exception";
 import { City } from "../../../database/entity/city.entity";
-import { Card } from "../../../database/entity/card.entity";
-import { CardEnum } from "../../../common/enum/card.enum";
 import { CodeService } from "../../../common/service/code.service";
+import { PhysicalCard } from "../../../database/entity/physical-card.entity";
 
 @Controller()
 @ApiUseTags('dashboard/ngo')
@@ -43,10 +42,10 @@ export class DashboardNgoController {
         ngo.email = dto.email;
         ngo.phone = dto.phone;
         ngo.ID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
-        let card = new Card();
-        card.type = CardEnum.PHYSICAL;
+        let card = new PhysicalCard();
         card.ID = this.codeService.generatePhysicalCardNumber(ngo.ID);
         try {
+            ngo.card = await card.save();
             await createQueryBuilder('Ngo').insert().values(ngo).execute();
         } catch (e) {
             handleException(e, 'ngo', this.logger)
@@ -147,7 +146,7 @@ export class DashboardNgoController {
         ngo.phone = data.phone;
         ngo.email = data.email;
         ngo.verified = data.verified;
-        ngo.verificationDate = data.verificationDate;
+        ngo.verifiedAt = data.verificationDate;
         ngo.longitude = data.longitude;
         ngo.latitude = data.latitude;
         ngo.name = data.name;
@@ -155,8 +154,7 @@ export class DashboardNgoController {
         ngo.postCode = data.postCode;
         ngo.ID = this.codeService.generateNgoNumber(type.code, this.codeService.generateNumber());
         try {
-            let ngoCard = new Card();
-            ngoCard.type = CardEnum.PHYSICAL;
+            let ngoCard = new PhysicalCard();
             ngoCard.ID = this.codeService.generatePhysicalCardNumber(ngo.ID);
             ngo.card = await ngoCard.save();
             await ngo.save();

@@ -31,7 +31,7 @@ export class TransactionController {
     }
 
     @Get('correction/:id')
-    @Roles(RoleEnum.PARTNER)
+    @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -46,7 +46,7 @@ export class TransactionController {
     @ApiResponse({status: 200, type: CorrectionSuccessResponse})
     async verifyCorrection(@Req() req, @Param('id') id) {
         let user: User = req.user;
-        let transaction = await Transaction.findOne({id: id, tradingPoint: user.tradingPoint});
+        let transaction = await Transaction.findOne({id: id, tradingPoint: user.terminal.tradingPoint});
         if (transaction.verifiedByUser) {
             const dto = new CorrectionSuccessResponse();
             dto.date = moment().format("YYYY-MM-DD");
@@ -73,7 +73,7 @@ export class TransactionController {
     })
     async correction(@Req() req, @Body() dto: CorrectionResponse) {
         let partner: User = req.user;
-        let tradingPoint: TradingPoint = partner.tradingPoint;
+        let tradingPoint: TradingPoint = partner.terminal.tradingPoint;
 
 
         let transaction: Transaction = await Transaction.findOne({id: dto.transactionId}, {relations: ['user']});
@@ -81,10 +81,10 @@ export class TransactionController {
 
         let pool = this.calService.calculateX(transaction.price, transaction.donationPercentage, tradingPoint.vat);
 
-        user.xp -= transaction.userXp;
-        user.personalPool -= pool / 2;
-        user.donationPool -= pool / 2;
-        user.collectedMoney -= pool;
+        user.details.xp -= transaction.userXp;
+        user.card.personalPool -= pool / 2;
+        user.card.donationPool -= pool / 2;
+        user.details.collectedMoney -= pool;
         transaction.isCorrection = true;
 
         tradingPoint.xp -= transaction.tradingPointXp;
@@ -117,10 +117,10 @@ export class TransactionController {
     })
     async saveTransaction(@Req() req, @Body() dto: { price, donationPercentage, clientCode }) {
         let partner: User = req.user;
-        let tradingPoint: TradingPoint = partner.tradingPoint;
+        let tradingPoint: TradingPoint = partner.terminal.tradingPoint;
 
         let currentCart: Cart = await Cart.findOne({
-            tradingPoint: partner.tradingPoint,
+            tradingPoint: partner.terminal.tradingPoint,
             isPaid: false,
             paymentDate: null
         }, {relations: ['transactions']});
@@ -137,7 +137,7 @@ export class TransactionController {
             let transaction: Transaction = new Transaction();
             transaction.ID = this.codeService.generateTransactionID();
             transaction.user = user;
-            transaction.tradingPoint = partner.tradingPoint;
+            transaction.tradingPoint = partner.terminal.tradingPoint;
             transaction.price = dto.price;
             transaction.donationPercentage = dto.donationPercentage;
 
@@ -157,13 +157,14 @@ export class TransactionController {
             user.personalPool = (pool / 2) + Number(user.personalPool);
             user.donationPool = (pool / 2) + Number(user.donationPool);
             user.collectedMoney = pool + Number(user.collectedMoney);
-            transaction.terminalID = partner.terminalID;
+            transaction.terminal = partner.terminal;
 
             await getConnection().transaction(async entityManager => {
                 if (!currentCart.id) {
                     currentCart = await entityManager.save(currentCart);
                 }
 
+                currentCart.price += transaction.price;
                 let savedTransaction = await entityManager.save(transaction);
                 currentCart.transactions.push(savedTransaction);
 
@@ -193,7 +194,7 @@ export class TransactionController {
             .getMany();
 
         transactions.push(currenctTransaction);
-        return this.calService.calculate(transactions, currenctTransaction.tradingPoint, user.xp)
+        return this.calService.calculate(transactions, currenctTransaction.tradingPoint, user.details.xp)
     }
 
 }

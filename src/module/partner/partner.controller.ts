@@ -39,7 +39,7 @@ export class PartnerController {
     @ApiUseTags('partner/auth')
     @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
-        return this.service.checkVerificationCode(dto);
+        return this.service.checkTerminalCode(dto);
     }
 
     @Post('signIn')
@@ -75,12 +75,12 @@ export class PartnerController {
         const user: User = req.user;
         const partner: any = await createQueryBuilder('TradingPoint')
             .leftJoinAndSelect('TradingPoint.city', 'city')
-            .where('TradingPoint.id = :id', {id: user.tradingPoint.id})
+            .where('TradingPoint.id = :id', {id: user.terminal.tradingPoint.id})
             .andWhere('TradingPoint.active = true')
             .getOne();
 
         return {
-            id: user.terminalID,
+            id: user.accounts.find(a => a.role.name === RoleEnum.TERMINAL).ID,
             name: partner.name,
             city: partner.city.name,
             address: partner.address,

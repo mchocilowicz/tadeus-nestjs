@@ -15,7 +15,8 @@ import TradingPointExcelRow from "../../../models/excel/trading-point-row.excel"
 import { Const } from "../../../common/util/const";
 import { TradingPointTypeRequest } from "../../../models/request/trading-point-type.request";
 import { CodeService } from "../../../common/service/code.service";
-import { Transaction } from "../../../database/entity/transaction.entity";
+import { Account } from "../../../database/entity/account.entity";
+import { Terminal } from "../../../database/entity/terminal.entity";
 
 @Controller()
 @ApiUseTags('dashboard/trading-point')
@@ -96,29 +97,33 @@ export class TradingPointController {
     @Post(':tradingPointId/terminal')
     async assignNewTerminal(@Param('tradingPointId') id: string, @Body() dto: any) {
         let point = await TradingPoint.findOne({id: id});
-        let user = await User.findOne({phone: dto.phone});
+        let user = await User.findOne({phone: dto.phone}, {relations: ['terminal']});
         const role = await Role.findOne({name: RoleEnum.TERMINAL});
-        if (user) {
-            user.tradingPoint = point;
-            user.roles.push(role);
-        } else {
+        if (!user) {
             user = new User();
-            user.tradingPoint = point;
-            user.ID = this.codeService.generateUserNumber();
-            user.phone = dto.phone;
-            user.roles = [role];
-        }
-        let terminalCount = await User.count({tradingPoint: point});
-        let terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+            let account = new Account();
+            account.role = role;
+            let counts = await Terminal.count({tradingPoint: point});
+            account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+            let terminal = new Terminal();
+            terminal.tradingPoint = point;
 
-        let transactionCount = await Transaction.count({terminalID: terminalID});
-        while (transactionCount !== 0) {
-            terminalCount += 1;
-            terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
-            transactionCount = await Transaction.count({terminalID: terminalID});
+            user.terminal = await terminal.save();
+            user = await user.save();
+            account.user = user;
+            await account.save()
+        } else {
+            let terminal = new Terminal();
+            terminal.tradingPoint = point;
+            user.terminal = await terminal.save();
+            let account = new Account();
+            account.role = role;
+            let counts = await Terminal.count({tradingPoint: point});
+            account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+            user = await user.save();
+            account.user = user;
+            await account.save();
         }
-        user.terminalID = terminalID;
-        await user.save();
     }
 
     @Post('type')
@@ -149,6 +154,20 @@ export class TradingPointController {
         const type = await TradingPointType.findOne({id: id});
         type.name = dto.name;
         await type.save()
+    }
+
+    @Get('report')
+    async getReport() {
+        let cart = await createQueryBuilder('Cart', 'cart')
+            .leftJoinAndSelect('cart.tradingPoint', 'tradingPoint')
+            .orderBy('tradingPoint', 'DESC')
+            .getMany();
+
+        return {
+            carts: cart,
+            availableMoney: cart.filter((c: any) => c.isPaid == true).reduce((t, e: any) => t + e.price, 0),
+            unavailableMoney: cart.filter((c: any) => c.isPaid == false).reduce((t, e: any) => t + e.price, 0),
+        };
     }
 
     private mapToBaseEntity(dto: any, entity: TradingPoint): void {

@@ -35,6 +35,7 @@ export class DonationController {
         donation.ngo = ngo;
         donation.user = user;
         donation.type = DonationEnum.NGO;
+        donation.pool = 'PERSONAL';
         donation.ID = this.codeService.generateDonationID();
         let price = user.personalPool;
         donation.price = price;
@@ -66,6 +67,7 @@ export class DonationController {
         donation.ngo = ngo;
         donation.user = user;
         donation.type = DonationEnum.NGO;
+        donation.pool = 'PERSONAL';
         donation.ID = this.codeService.generateDonationID();
         let price = user.personalPool;
         donation.price = price;

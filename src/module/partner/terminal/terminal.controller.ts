@@ -10,7 +10,6 @@ import { PhoneRequest } from "../../../models/request/phone.request";
 import { User } from "../../../database/entity/user.entity";
 import { Role } from "../../../database/entity/role.entity";
 import { Transaction } from "../../../database/entity/transaction.entity";
-import { Step } from "../../../common/enum/status.enum";
 import { CodeService } from "../../../common/service/code.service";
 
 @Controller()
@@ -75,26 +74,26 @@ export class TerminalController {
         let user = await User.findOne({phone: phoneNumber});
         const role = await Role.findOne({name: RoleEnum.TERMINAL});
         if (user) {
-            user.tradingPoint = point;
-            user.roles.push(role);
+            // user.tradingPoint = point;
+            // user.roles.push(role);
         } else {
             user = new User();
-            user.tradingPoint = point;
-            user.ID = this.codeService.generateUserNumber();
+            // user.tradingPoint = point;
+            // user.ID = this.codeService.generateUserNumber();
             user.phone = phoneNumber;
-            user.roles = [role];
+            // user.roles = [role];
         }
-        let terminalCount = await User.count({tradingPoint: point});
-        let terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
-
-        let transactionCount = await Transaction.count({terminalID: terminalID});
-        while (transactionCount !== 0) {
-            terminalCount += 1;
-            terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
-            transactionCount = await Transaction.count({terminalID: terminalID});
-        }
-        user.terminalID = terminalID;
-        user.step = Step.SIGN_IN;
+        // let terminalCount = await User.count({tradingPoint: point});
+        // let terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+        //
+        // let transactionCount = await Transaction.count({terminalID: terminalID});
+        // while (transactionCount !== 0) {
+        //     terminalCount += 1;
+        //     terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
+        //     transactionCount = await Transaction.count({terminalID: terminalID});
+        // }
+        // user.terminalID = terminalID;
+        // user.step = Step.SIGN_IN;
         await user.save();
     }
 

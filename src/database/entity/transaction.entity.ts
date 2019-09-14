@@ -2,6 +2,7 @@ import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, Pr
 import { TradingPoint } from "./trading-point.entity";
 import { User } from "./user.entity";
 import { Cart } from "./cart.entity";
+import { Terminal } from "./terminal.entity";
 
 @Entity()
 export class Transaction extends BaseEntity {
@@ -32,9 +33,6 @@ export class Transaction extends BaseEntity {
     @Column()
     verifiedByUser: boolean = false;
 
-    @Column({nullable: true})
-    terminalID: string;
-
     @ManyToOne(type => Cart, cart => cart.transactions)
     @JoinColumn()
     cart: Cart;
@@ -44,6 +42,9 @@ export class Transaction extends BaseEntity {
 
     @ManyToOne(type => User, user => user.transactions)
     user: User;
+
+    @ManyToOne(type => Terminal, terminal => terminal.transactions)
+    terminal: Terminal;
 
     @CreateDateColumn()
     createdAt: Date;

@@ -13,9 +13,9 @@ import {
 } from "typeorm";
 import { NgoType } from "./ngo-type.entity";
 import { City } from "./city.entity";
-import { User } from "./user.entity";
 import { Donation } from "./donation.entity";
-import { Card } from "./card.entity";
+import { UserDetails } from "./user-details.entity";
+import { PhysicalCard } from "./physical-card.entity";
 
 @Entity()
 @Unique(["name"])
@@ -40,7 +40,7 @@ export class Ngo extends BaseEntity {
     verified: boolean = false;
 
     @Column({nullable: true})
-    verificationDate: Date;
+    verifiedAt: Date;
 
     @Column({type: "decimal"})
     longitude: number;
@@ -73,9 +73,9 @@ export class Ngo extends BaseEntity {
     @Column({nullable: true})
     lastDonation: number = 0;
 
-    @OneToOne(type => Card)
+    @OneToOne(type => PhysicalCard)
     @JoinColumn()
-    card: Card;
+    card: PhysicalCard;
 
     @ManyToOne(type => City, {nullable: false})
     @JoinColumn()
@@ -85,14 +85,14 @@ export class Ngo extends BaseEntity {
     @JoinColumn()
     type: NgoType;
 
-    @OneToMany(type => User, user => user.ngo)
-    user: User[];
+    @OneToMany(type => UserDetails, user => user.ngo)
+    userDetails: UserDetails[];
 
     @OneToMany(type => Donation, donation => donation.ngo)
     donations: Donation[];
 
     @CreateDateColumn()
-    creationDate: Date;
+    creationAt: Date;
 
     @BeforeInsert()
     assignPointData() {

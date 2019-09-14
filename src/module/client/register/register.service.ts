@@ -8,9 +8,10 @@ import { handleException } from "../../../common/util/functions";
 import { CodeVerificationRequest } from "../../../models/request/code-verification.request";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { Role } from "../../../database/entity/role.entity";
-import { Card } from "../../../database/entity/card.entity";
-import { CardEnum } from "../../../common/enum/card.enum";
 import { getConnection } from "typeorm";
+import { Account } from "../../../database/entity/account.entity";
+import { UserDetails } from "../../../database/entity/user-details.entity";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 
 
 @Injectable()
@@ -22,12 +23,26 @@ export class RegisterService {
 
     async createUser(phone: NewPhoneRequest): Promise<void> {
         let phoneNumber = phone.phonePrefix + phone.phone;
-        let user = await User.findOne({phone: phoneNumber}, {relations: ['roles']});
-        let anonymousUser = await User.findOne({id: phone.anonymousKey}, {relations: ['roles']});
+        // let user = await createQueryBuilder('User', 'user')
+        //     .leftJoinAndSelect('user.account','account')
+        //     .leftJoinAndSelect('account.role', 'role')
+        //     .where('role.name = :name', {name: RoleEnum.CLIENT})
+        //     .andWhere('user.phone = :phone', {phone: phoneNumber})
+        //     .getOne();
+        let user = await User.findOne({phone: phoneNumber}, {
+            relations: ['account', 'account.role'], where: {
+                'account.role.name': RoleEnum.CLIENT
+            }
+        });
+        let anonymousUser = await User.findOne({
+            id: phone.anonymousKey,
+            isAnonymous: true
+        }, {relations: ['account', 'account.role']});
         if (user && user.registered) {
             throw new BadRequestException("user_active")
         } else {
             if (anonymousUser) {
+                anonymousUser.isAnonymous = false;
                 await this.registerUser(anonymousUser)
             } else if (user) {
                 await this.registerUser(user)
@@ -51,15 +66,17 @@ export class RegisterService {
             user.email = dto.email;
             user.name = dto.name;
             user.registered = true;
-            user.xp = 50;
 
-            const card = new Card();
+            const card = new VirtualCard();
             card.ID = this.codeService.generateVirtualCardNumber();
-            card.type = CardEnum.VIRTUAL;
+
+            const details = new UserDetails();
+            details.xp = 50;
 
             try {
                 await getConnection().transaction(async entityManager => {
                     user.card = await entityManager.save(card);
+                    user.details = await entityManager.save(details);
                     await entityManager.save(user);
                 });
                 return this.jwtService.signToken({id: user.id})
@@ -72,7 +89,17 @@ export class RegisterService {
 
     async checkCode(dto: CodeVerificationRequest) {
         let phoneNumber = dto.phonePrefix + dto.phone;
-        let user = await User.findOne({phone: phoneNumber, code: dto.code});
+        let user = await User.findOne({phone: phoneNumber}, {
+            join: {
+                alias: 'user',
+                leftJoin: {
+                    'account': 'user.account',
+                    'role': 'account.role'
+                }
+            }, where: {
+                'user.account.role': RoleEnum.CLIENT
+            }
+        });
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
@@ -83,16 +110,27 @@ export class RegisterService {
         if (!role) {
             throw new BadRequestException('user_not_created')
         }
-        if (user.roles) {
-            user.roles.push(role);
-        } else {
-            user.roles = [role]
-        }
-        user.ID = this.codeService.generateUserNumber();
-        user.code = this.codeService.generateSmsCode();
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         try {
-            await user.save();
+            let savedUser = await user.save();
+            if (user.accounts) {
+                let account = user.accounts.find(a => a.role == role);
+                if (!account) {
+                    let account = new Account();
+                    account.role = role;
+                    account.ID = this.codeService.generateUserNumber();
+                    account.code = this.codeService.generateSmsCode();
+                    account.user = savedUser;
+                    await account.save();
+                }
+            } else {
+                let account = new Account();
+                account.role = role;
+                account.ID = this.codeService.generateUserNumber();
+                account.code = this.codeService.generateSmsCode();
+                account.user = savedUser;
+                await account.save();
+            }
         } catch (e) {
             console.log(e);
             handleException(e, 'user', this.logger)

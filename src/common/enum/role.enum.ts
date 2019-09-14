@@ -1,8 +1,5 @@
 export enum RoleEnum {
-    ADMIN = 'ADMIN',
     CLIENT = 'CLIENT',
-    ANONYMOUS = 'ANONYMOUS',
-    PARTNER = 'PARTNER',
     DASHBOARD = 'DASHBOARD',
     TERMINAL = 'TERMINAL'
 }

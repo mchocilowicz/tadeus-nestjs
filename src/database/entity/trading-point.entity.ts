@@ -13,10 +13,10 @@ import {
 } from "typeorm";
 import { TradingPointType } from "./trading-point-type.entity";
 import { City } from "./city.entity";
-import { User } from "./user.entity";
 import { Transaction } from "./transaction.entity";
 import { Cart } from "./cart.entity";
 import { Payment } from "./payment.entity";
+import { Terminal } from "./terminal.entity";
 
 @Entity()
 @Unique(["name"])
@@ -28,8 +28,8 @@ export class TradingPoint extends BaseEntity {
     @Column()
     ID: string;
 
-    @OneToMany(type => User, user => user.tradingPoint)
-    user: User[];
+    @OneToMany(type => Terminal, terminal => terminal.tradingPoint)
+    terminals: Terminal[];
 
     @OneToMany(type => Cart, cart => cart.tradingPoint)
     cartList: Cart[];

@@ -4,14 +4,18 @@ import { RoleEnum } from "../../../common/enum/role.enum";
 import { User } from "../../../database/entity/user.entity";
 import { Status } from "../../../common/enum/status.enum";
 import { ApiUseTags } from "@nestjs/swagger";
+import { Account } from "../../../database/entity/account.entity";
 
 @Controller()
 @ApiUseTags('dashboard/user')
 export class UserController {
     @Get()
     async getAllUsers() {
-        const users = await createQueryBuilder("User")
-            .innerJoin("User.roles", 'role', "role.name = :name", {name: RoleEnum.CLIENT})
+        const users = await createQueryBuilder("User", 'user')
+            .leftJoinAndSelect(`user.accounts`, 'accounts')
+            .leftJoinAndSelect('accounts.role', 'role')
+            .leftJoinAndSelect('user.details', 'details')
+            .where(`role.name = ${RoleEnum.CLIENT}`)
             .getMany();
         return users.map((user: User) => {
             return {
@@ -19,16 +23,16 @@ export class UserController {
                 phone: user.phone,
                 name: user.name,
                 email: user.email,
-                xp: user.xp,
-                status: user.status,
-                updatedDate: user.updatedDate
+                xp: user.details.xp,
+                status: user.accounts.find(a => a.role.name == RoleEnum.CLIENT).status,
+                updatedDate: user.details.updatedAt
             }
         })
     }
 
     @Get(':id')
     async getUserById(@Param('id') id: string) {
-        let user = await User.findOne({id: id}, {relations: ['ngo', 'transactions', 'donations']});
+        let user = await User.findOne({id: id}, {relations: ['details', 'transactions', 'donations']});
         if (!user) {
             throw new BadRequestException('user_not_exists')
         }
@@ -51,7 +55,9 @@ export class UserController {
         if (!user) {
             throw new BadRequestException('user_not_exists')
         }
-        user.status = dto.status;
-        await user.save();
+        let accounts = await Account.find({user: user});
+        let a = accounts.find(a => a.role.name == RoleEnum.CLIENT);
+        a.status = dto.status;
+        await a.save();
     }
 }

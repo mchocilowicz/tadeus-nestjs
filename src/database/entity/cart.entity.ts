@@ -19,6 +19,15 @@ export class Cart extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
+    @Column({default: false})
+    isPaid: boolean;
+
+    @Column({nullable: true, type: 'decimal'})
+    price: number;
+
+    @Column({nullable: true})
+    paymentDate: Date;
+
     @ManyToOne(type => TradingPoint)
     @JoinColumn()
     tradingPoint: TradingPoint;
@@ -34,10 +43,4 @@ export class Cart extends BaseEntity {
 
     @UpdateDateColumn()
     updatedAt: Date;
-
-    @Column()
-    isPaid: boolean = false;
-
-    @Column({nullable: true})
-    paymentDate: Date;
 }

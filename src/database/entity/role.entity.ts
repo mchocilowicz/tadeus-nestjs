@@ -1,11 +1,15 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Account } from "./account.entity";
 
 @Entity()
-@Unique("UNIQUE_ROLE_NAME", ["name"])
+@Unique(["name"])
 export class Role extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
 
     @Column()
     name: string;
+
+    @OneToMany(account => Account, account => account.role)
+    accounts: Account[];
 }

@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
-import { JwtStrategy } from "../../../common/strategy/jwt.strategy";
 import { TadeusJwtService } from "./TadeusJwtService";
 import { CryptoService } from "../../../common/service/crypto.service";
 
@@ -12,7 +11,7 @@ import { CryptoService } from "../../../common/service/crypto.service";
             secretOrPrivateKey: process.env.TADEUS_JWT_EVEREST,
         }),
     ],
-    providers: [JwtStrategy, TadeusJwtService, CryptoService],
+    providers: [TadeusJwtService, CryptoService],
     exports: [TadeusJwtService]
 })
 export class TadeusJwtModule {

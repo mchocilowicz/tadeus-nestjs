@@ -40,7 +40,7 @@ export class CryptoService {
             1000, 64, process.env.TADEUS_CRYPTO).toString(`hex`);
     }
 
-    generateToken(id: string): string {
+    generateToken(id: string, code: number): string {
         let c = id.split('-').reverse().join();
         let hash = this.encrypt(c);
         let md5a = hash.split('').reverse().join();
@@ -50,7 +50,7 @@ export class CryptoService {
         parts[1] = parts[2];
         parts[2] = a;
         let newId = parts.join('-');
-        let s = newId.replace(md5b[0], md5a[0]);
+        let s = newId.replace(md5b[0], md5a[0]) + '-' + code;
         let md5Token = this.md5Tokne(s);
 
         return this.sweet(md5Token);
