@@ -27,7 +27,8 @@ export class DonationController {
     })
     async donationSelectedNgo(@Req() req: any) {
         const user: User = req.user;
-        const ngo = user.ngo;
+        let details = user.details;
+        const ngo = details.ngo;
         if (!ngo) {
             throw new BadRequestException('ngo_not_selected')
         }
@@ -37,12 +38,13 @@ export class DonationController {
         donation.type = DonationEnum.NGO;
         donation.pool = 'PERSONAL';
         donation.ID = this.codeService.generateDonationID();
-        let price = user.personalPool;
+        let card = user.card;
+        let price = card.personalPool;
         donation.price = price;
         await getConnection().transaction(async entityManager => {
             await entityManager.save(donation);
-            user.personalPool -= price;
-            await entityManager.save(user);
+            card.personalPool -= price;
+            await entityManager.save(card);
         })
     }
 
@@ -69,12 +71,13 @@ export class DonationController {
         donation.type = DonationEnum.NGO;
         donation.pool = 'PERSONAL';
         donation.ID = this.codeService.generateDonationID();
-        let price = user.personalPool;
+        let card = user.card;
+        let price = card.personalPool;
         donation.price = price;
         await getConnection().transaction(async entityManager => {
             await entityManager.save(donation);
-            user.personalPool -= price;
-            await entityManager.save(user);
+            card.personalPool -= price;
+            await entityManager.save(card);
         })
     }
 
