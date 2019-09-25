@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
 import { CodeService } from "../../common/service/code.service";
 import { User } from "../../database/entity/user.entity";
 import { Role } from "../../database/entity/role.entity";
@@ -11,6 +10,7 @@ import { CryptoService } from "../../common/service/crypto.service";
 import { createQueryBuilder, getConnection } from "typeorm";
 import { Account } from "../../database/entity/account.entity";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
 
 @Injectable()
 export class LoginService {
@@ -35,14 +35,12 @@ export class LoginService {
             let userId;
             await getConnection().transaction(async entityManager => {
                 user.card = await entityManager.save(virtualCard);
-                let savedUser = await entityManager.save(user);
 
-                account.token = this.cryptoService.generateToken(savedUser.id, account.code);
-                account.user = savedUser;
-                await entityManager.save(account);
-                userId = this.cryptoService.encryptId(savedUser.id);
-
-                await entityManager.save(savedUser);
+                account.user = await entityManager.save(user);
+                let savedAccount = await entityManager.save(account);
+                savedAccount.token = this.cryptoService.generateToken(savedAccount.id, account.code);
+                userId = this.cryptoService.encryptId(savedAccount.id, RoleEnum.CLIENT);
+                await entityManager.save(savedAccount);
             });
             return this.jwtService.signToken({id: userId})
         } catch (e) {
@@ -52,7 +50,7 @@ export class LoginService {
 
     async checkTerminalCode(dto: CodeVerificationRequest): Promise<string> {
         let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = this.getUser(phoneNumber, dto.code, RoleEnum.TERMINAL);
+        let user: any = await this.getUser(phoneNumber, dto.code, RoleEnum.TERMINAL);
 
         if (!user) {
             throw new NotFoundException('invalid_code')
@@ -61,39 +59,39 @@ export class LoginService {
         let account = user.accounts.find(a => a.role.name == RoleEnum.TERMINAL);
         account.token = this.cryptoService.generateToken(account.id, account.code);
 
-        let id = this.cryptoService.encryptId(account.id);
+        let id = this.cryptoService.encryptId(account.id, RoleEnum.TERMINAL);
         await account.save();
         return this.jwtService.signToken({id: id})
     }
 
     async checkDashboardCode(dto: CodeVerificationRequest): Promise<string> {
         let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = this.getUser(phoneNumber, dto.code, RoleEnum.DASHBOARD);
+        let user: any = await this.getUser(phoneNumber, dto.code, RoleEnum.DASHBOARD);
 
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
 
-        let account = user.accounts.find(a => a.role.name == RoleEnum.TERMINAL);
+        let account = user.accounts.find(a => a.role.name == RoleEnum.DASHBOARD);
         account.token = this.cryptoService.generateToken(account.id, account.code);
 
-        let id = this.cryptoService.encryptId(account.id);
+        let id = this.cryptoService.encryptId(account.id, RoleEnum.DASHBOARD);
         await account.save();
         return this.jwtService.signToken({id: id})
     }
 
     async checkClientCode(dto: CodeVerificationRequest): Promise<string> {
         let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = this.getUser(phoneNumber, dto.code, RoleEnum.CLIENT);
+        let user: any = await this.getUser(phoneNumber, dto.code, RoleEnum.CLIENT);
 
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
 
-        let account = user.accounts.find(a => a.role.name == RoleEnum.TERMINAL);
+        let account = user.accounts.find(a => a.role.name == RoleEnum.CLIENT);
         account.token = this.cryptoService.generateToken(account.id, account.code);
 
-        let id = this.cryptoService.encryptId(account.id);
+        let id = this.cryptoService.encryptId(account.id, RoleEnum.CLIENT);
         await account.save();
         return this.jwtService.signToken({id: id})
     }
@@ -103,15 +101,15 @@ export class LoginService {
         let user: any = await createQueryBuilder('User', 'user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
-            .where(`user.phone = ${phoneNumber}`)
-            .andWhere(`role.name = ${role}`)
+            .where(`user.phone = :phone`, {phone: phoneNumber})
+            .andWhere(`role.name = :role`, {role: role})
             .getOne();
         if (!user) {
             throw new NotFoundException('user_no_exists')
         }
-        this.checkUserRights(user, role);
 
         let account = user.accounts.find(a => a.role.name == role);
+        this.checkUserRights(account, role);
 
         account.code = this.codeService.generateSmsCode();
         account.step = Step.CODE;
@@ -119,23 +117,23 @@ export class LoginService {
         await account.save()
     }
 
-    private checkUserRights(user: User, role: RoleEnum) {
-        if (!this.checkUserAccount(user.accounts, role)) {
+    private checkUserRights(account: Account, role: RoleEnum) {
+        if (!this.checkUserAccount(account, role)) {
             throw new UnauthorizedException('account_blocked')
         }
     }
 
-    private checkUserAccount(userRoles: Account[], role: RoleEnum): boolean {
-        return userRoles.some(r => r.role.name === role && r.status !== Status.ACTIVE)
+    private checkUserAccount(account: Account, role: RoleEnum): boolean {
+        return account.role.name === role && account.status === Status.ACTIVE
     }
 
-    private async getUser(phone: String, code: number, role: string) {
+    private async getUser(phone: string, code: number, role: string) {
         return await createQueryBuilder('User', 'user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
-            .where(`user.phone = ${phone}`)
-            .andWhere(`account.code = ${code}`)
-            .andWhere(`role.name = ${role}`)
+            .where(`user.phone = :phone`, {phone: phone})
+            .andWhere(`accounts.code = :code`, {code: code})
+            .andWhere(`role.name = :role`, {role: role})
             .getOne();
     }
 }

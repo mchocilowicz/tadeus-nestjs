@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Logger, Param, Post, Put, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { createQueryBuilder, QueryFailedError } from "typeorm";
+import { createQueryBuilder, getConnection, QueryFailedError } from "typeorm";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { City } from "../../../database/entity/city.entity";
 import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
@@ -107,22 +107,23 @@ export class TradingPointController {
             account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
             let terminal = new Terminal();
             terminal.tradingPoint = point;
-
-            user.terminal = await terminal.save();
-            user = await user.save();
-            account.user = user;
-            await account.save()
+            await getConnection().transaction(async entityManager => {
+                user.terminal = await entityManager.save(terminal);
+                account.user = await entityManager.save(user);
+                await entityManager.save(account);
+            })
         } else {
             let terminal = new Terminal();
             terminal.tradingPoint = point;
-            user.terminal = await terminal.save();
             let account = new Account();
             account.role = role;
-            let counts = await Terminal.count({tradingPoint: point});
-            account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
-            user = await user.save();
-            account.user = user;
-            await account.save();
+            await getConnection().transaction(async entityManager => {
+                user.terminal = await entityManager.save(terminal);
+                let counts = await Terminal.count({tradingPoint: point});
+                account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+                account.user = await entityManager.save(user);
+                await entityManager.save(account);
+            })
         }
     }
 
@@ -194,7 +195,6 @@ export class TradingPointController {
         let tradePoint: TradingPoint = new TradingPoint();
         tradePoint.name = row.name;
         tradePoint.donationPercentage = row.donationPercentage;
-        tradePoint.vat = row.vat;
         tradePoint.manipulationFee = row.manipulationFee ? row.manipulationFee : 0.66;
         tradePoint.latitude = row.latitude;
         tradePoint.longitude = row.longitude;

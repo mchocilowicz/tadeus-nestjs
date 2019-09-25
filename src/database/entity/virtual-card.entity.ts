@@ -4,11 +4,9 @@ import {
     CreateDateColumn,
     Entity,
     Generated,
-    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import { User } from "./user.entity";
 
 @Entity()
 export class VirtualCard extends BaseEntity {
@@ -27,9 +25,6 @@ export class VirtualCard extends BaseEntity {
 
     @Column({type: 'decimal'})
     personalPool: number = 0;
-
-    @OneToMany(type => User, user => user.card)
-    user: User[];
 
     @CreateDateColumn()
     createdAt: Date;

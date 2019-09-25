@@ -1,4 +1,5 @@
 import { Injectable } from "@nestjs/common";
+import { RoleEnum } from "../enum/role.enum";
 
 const crypto = require('crypto');
 
@@ -18,6 +19,7 @@ export class CryptoService {
     }
 
     decrypt(text: string): string {
+        if (!text) return text;
 
         let textParts = text.split(':');
         let iv = Buffer.from(textParts.shift(), 'hex');
@@ -56,22 +58,23 @@ export class CryptoService {
         return this.sweet(md5Token);
     }
 
-    encryptId(id: string): string {
+    encryptId(id: string, role: RoleEnum): string {
         let idParts = id.split('-');
         let p = idParts[1];
         idParts[1] = idParts[2];
         idParts[2] = idParts[3];
         idParts[3] = p.split('').reverse().join('');
-        return this.encrypt(idParts.join('-'));
+        return this.encrypt([idParts.join('-'), role].join(':'));
     }
 
-    decryptId(hash: string): string {
+    decryptId(hash: string): any {
         let id = this.decrypt(hash);
-        let idParts = id.split('-');
+        let obj = id.split(':');
+        let idParts = obj[0].split('-');
         let p = idParts[3];
         idParts[3] = idParts[2];
         idParts[2] = idParts[1];
         idParts[1] = p.split('').reverse().join('');
-        return idParts.join('-');
+        return {id: idParts.join('-'), role: obj[1]}
     }
 }

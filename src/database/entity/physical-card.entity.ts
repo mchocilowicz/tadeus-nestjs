@@ -4,11 +4,9 @@ import {
     CreateDateColumn,
     Entity,
     Generated,
-    OneToMany,
     PrimaryGeneratedColumn,
     UpdateDateColumn
 } from "typeorm";
-import { Ngo } from "./ngo.entity";
 
 @Entity()
 export class PhysicalCard extends BaseEntity {
@@ -24,9 +22,6 @@ export class PhysicalCard extends BaseEntity {
 
     @Column({type: 'decimal', default: 0})
     collectedMoney: number;
-
-    @OneToMany(type => Ngo, ngo => ngo.card)
-    ngoList: Ngo[];
 
     @CreateDateColumn()
     createdAt: Date;

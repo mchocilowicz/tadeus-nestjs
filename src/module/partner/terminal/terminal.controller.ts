@@ -11,6 +11,9 @@ import { User } from "../../../database/entity/user.entity";
 import { Role } from "../../../database/entity/role.entity";
 import { Transaction } from "../../../database/entity/transaction.entity";
 import { CodeService } from "../../../common/service/code.service";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { Account } from "../../../database/entity/account.entity";
+import { Terminal } from "../../../database/entity/terminal.entity";
 
 @Controller()
 @ApiUseTags('partner/terminal')
@@ -34,14 +37,13 @@ export class TerminalController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
     async getPartnerTerminals(@Req() req: any) {
-        let terminal = req.user;
-        let terminals = await createQueryBuilder('User')
-            .leftJoinAndSelect('User.tradingPoint', 'tradingPoint')
-            .where('tradingPoint.id = :id', {id: terminal.tradingPoint.id})
-            .andWhere('User.id != :userId', {userId: terminal.id})
+        let user = req.user;
+        let terminals = await createQueryBuilder('Terminal', 'terminal')
+            .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
+            .andWhere('terminal.id != :id', {id: user.terminal.id})
             .getMany();
         return {
-            phone: terminal.phone,
+            phone: user.phone,
             terminals: terminals.map((t: any) => {
                 return {
                     id: t.id,
@@ -70,31 +72,36 @@ export class TerminalController {
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async assignNewTerminal(@Req() req: any, @Body() dto: PhoneRequest) {
         let phoneNumber = dto.phonePrefix + dto.phone;
-        let point = req.user.tradingPoint;
-        let user = await User.findOne({phone: phoneNumber});
+        let point = await TradingPoint.findOne({id: req.user.terminal.tradingPoint.id});
+        let user = await User.findOne({phone: phoneNumber}, {relations: ['terminal']});
         const role = await Role.findOne({name: RoleEnum.TERMINAL});
-        if (user) {
-            // user.tradingPoint = point;
-            // user.roles.push(role);
-        } else {
+
+        if (!user) {
             user = new User();
-            // user.tradingPoint = point;
-            // user.ID = this.codeService.generateUserNumber();
-            user.phone = phoneNumber;
-            // user.roles = [role];
+            let account = new Account();
+            account.role = role;
+            let counts = await Terminal.count({tradingPoint: point});
+            account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+            let terminal = new Terminal();
+            terminal.tradingPoint = point;
+            await getConnection().transaction(async entityManager => {
+                user.terminal = await entityManager.save(terminal);
+                account.user = await entityManager.save(user);
+                await entityManager.save(account);
+            })
+        } else {
+            let terminal = new Terminal();
+            terminal.tradingPoint = point;
+            let account = new Account();
+            account.role = role;
+            await getConnection().transaction(async entityManager => {
+                user.terminal = await entityManager.save(terminal);
+                let counts = await Terminal.count({tradingPoint: point});
+                account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+                account.user = await entityManager.save(user);
+                await entityManager.save(account);
+            })
         }
-        // let terminalCount = await User.count({tradingPoint: point});
-        // let terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
-        //
-        // let transactionCount = await Transaction.count({terminalID: terminalID});
-        // while (transactionCount !== 0) {
-        //     terminalCount += 1;
-        //     terminalID = [point.ID, this.codeService.generateTerminalNumber(terminalCount)].join('-');
-        //     transactionCount = await Transaction.count({terminalID: terminalID});
-        // }
-        // user.terminalID = terminalID;
-        // user.step = Step.SIGN_IN;
-        await user.save();
     }
 
     @Delete(':id')

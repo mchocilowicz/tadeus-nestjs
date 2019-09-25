@@ -19,14 +19,6 @@ export default class TradingPointExcelRow {
     })
     donationPercentage: number;
 
-    @IsNotEmpty({
-        message: "excel_data_required"
-    })
-    @IsNumber({}, {
-        message: "excel_vat_format"
-    })
-    vat: number;
-
     @IsNumber({}, {
         message: "excel_manipulation_fee_format"
     })
@@ -72,7 +64,6 @@ export default class TradingPointExcelRow {
         this.name = row.name ? row.name : null;
         this.type = row.type ? row.type : null;
         this.donationPercentage = row.donationPercentage ? row.donationPercentage : null;
-        this.vat = row.vat ? row.vat : null;
         this.manipulationFee = row.manipulationFee ? row.manipulationFee : 0.66;
         this.latitude = row.latitude ? Number(row.latitude) : null;
         this.longitude = row.longitude ? Number(row.longitude) : null;

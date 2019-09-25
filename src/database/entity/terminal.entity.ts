@@ -10,7 +10,7 @@ export class Terminal extends BaseEntity {
     id: string;
 
     @Column({type: 'text', nullable: true})
-    step: Step;
+    step: Step = Step.SIGN_IN;
 
     @ManyToOne(type => TradingPoint)
     @JoinColumn()

@@ -124,9 +124,11 @@ export class TransactionController {
             isPaid: false,
             paymentDate: null
         }, {relations: ['transactions']});
-        let user: any = await createQueryBuilder('User')
-            .leftJoin('User.card', 'card')
-            .leftJoinAndSelect('User.ngo', 'ngo')
+        let user: any = await createQueryBuilder('User', 'user')
+            .leftJoin('user.card', 'card')
+            .leftJoinAndSelect('user.details', 'details')
+            .leftJoinAndSelect('details.ngo', 'ngo')
+            .leftJoinAndSelect('ngo.card', 'card')
             .where('card.code = :code', {code: dto.clientCode}).getOne();
 
         if (!currentCart) {
@@ -147,16 +149,17 @@ export class TransactionController {
             transaction.userXp = userXp;
             transaction.tradingPointXp = tradingPointXp;
             tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
+            let userDetails = user.details;
 
-            user.xp += userXp;
+            userDetails.xp += userXp;
 
             let pool = this.calService.calculateX(dto.price, dto.donationPercentage, tradingPoint.vat);
             let t = this.calService.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.vat);
 
             transaction.donationValue = t + pool;
-            user.personalPool = (pool / 2) + Number(user.personalPool);
-            user.donationPool = (pool / 2) + Number(user.donationPool);
-            user.collectedMoney = pool + Number(user.collectedMoney);
+            userDetails.personalPool = (pool / 2) + Number(user.personalPool);
+            userDetails.donationPool = (pool / 2) + Number(user.donationPool);
+            userDetails.collectedMoney = pool + Number(user.collectedMoney);
             transaction.terminal = partner.terminal;
 
             await getConnection().transaction(async entityManager => {
@@ -167,10 +170,16 @@ export class TransactionController {
                 currentCart.price += transaction.price;
                 let savedTransaction = await entityManager.save(transaction);
                 currentCart.transactions.push(savedTransaction);
-
+                if (user.details.ngo) {
+                    let card = user.details.ngo.card;
+                    card.collectedMoney += pool;
+                    await entityManager.save(card)
+                } else {
+                    user.details.ngoTempMoney += pool;
+                }
                 await entityManager.save(currentCart);
                 await entityManager.save(tradingPoint);
-                await entityManager.save(user);
+                await entityManager.save(userDetails);
             });
 
             let result = new TransactionSuccessResponse();

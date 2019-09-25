@@ -63,7 +63,6 @@ export class ClientController {
         return this.service.checkClientCode(dto);
     }
 
-
     @Get()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)

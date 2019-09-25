@@ -4,7 +4,6 @@ import {
     CreateDateColumn,
     Entity,
     JoinColumn,
-    JoinTable,
     ManyToOne,
     OneToMany,
     OneToOne,
@@ -39,8 +38,7 @@ export class User extends BaseEntity {
     @Column({default: false})
     isAnonymous: boolean;
 
-    @ManyToOne(type => Account)
-    @JoinTable()
+    @OneToMany(type => Account, account => account.user)
     accounts: Account[];
 
     @OneToMany(type => Transaction, transactions => transactions.user)
