@@ -17,6 +17,7 @@ import { PlaceModule } from "../client/place/place.module";
 import { TransactionModule } from "../partner/transaction/transaction.module";
 import { PartnerModule } from "../partner/partner.module";
 import { TerminalModule } from "../partner/terminal/terminal.module";
+import { DashboardModule } from "../dashboard/dashboard.module";
 
 const routes: Routes = [
     {
@@ -61,6 +62,7 @@ const routes: Routes = [
             },
             {
                 path: '/dashboard',
+                module: DashboardModule,
                 children: [
                     {
                         path: '/user',
@@ -111,7 +113,8 @@ const routes: Routes = [
         ConfigurationModule,
         DashboardNgoModule,
         PartnerModule,
-        TerminalModule
+        TerminalModule,
+        DashboardModule
     ],
     controllers: [],
     providers: [

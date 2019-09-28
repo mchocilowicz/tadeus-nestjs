@@ -15,7 +15,8 @@ export class UserController {
             .leftJoinAndSelect(`user.accounts`, 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .leftJoinAndSelect('user.details', 'details')
-            .where(`role.name = ${RoleEnum.CLIENT}`)
+            .where(`role.name = :role`, {role: RoleEnum.CLIENT})
+            .andWhere('accounts.status = :status', {status: Status.ACTIVE})
             .getMany();
         return users.map((user: User) => {
             return {
@@ -24,7 +25,7 @@ export class UserController {
                 name: user.name,
                 email: user.email,
                 xp: user.details.xp,
-                status: user.accounts.find(a => a.role.name == RoleEnum.CLIENT).status,
+                status: user.accounts.find(a => a.role.name === RoleEnum.CLIENT).status,
                 updatedDate: user.details.updatedAt
             }
         })
