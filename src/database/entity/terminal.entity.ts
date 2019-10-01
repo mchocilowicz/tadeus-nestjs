@@ -12,6 +12,12 @@ export class Terminal extends BaseEntity {
     @Column({type: 'text', nullable: true})
     step: Step = Step.SIGN_IN;
 
+    @Column()
+    phone: string;
+
+    @Column()
+    ID: string;
+
     @ManyToOne(type => TradingPoint)
     @JoinColumn()
     tradingPoint: TradingPoint;

@@ -154,7 +154,7 @@ export class TransactionController {
             userDetails.xp += userXp;
 
             let pool = this.calService.calculateX(dto.price, dto.donationPercentage, tradingPoint.vat);
-            let t = this.calService.calculateY(dto.price, tradingPoint.manipulationFee, tradingPoint.vat);
+            let t = this.calService.calculateY(dto.price, tradingPoint.fee, tradingPoint.vat);
 
             transaction.donationValue = t + pool;
             userDetails.personalPool = (pool / 2) + Number(user.personalPool);

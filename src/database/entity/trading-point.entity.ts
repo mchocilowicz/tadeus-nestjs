@@ -54,7 +54,7 @@ export class TradingPoint extends BaseEntity {
     vat: number = 23;
 
     @Column({type: "decimal"})
-    manipulationFee: number = 0.66;
+    fee: number = 0.66;
 
     @ManyToOne(type => City, {nullable: false})
     @JoinColumn()

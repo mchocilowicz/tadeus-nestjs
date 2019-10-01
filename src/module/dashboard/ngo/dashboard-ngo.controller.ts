@@ -1,11 +1,10 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, Put, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Logger, Param, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { NgoRequest } from "../../../models/request/ngo.request";
 import { Ngo } from "../../../database/entity/ngo.entity";
 import { createQueryBuilder, QueryFailedError } from "typeorm";
 import { extractErrors, handleException } from "../../../common/util/functions";
-import { NgoTypeRequest } from "../../../models/request/ngo-type.request";
 import { NgoType } from "../../../database/entity/ngo-type.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { NgoRowExcel } from "../../../models/excel/ngo-row.excel";
@@ -86,36 +85,6 @@ export class DashboardNgoController {
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     delete() {
-    }
-
-    @Post('type')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: NgoTypeRequest})
-    async createNgoType(@Body() dto: NgoTypeRequest) {
-        const type = new NgoType();
-        type.name = dto.name;
-        type.code = await this.getNgoCode();
-        try {
-            await createQueryBuilder('NgoType').insert().values(type).execute();
-        } catch (e) {
-            handleException(e, 'ngo_type', this.logger)
-        }
-    }
-
-    @Put('type/:id')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    async updateType(@Param('id') id: string, @Body() dto: any) {
-        const type = await NgoType.findOne({id: id});
-        type.name = dto.name;
-        await type.save()
     }
 
     private async saveNgoRow(row: any, index: number, errors: object[]) {

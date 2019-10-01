@@ -18,6 +18,8 @@ import { TransactionModule } from "../partner/transaction/transaction.module";
 import { PartnerModule } from "../partner/partner.module";
 import { TerminalModule } from "../partner/terminal/terminal.module";
 import { DashboardModule } from "../dashboard/dashboard.module";
+import { TradingPointTypeModule } from "../dashboard/trading-point-type/trading-point-type.module";
+import { NgoTypeModule } from "../dashboard/ngo-type/ngo-type.module";
 
 const routes: Routes = [
     {
@@ -70,7 +72,7 @@ const routes: Routes = [
                     },
                     {
                         path: '/trading-point',
-                        module: TradingPointModule
+                        module: TradingPointModule,
                     },
                     {
                         path: '/configuration',
@@ -79,6 +81,14 @@ const routes: Routes = [
                     {
                         path: '/ngo',
                         module: DashboardNgoModule
+                    },
+                    {
+                        path: '/trading-point-type',
+                        module: TradingPointTypeModule
+                    },
+                    {
+                        path: '/ngo-type',
+                        module: NgoTypeModule
                     }
                 ]
             }
@@ -114,7 +124,9 @@ const routes: Routes = [
         DashboardNgoModule,
         PartnerModule,
         TerminalModule,
-        DashboardModule
+        DashboardModule,
+        TradingPointTypeModule,
+        NgoTypeModule
     ],
     controllers: [],
     providers: [

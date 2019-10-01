@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, Put, UploadedFile, UseInterceptors } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Logger,
+    Param,
+    Post,
+    Put,
+    Query,
+    UploadedFile,
+    UseInterceptors
+} from "@nestjs/common";
 import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { createQueryBuilder, getConnection, QueryFailedError } from "typeorm";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -7,13 +19,11 @@ import { TradingPointType } from "../../../database/entity/trading-point-type.en
 import { User } from "../../../database/entity/user.entity";
 import { Role } from "../../../database/entity/role.entity";
 import { RoleEnum } from "../../../common/enum/role.enum";
-import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
+import { ApiConsumes, ApiImplicitFile, ApiUseTags } from "@nestjs/swagger";
 import { validate } from "class-validator";
-import { extractErrors, handleException } from "../../../common/util/functions";
+import { extractErrors } from "../../../common/util/functions";
 import { ExcelException } from "../../../common/exceptions/excel.exception";
 import TradingPointExcelRow from "../../../models/excel/trading-point-row.excel";
-import { Const } from "../../../common/util/const";
-import { TradingPointTypeRequest } from "../../../models/request/trading-point-type.request";
 import { CodeService } from "../../../common/service/code.service";
 import { Account } from "../../../database/entity/account.entity";
 import { Terminal } from "../../../database/entity/terminal.entity";
@@ -39,19 +49,30 @@ export class TradingPointController {
     }
 
     @Get()
-    async getAllTradePoints() {
-        const tradePoints = await createQueryBuilder('TradingPoint')
-            .leftJoinAndSelect('TradingPoint.city', 'city')
-            .leftJoinAndSelect('TradingPoint.type', 'placeType')
-            .getMany();
-        return tradePoints.map((t: TradingPoint) => {
+    async getAllTradePoints(@Query() query: { name: string, type: string, city: string }) {
+        let sql = await createQueryBuilder('TradingPoint', 'tradingPoint')
+            .leftJoinAndSelect('tradingPoint.city', 'city')
+            .leftJoinAndSelect('tradingPoint.type', 'type');
+
+        if (query.name) {
+            sql = sql.andWhere('tradingPoint.name like "%:name"', {name: query.name})
+        }
+        if (query.type) {
+            sql = sql.andWhere('type.name = :type', {type: query.type})
+        }
+        if (query.city) {
+            sql = sql.andWhere('city.name = :city', {city: query.city})
+        }
+        let tradingPoints = await sql.getMany();
+
+        return tradingPoints.map((t: TradingPoint) => {
             return {
-                id: t.id,
+                ID: t.ID,
                 type: t.type,
                 name: t.name,
-                donationPercentage: t.donationPercentage,
-                defaultVat: t.vat,
-                manipulationFee: t.manipulationFee,
+                donation: t.donationPercentage,
+                vat: t.vat,
+                fee: t.fee,
                 city: t.city,
                 xp: t.xp,
                 updatedDate: t.updatedDate
@@ -84,28 +105,53 @@ export class TradingPointController {
 
     @Get(':id')
     async getTradePointById(@Param('id') id: string) {
-        return await TradingPoint.findOne({id: id}, {relations: ['city', 'type', 'user', 'transactions']})
+        const point = await TradingPoint.findOne({ID: id}, {relations: ['city', 'type', 'terminals', 'transactions']});
+        return {
+            ID: point.ID,
+            city: point.city.name,
+            type: point.type.name,
+            name: point.name,
+            address: point.address,
+            donationPercentage: point.donationPercentage,
+            vat: point.vat,
+            longitude: point.longitude,
+            latitude: point.latitude,
+            fee: point.fee,
+            postCode: point.postCode,
+            xp: point.xp
+        }
     }
 
-    @Put(':tradePointId')
-    async updateTradingPoint(@Body() dto: any) {
-        let point = await TradingPoint.findOne({id: dto.id});
+    @Put(':id')
+    async updateTradingPoint(@Body() dto: any, @Param('id') id: string) {
+        let point = await TradingPoint.findOne({ID: id}, {relations: ['city', 'type']});
         this.mapToBaseEntity(dto, point);
         await point.save()
     }
 
+    @Get(':ID/terminal')
+    getTerminal(@Param('ID') id: string) {
+        return createQueryBuilder('Terminal', 'terminal')
+            .leftJoin('terminal.tradingPoint', 'tradingPoint')
+            .where('tradingPoint.ID = :id', {id: id})
+            .getMany()
+    }
+
     @Post(':tradingPointId/terminal')
     async assignNewTerminal(@Param('tradingPointId') id: string, @Body() dto: any) {
-        let point = await TradingPoint.findOne({id: id});
+        let point = await TradingPoint.findOne({ID: id});
         let user = await User.findOne({phone: dto.phone}, {relations: ['terminal']});
         const role = await Role.findOne({name: RoleEnum.TERMINAL});
         if (!user) {
             user = new User();
+            user.phone = dto.phone;
             let account = new Account();
             account.role = role;
             let counts = await Terminal.count({tradingPoint: point});
             account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
             let terminal = new Terminal();
+            terminal.ID = account.ID;
+            terminal.phone = user.phone;
             terminal.tradingPoint = point;
             await getConnection().transaction(async entityManager => {
                 user.terminal = await entityManager.save(terminal);
@@ -114,47 +160,20 @@ export class TradingPointController {
             })
         } else {
             let terminal = new Terminal();
+            terminal.phone = user.phone;
             terminal.tradingPoint = point;
             let account = new Account();
             account.role = role;
             await getConnection().transaction(async entityManager => {
-                user.terminal = await entityManager.save(terminal);
                 let counts = await Terminal.count({tradingPoint: point});
                 account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+                terminal.ID = account.ID;
+                user.terminal = await entityManager.save(terminal);
                 account.user = await entityManager.save(user);
                 await entityManager.save(account);
             })
         }
-    }
-
-    @Post('type')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: TradingPointTypeRequest})
-    async savePlaceType(@Body() dto: TradingPointTypeRequest) {
-        const type = new TradingPointType();
-        type.name = dto.name;
-        type.code = await this.getTypeCode();
-        try {
-            await type.save();
-        } catch (e) {
-            handleException(e, 'ngo_type', this.logger)
-        }
-    }
-
-    @Put('type/:id')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    async updateType(@Param('id') id: string, @Body() dto: any) {
-        const type = await TradingPointType.findOne({id: id});
-        type.name = dto.name;
-        await type.save()
+        return user.terminal;
     }
 
     @Get('report')
@@ -180,7 +199,7 @@ export class TradingPointController {
         entity.vat = dto.vat;
         entity.longitude = dto.longitude;
         entity.latitude = dto.latitude;
-        entity.manipulationFee = dto.manipulationFee;
+        entity.fee = dto.fee;
         entity.postCode = dto.postCode;
         entity.xp = dto.xp;
     }
@@ -195,7 +214,7 @@ export class TradingPointController {
         let tradePoint: TradingPoint = new TradingPoint();
         tradePoint.name = row.name;
         tradePoint.donationPercentage = row.donationPercentage;
-        tradePoint.manipulationFee = row.manipulationFee ? row.manipulationFee : 0.66;
+        tradePoint.fee = row.manipulationFee ? row.manipulationFee : 0.66;
         tradePoint.latitude = row.latitude;
         tradePoint.longitude = row.longitude;
         tradePoint.address = row.address;
@@ -268,5 +287,9 @@ export class TradingPointController {
 
     private createCode(min: number, max: number) {
         return Math.floor(Math.random() * (max - min) + min);
+    }
+
+    private checkEmpty(value) {
+        return value === 'null' || value === 'undefined' || !value
     }
 }

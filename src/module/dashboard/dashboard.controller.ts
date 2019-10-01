@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Param, Post, Put } from "@nestjs/common";
 import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../common/util/const";
 import { PhoneRequest } from "../../models/request/phone.request";
@@ -9,6 +9,8 @@ import { createQueryBuilder } from "typeorm";
 import { DonationEnum } from "../../common/enum/donation.enum";
 import { User } from "../../database/entity/user.entity";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { City } from "../../database/entity/city.entity";
+import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 
 const moment = require("moment");
 
@@ -92,6 +94,40 @@ export class DashboardController {
             months: users.filter((user: any) => moment(user.updatedDate).isBetween(moment().subtract(3, 'months').format(Const.DATE_FORMAT), moment().subtract(999, 'months').format(Const.DATE_FORMAT)
             )).length,
         }
+    }
+
+    @Get('city')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    getCities() {
+        return City.find();
+    }
+
+    @Post('city')
+    async createCity(@Body() dto: any) {
+        let city = new City();
+        city.name = dto.name;
+        return await city.save();
+    }
+
+    @Put('city/:id')
+    async updateCity(@Param('id') id: string, @Body() dto: any) {
+        let city = await City.findOne({id: id});
+        city.name = dto.name;
+        await city.save()
+    }
+
+    @Get('trading-point-type')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    getAllTypes() {
+        return TradingPointType.find();
     }
 
 }
