@@ -24,7 +24,7 @@ export class RegisterController {
     })
     @ApiImplicitBody({name: '', type: NewPhoneRequest})
     async registerPhone(@Body() phone: NewPhoneRequest) {
-        await this.service.createUser(phone);
+        return await this.service.createUser(phone);
     }
 
     @Post('code')

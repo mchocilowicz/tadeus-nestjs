@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Logger, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
@@ -11,15 +11,14 @@ import { MainResponse } from "../../models/response/main.response";
 import { ClientHistoryResponse } from "../../models/response/client-history.response";
 import { VirtualCardResponse } from "../../models/response/virtual-card.response";
 import { CodeService } from "../../common/service/code.service";
-import { PhoneRequest } from "../../models/request/phone.request";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { LoginService } from "../common/login.service";
 import { Transaction } from "../../database/entity/transaction.entity";
+import { NewPhoneRequest } from "../../models/request/new-phone.request";
 
 
 @Controller()
 export class ClientController {
-    private readonly logger = new Logger(ClientController.name);
 
     constructor(private readonly codeService: CodeService, private readonly service: LoginService) {
     }
@@ -27,15 +26,17 @@ export class ClientController {
     @Post('signIn')
     @ApiUseTags('client/auth')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: null})
+    @ApiResponse({status: 200, type: SignInResponse})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @ApiImplicitBody({name: '', type: PhoneRequest})
-    async signIn(@Body() phone: PhoneRequest) {
-        await this.service.signIn(phone, RoleEnum.CLIENT);
+    @ApiImplicitBody({name: '', type: NewPhoneRequest})
+    async signIn(@Body() dto: NewPhoneRequest) {
+        return {
+            userExists: this.service.clientSignIn(dto)
+        }
     }
 
     @Post('anonymous')
@@ -191,4 +192,8 @@ export class ClientController {
         t.verifiedByUser = true;
         await t.save()
     }
+}
+
+class SignInResponse {
+    userExists: boolean;
 }

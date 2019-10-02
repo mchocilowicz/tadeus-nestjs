@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CodeService } from "../../common/service/code.service";
 import { User } from "../../database/entity/user.entity";
 import { Role } from "../../database/entity/role.entity";
@@ -11,14 +11,17 @@ import { createQueryBuilder, getConnection } from "typeorm";
 import { Account } from "../../database/entity/account.entity";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
+import { NewPhoneRequest } from "../../models/request/new-phone.request";
+import { handleException } from "../../common/util/functions";
 
 @Injectable()
 export class LoginService {
+    private readonly logger = new Logger(LoginService.name);
+
     constructor(private readonly jwtService: TadeusJwtService,
                 private readonly codeService: CodeService,
                 private readonly cryptoService: CryptoService) {
     }
-
 
     async createAnonymousUser(): Promise<string> {
         let user = new User();
@@ -116,6 +119,77 @@ export class LoginService {
         // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         await account.save()
     }
+
+    async clientSignIn(dto: NewPhoneRequest): Promise<boolean> {
+        let phoneNumber = dto.phonePrefix + dto.phone;
+        let user: any = await createQueryBuilder('User', 'user')
+            .leftJoinAndSelect('user.accounts', 'accounts')
+            .leftJoinAndSelect('accounts.role', 'role')
+            .where('role.name = :name', {name: RoleEnum.CLIENT})
+            .andWhere('user.phone = :phone', {phone: phoneNumber})
+            .getOne();
+
+        let anonymousUser: any = await createQueryBuilder('User', 'user')
+            .leftJoinAndSelect('user.accounts', 'accounts')
+            .leftJoinAndSelect('accounts.role', 'role')
+            .where('role.name = :name', {name: RoleEnum.CLIENT})
+            .andWhere(`accounts.id = :id`, {id: this.cryptoService.decrypt(dto.anonymousKey)})
+            .andWhere('user.isAnonymous = true')
+            .getOne();
+
+        if (user && user.registered) {
+            let account = user.accounts.find(a => a.role.name == RoleEnum.CLIENT);
+            this.checkUserRights(account, RoleEnum.CLIENT);
+            account.code = this.codeService.generateSmsCode();
+            await account.save();
+            return true;
+        } else {
+            if (anonymousUser) {
+                anonymousUser.isAnonymous = false;
+                anonymousUser.phone = phoneNumber;
+                await this.registerUser(anonymousUser)
+            } else if (user) {
+                await this.registerUser(user)
+            } else {
+                user = new User();
+                user.phone = phoneNumber;
+                await this.registerUser(user)
+            }
+            return false;
+        }
+    }
+
+    private async registerUser(user: User) {
+        let role = await Role.findOne({name: RoleEnum.CLIENT});
+        if (!role) {
+            throw new BadRequestException('user_not_created')
+        }
+        // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
+        try {
+            if (user.accounts) {
+                let account = user.accounts.find(a => a.role == role);
+                if (!account) {
+                    let account = new Account();
+                    account.role = role;
+                    account.ID = this.codeService.generateUserNumber();
+                    account.code = this.codeService.generateSmsCode();
+                    account.user = user;
+                    await account.save();
+                }
+            } else {
+                let account = new Account();
+                account.role = role;
+                account.ID = this.codeService.generateUserNumber();
+                account.code = this.codeService.generateSmsCode();
+                account.user = await user.save();
+                await account.save();
+            }
+        } catch (e) {
+            console.log(e);
+            handleException(e, 'user', this.logger)
+        }
+    }
+
 
     private checkUserRights(account: Account, role: RoleEnum) {
         if (!this.checkUserAccount(account, role)) {
