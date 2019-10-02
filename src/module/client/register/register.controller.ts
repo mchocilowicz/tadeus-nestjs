@@ -5,13 +5,14 @@ import { Const } from "../../../common/util/const";
 import { NewPhoneRequest } from "../../../models/request/new-phone.request";
 import { CodeVerificationRequest } from "../../../models/request/code-verification.request";
 import { UserInformationRequest } from "../../../models/request/user-Information.request";
+import { LoginService } from "../../common/login.service";
 
 const axios = require('axios');
 
 @Controller()
 @ApiUseTags('client/register')
 export class RegisterController {
-    constructor(private readonly service: RegisterService) {
+    constructor(private readonly service: RegisterService, private readonly loginService: LoginService) {
     }
 
     @Post('phone')
@@ -24,7 +25,7 @@ export class RegisterController {
     })
     @ApiImplicitBody({name: '', type: NewPhoneRequest})
     async registerPhone(@Body() phone: NewPhoneRequest) {
-        return await this.service.createUser(phone);
+        return await this.loginService.clientSignIn(phone);
     }
 
     @Post('code')
