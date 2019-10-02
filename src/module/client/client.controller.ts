@@ -15,12 +15,13 @@ import { CodeVerificationRequest } from "../../models/request/code-verification.
 import { LoginService } from "../common/login.service";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { NewPhoneRequest } from "../../models/request/new-phone.request";
-
+import { SignInResponse } from "../../models/response/signIn.response";
 
 @Controller()
 export class ClientController {
 
-    constructor(private readonly codeService: CodeService, private readonly service: LoginService) {
+    constructor(private readonly codeService: CodeService,
+                private readonly service: LoginService) {
     }
 
     @Post('signIn')
@@ -192,8 +193,4 @@ export class ClientController {
         t.verifiedByUser = true;
         await t.save()
     }
-}
-
-class SignInResponse {
-    userExists: boolean;
 }
