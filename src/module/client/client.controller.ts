@@ -36,7 +36,7 @@ export class ClientController {
     @ApiImplicitBody({name: '', type: NewPhoneRequest})
     async signIn(@Body() dto: NewPhoneRequest) {
         return {
-            userExists: this.service.clientSignIn(dto)
+            userExists: await this.service.clientSignIn(dto)
         }
     }
 
