@@ -22,6 +22,16 @@ export class DashboardNgoController {
     constructor(private readonly codeService: CodeService) {
     }
 
+    @Get()
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    getNgoList() {
+        return Ngo.find({relations: ['city', 'type']})
+    }
+
     @Post()
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -30,7 +40,6 @@ export class DashboardNgoController {
     })
     @ApiImplicitBody({name: '', type: NgoRequest})
     async create(@Body() dto: NgoRequest) {
-        console.log(dto);
         const ngo = new Ngo();
         ngo.city = dto.city;
         ngo.latitude = dto.latitude;
