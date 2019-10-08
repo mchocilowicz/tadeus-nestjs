@@ -8,6 +8,18 @@ import { APP_FILTER } from "@nestjs/core";
 import { TadeusExceptionFilter } from "../../common/filter/tadeus-exception.filter";
 import { PartnerModule } from "../partner/partner.module";
 import { DashboardModule } from "../dashboard/dashboard.module";
+import { UserModule } from "../dashboard/user/user.module";
+import { TradingPointModule } from "../dashboard/trading-point/trading-point.module";
+import { TradingPointTypeModule } from "../dashboard/trading-point-type/trading-point-type.module";
+import { ConfigurationModule } from "../dashboard/configuration/configuration.module";
+import { DashboardNgoModule } from "../dashboard/ngo/dashboard-ngo.module";
+import { NgoTypeModule } from "../dashboard/ngo-type/ngo-type.module";
+import { TransactionModule } from "../partner/transaction/transaction.module";
+import { TerminalModule } from "../partner/terminal/terminal.module";
+import { NgoModule } from "../client/ngo/ngo.module";
+import { RegisterModule } from "../client/register/register.module";
+import { CityModule } from "../client/city/city.module";
+import { PlaceModule } from "../client/place/place.module";
 
 const routes: Routes = [
     {
@@ -16,15 +28,69 @@ const routes: Routes = [
         children: [
             {
                 path: '/client',
-                module: ClientModule
+                module: ClientModule,
+                children: [
+                    {
+                        path: '/ngo',
+                        module: NgoModule
+                    },
+                    {
+                        path: '/register',
+                        module: RegisterModule
+                    },
+                    {
+                        path: '/city',
+                        module: CityModule
+                    },
+                    {
+                        path: '/place',
+                        module: PlaceModule
+                    }
+                ]
             },
             {
                 path: '/partner',
-                module: PartnerModule
+                module: PartnerModule,
+                children: [
+                    {
+                        path: '/transaction',
+                        module: TransactionModule
+                    },
+                    {
+                        path: '/terminal',
+                        module: TerminalModule
+                    }
+                ]
             },
             {
                 path: '/dashboard',
-                module: DashboardModule
+                module: DashboardModule,
+                children: [
+                    {
+                        path: '/user',
+                        module: UserModule
+                    },
+                    {
+                        path: '/trading-point',
+                        module: TradingPointModule,
+                    },
+                    {
+                        path: '/configuration',
+                        module: ConfigurationModule
+                    },
+                    {
+                        path: '/ngo',
+                        module: DashboardNgoModule
+                    },
+                    {
+                        path: '/trading-point-type',
+                        module: TradingPointTypeModule
+                    },
+                    {
+                        path: '/ngo-type',
+                        module: NgoTypeModule
+                    }
+                ]
             }
         ]
     }
@@ -49,6 +115,18 @@ const routes: Routes = [
         ClientModule,
         PartnerModule,
         DashboardModule,
+        UserModule,
+        TradingPointModule,
+        TradingPointTypeModule,
+        ConfigurationModule,
+        DashboardNgoModule,
+        NgoTypeModule,
+        TransactionModule,
+        TerminalModule,
+        NgoModule,
+        RegisterModule,
+        CityModule,
+        PlaceModule
 
     ],
     controllers: [],
