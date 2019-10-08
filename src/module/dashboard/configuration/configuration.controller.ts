@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Put } from "@nestjs/common";
 import { Configuration } from "../../../database/entity/configuration.entity";
 import { ApiUseTags } from "@nestjs/swagger";
+
+const moment = require('moment');
 
 @Controller()
 @ApiUseTags('dashboard/configuration')
@@ -8,17 +10,25 @@ export class ConfigurationController {
 
     @Post()
     async save(@Body() dto: any) {
-        let config = await Configuration.findOne({type: 'MAIN'});
-        if (!config) {
-            config = new Configuration();
-        }
+        let config = new Configuration();
         this.mapDtoToEntity(dto, config);
+        const c = moment().subtract(5, 'months').toDate();
+        config.oldClientPaymentDate = c;
+        config.oldNgoPaymentDate = c;
+        config.oldPartnerPaymentDate = c;
         await config.save();
     }
 
     @Get()
     async getConfiguration() {
         return await Configuration.findOne({type: 'MAIN'});
+    }
+
+    @Put(':id')
+    async updateConfiguration(@Param('id') id: string, dto: any) {
+        let config = await Configuration.findOne({id: id});
+        this.mapDtoToEntity(dto, config);
+        await config.save()
     }
 
     mapDtoToEntity(dto: any, config: Configuration) {

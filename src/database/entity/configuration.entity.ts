@@ -12,6 +12,9 @@ export class Configuration extends BaseEntity {
     minPersonalPool: number;
 
     @Column()
+    oldClientPaymentDate: Date;
+
+    @Column()
     currentClientPaymentDate: Date;
 
     @Column()
@@ -21,6 +24,9 @@ export class Configuration extends BaseEntity {
     nextClientPaymentDate: Date;
 
     @Column()
+    oldPartnerPaymentDate: Date;
+
+    @Column()
     currentPartnerPaymentDate: Date;
 
     @Column()
@@ -28,6 +34,9 @@ export class Configuration extends BaseEntity {
 
     @Column()
     nextPartnerPaymentDate: Date;
+
+    @Column()
+    oldNgoPaymentDate: Date;
 
     @Column()
     currentNgoPaymentDate: Date;
