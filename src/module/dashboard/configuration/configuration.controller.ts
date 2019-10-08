@@ -10,7 +10,10 @@ export class ConfigurationController {
 
     @Post()
     async save(@Body() dto: any) {
-        let config = new Configuration();
+        let config = await Configuration.findOne({type: 'MAIN'});
+        if (!config) {
+            config = new Configuration();
+        }
         this.mapDtoToEntity(dto, config);
         const c = moment().subtract(5, 'months').toDate();
         config.oldClientPaymentDate = c;
@@ -32,16 +35,16 @@ export class ConfigurationController {
     }
 
     mapDtoToEntity(dto: any, config: Configuration) {
-        config.minNgoTransfer = dto.minNgoTransfer;
-        config.minPersonalPool = dto.minPersonalPool;
+        config.minNgoTransfer = Number(dto.minNgoTransfer);
+        config.minPersonalPool = Number(dto.minPersonalPool);
         config.currentClientPaymentDate = dto.currentClientPaymentDate;
-        config.clientCycleDays = dto.clientCycleDays;
+        config.clientCycleDays = Number(dto.clientCycleDays);
         config.nextClientPaymentDate = dto.nextClientPaymentDate;
         config.currentPartnerPaymentDate = dto.currentPartnerPaymentDate;
-        config.partnerCycleDays = dto.partnerCycleDays;
+        config.partnerCycleDays = Number(dto.partnerCycleDays);
         config.nextPartnerPaymentDate = dto.nextPartnerPaymentDate;
         config.currentNgoPaymentDate = dto.currentNgoPaymentDate;
-        config.ngoCycleDays = dto.ngoCycleDays;
+        config.ngoCycleDays = Number(dto.ngoCycleDays);
         config.nextNgoPaymentDate = dto.nextNgoPaymentDate;
     }
 }
