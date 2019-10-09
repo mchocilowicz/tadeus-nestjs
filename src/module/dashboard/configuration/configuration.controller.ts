@@ -27,7 +27,11 @@ export class ConfigurationController {
 
     @Get()
     async getConfiguration() {
-        return await Configuration.findOne({type: 'MAIN'});
+        let config = await Configuration.findOne({type: 'MAIN'});
+        if (config) {
+            return this.mapToResponse(config)
+        }
+        return null;
     }
 
     @Put(':id')
