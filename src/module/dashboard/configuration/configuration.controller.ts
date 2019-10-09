@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, Post, Put } from "@nestjs/common";
 import { Configuration } from "../../../database/entity/configuration.entity";
 import { ApiUseTags } from "@nestjs/swagger";
+import { ConfigurationRequest } from "../models/request/configuration.request";
+import { ConfigurationResponse } from "../models/response/configuration.response";
 
 const moment = require('moment');
 
@@ -9,7 +11,7 @@ const moment = require('moment');
 export class ConfigurationController {
 
     @Post()
-    async save(@Body() dto: any) {
+    async save(@Body() dto: ConfigurationRequest) {
         let config = await Configuration.findOne({type: 'MAIN'});
         if (!config) {
             config = new Configuration();
@@ -19,7 +21,8 @@ export class ConfigurationController {
         config.oldClientPaymentDate = c;
         config.oldNgoPaymentDate = c;
         config.oldPartnerPaymentDate = c;
-        await config.save();
+        let savedConfig = await config.save();
+        return this.mapToResponse(savedConfig)
     }
 
     @Get()
@@ -28,13 +31,22 @@ export class ConfigurationController {
     }
 
     @Put(':id')
-    async updateConfiguration(@Param('id') id: string, dto: any) {
+    async updateConfiguration(@Param('id') id: string, dto: ConfigurationRequest) {
         let config = await Configuration.findOne({id: id});
         this.mapDtoToEntity(dto, config);
-        await config.save()
+        await config.save();
+        return this.mapToResponse(config)
     }
 
-    mapDtoToEntity(dto: any, config: Configuration) {
+    private mapToResponse(config: Configuration): ConfigurationResponse {
+        const response = new ConfigurationResponse();
+        Object.keys(response).forEach(key => {
+            response[key] = config[key]
+        });
+        return response
+    }
+
+    private mapDtoToEntity(dto: ConfigurationRequest, config: Configuration) {
         config.minNgoTransfer = Number(dto.minNgoTransfer);
         config.minPersonalPool = Number(dto.minPersonalPool);
         config.currentClientPaymentDate = dto.currentClientPaymentDate;
