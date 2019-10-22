@@ -3,7 +3,7 @@ import { Ngo } from "./ngo.entity";
 import { ApiModelProperty } from "@nestjs/swagger";
 import { TradingPoint } from "./trading-point.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 @Unique(["name"])
 export class City extends BaseEntity {
 

@@ -12,7 +12,7 @@ import { Role } from "./role.entity";
 import { User } from "./user.entity";
 import { Status } from "../../common/enum/status.enum";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class Account extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")

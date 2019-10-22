@@ -1,6 +1,6 @@
 import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique } from "typeorm";
 
-@Entity()
+@Entity({schema: 'tds'})
 @Unique(['value', 'code'])
 export class PhonePrefix extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")

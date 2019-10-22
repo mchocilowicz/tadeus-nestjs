@@ -15,7 +15,7 @@ import { TradingPointType } from "../../database/entity/trading-point-type.entit
 const moment = require("moment");
 
 @Controller()
-@ApiUseTags('dashboard/auth')
+@ApiUseTags('auth')
 export class DashboardController {
     constructor(private readonly service: LoginService) {
     }

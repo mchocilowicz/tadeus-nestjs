@@ -1,6 +1,6 @@
 import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class Configuration extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
@@ -12,40 +12,40 @@ export class Configuration extends BaseEntity {
     minPersonalPool: number;
 
     @Column()
-    oldClientPaymentDate: Date;
+    oldClientPaymentAt: Date;
 
     @Column()
-    currentClientPaymentDate: Date;
+    previousClientPaymentAt: Date;
 
     @Column()
-    clientCycleDays: number;
+    currentClientPaymentAt: Date;
 
     @Column()
-    nextClientPaymentDate: Date;
+    clientInterval: number;
 
     @Column()
-    oldPartnerPaymentDate: Date;
+    oldPartnerPaymentAt: Date;
 
     @Column()
-    currentPartnerPaymentDate: Date;
+    previousPartnerPaymentAt: Date;
 
     @Column()
-    partnerCycleDays: number;
+    currentPartnerPaymentAt: Date;
 
     @Column()
-    nextPartnerPaymentDate: Date;
+    partnerInterval: number;
 
     @Column()
-    oldNgoPaymentDate: Date;
+    oldNgoPaymentAt: Date;
 
     @Column()
-    currentNgoPaymentDate: Date;
+    previousNgoPaymentAt: Date;
 
     @Column()
-    ngoCycleDays: number;
+    currentNgoPaymentAt: Date;
 
     @Column()
-    nextNgoPaymentDate: Date;
+    ngoInterval: number;
 
     @Column()
     type: string = 'MAIN';

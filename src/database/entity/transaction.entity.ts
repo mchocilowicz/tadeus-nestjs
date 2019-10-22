@@ -4,7 +4,7 @@ import { User } from "./user.entity";
 import { Cart } from "./cart.entity";
 import { Terminal } from "./terminal.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class Transaction extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;

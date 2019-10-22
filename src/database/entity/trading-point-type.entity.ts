@@ -2,7 +2,7 @@ import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique }
 import { ApiModelProperty } from "@nestjs/swagger";
 import { TradingPoint } from "./trading-point.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 @Unique(["name"])
 export class TradingPointType extends BaseEntity {
 

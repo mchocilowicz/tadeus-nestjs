@@ -6,7 +6,7 @@ import { TradingPointType } from "../../../database/entity/trading-point-type.en
 import { TradingPointTypeRequest } from "../../../models/request/trading-point-type.request";
 
 @Controller()
-@ApiUseTags('dashboard/trading-point-type')
+@ApiUseTags('trading-point-type')
 export class TradingPointTypeController {
     private readonly logger = new Logger(TradingPointTypeController.name);
 

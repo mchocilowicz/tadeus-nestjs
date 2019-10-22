@@ -7,10 +7,8 @@ import { CodeVerificationRequest } from "../../../models/request/code-verificati
 import { UserInformationRequest } from "../../../models/request/user-Information.request";
 import { LoginService } from "../../common/login.service";
 
-const axios = require('axios');
-
 @Controller()
-@ApiUseTags('client/register')
+@ApiUseTags('register')
 export class RegisterController {
     constructor(private readonly service: RegisterService, private readonly loginService: LoginService) {
     }

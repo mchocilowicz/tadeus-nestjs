@@ -16,7 +16,7 @@ import { Account } from "../../../database/entity/account.entity";
 import { Terminal } from "../../../database/entity/terminal.entity";
 
 @Controller()
-@ApiUseTags('partner/terminal')
+@ApiUseTags('terminal')
 export class TerminalController {
 
     constructor(private readonly codeService: CodeService) {

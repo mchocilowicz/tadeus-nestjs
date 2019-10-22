@@ -9,7 +9,8 @@ import {
     OneToMany,
     OneToOne,
     PrimaryGeneratedColumn,
-    Unique
+    Unique,
+    UpdateDateColumn
 } from "typeorm";
 import { NgoType } from "./ngo-type.entity";
 import { City } from "./city.entity";
@@ -17,7 +18,7 @@ import { Donation } from "./donation.entity";
 import { UserDetails } from "./user-details.entity";
 import { PhysicalCard } from "./physical-card.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 @Unique(["name"])
 export class Ngo extends BaseEntity {
 
@@ -32,6 +33,9 @@ export class Ngo extends BaseEntity {
 
     @Column()
     phone: string;
+
+    @Column()
+    phonePrefix: string;
 
     @Column()
     email: string;
@@ -60,6 +64,21 @@ export class Ngo extends BaseEntity {
 
     @Column()
     name: string;
+
+    @Column()
+    longName: string;
+
+    @Column({length: 550})
+    description: string;
+
+    @Column({nullable: true})
+    image: string = 'icon.jpg';
+
+    @Column({nullable: true})
+    thumbnail: string = 'thumbnail.jpg';
+
+    @Column()
+    isTadeus: boolean = false;
 
     @Column()
     address: string;
@@ -93,6 +112,9 @@ export class Ngo extends BaseEntity {
 
     @CreateDateColumn()
     creationAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @BeforeInsert()
     assignPointData() {

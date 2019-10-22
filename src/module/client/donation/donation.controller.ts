@@ -1,4 +1,4 @@
-import { BadRequestException, Controller, Param, Post, Req } from "@nestjs/common";
+import { BadRequestException, Controller, Get, Param, Post, Req } from "@nestjs/common";
 import { ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { User } from "../../../database/entity/user.entity";
@@ -9,9 +9,25 @@ import { Ngo } from "../../../database/entity/ngo.entity";
 import { getConnection } from "typeorm";
 
 @Controller()
-@ApiUseTags('client/donation')
+@ApiUseTags('donation')
 export class DonationController {
     constructor(private readonly codeService: CodeService) {
+    }
+
+    @Get()
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    async getNgoSelectionCount(@Req() req) {
+        let user: User = req.user;
+        return user.details.ngoSelectionCount > 1;
     }
 
     @Post()

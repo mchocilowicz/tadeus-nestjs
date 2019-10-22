@@ -11,7 +11,9 @@ export class TransactionSuccessResponse {
 
 export class CorrectionResponse {
     @ApiModelProperty()
-    transactionId: string
+    transactionId: string;
+    @ApiModelProperty()
+    price: number;
 }
 
 export class CorrectionSuccessResponse {

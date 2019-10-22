@@ -9,6 +9,10 @@ import { Const } from "./common/util/const";
 import { LoggerService } from "./common/service/logger.service";
 import { i18nMiddleware } from "./common/middleware/i18n.middleware";
 import { TadeusValidationPipe } from "./common/pipe/tadeus-validation.pipe";
+import { ClientModule } from "./module/client/client.module";
+import { PartnerModule } from "./module/partner/partner.module";
+import { DashboardModule } from "./module/dashboard/dashboard.module";
+import { join } from "path";
 import morgan = require("morgan");
 
 async function bootstrap() {
@@ -21,8 +25,22 @@ async function bootstrap() {
         .setDescription('The TADEUS API description')
         .setVersion('1.0')
         .build();
-    const document = SwaggerModule.createDocument(app, options);
-    SwaggerModule.setup('docs', app, document);
+
+    const clientDocument = SwaggerModule.createDocument(app, options, {
+        include: [ClientModule],
+    });
+    SwaggerModule.setup('api/docs/client', app, clientDocument);
+
+    const partnerDocument = SwaggerModule.createDocument(app, options, {
+        include: [PartnerModule],
+    });
+    SwaggerModule.setup('api/docs/partner', app, partnerDocument);
+
+    const dashboardDocument = SwaggerModule.createDocument(app, options, {
+        include: [DashboardModule],
+    });
+    SwaggerModule.setup('api/docs/dashboard', app, dashboardDocument);
+
 
     app.enableCors();
     app.use(helmet());
@@ -35,6 +53,9 @@ async function bootstrap() {
 
     app.use(i18nMiddleware);
     app.useGlobalPipes(new TadeusValidationPipe());
+    app.useStaticAssets(join(__dirname, '..', 'public', 'image'));
+    app.useStaticAssets(join(__dirname, '..', 'public', 'excel'));
+    app.useStaticAssets(join(__dirname, '..', 'public', 'import'));
 
     const port = process.env.PORT ? process.env.PORT : 4000;
     await app.listen(port);

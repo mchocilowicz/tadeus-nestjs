@@ -5,9 +5,11 @@ import {
     Get,
     HttpCode,
     Logger,
+    Param,
     Post,
     Query,
     Req,
+    Res,
     UseGuards
 } from "@nestjs/common";
 import { createQueryBuilder, getConnection } from "typeorm";
@@ -23,10 +25,12 @@ import { User } from "../../../database/entity/user.entity";
 import { Donation } from "../../../database/entity/donation.entity";
 import { DonationEnum } from "../../../common/enum/donation.enum";
 import { CodeService } from "../../../common/service/code.service";
+import { CityResponse } from "../../../models/response/city.response";
+import { City } from "../../../database/entity/city.entity";
 
 
 @Controller()
-@ApiUseTags('client/ngo')
+@ApiUseTags('ngo')
 export class NgoController {
     private readonly logger = new Logger(NgoController.name);
 
@@ -127,5 +131,24 @@ export class NgoController {
     })
     getNgoTypes() {
         return NgoType.find();
+    }
+
+    @Get('city')
+    @ApiResponse({status: 200, type: CityResponse, isArray: true})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    getCities() {
+        return createQueryBuilder('City', 'city')
+            .leftJoin('city.ngoList', 'ngo')
+            .where('ngo IS NOT NULL')
+            .getMany()
+    }
+
+    @Get('/img/:name')
+    getImage(@Param('name') imageName: string, @Res() response) {
+        response.sendFile(imageName, {root: 'public/image'});
     }
 }

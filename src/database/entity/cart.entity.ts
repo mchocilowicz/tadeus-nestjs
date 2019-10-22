@@ -14,7 +14,7 @@ import { Transaction } from "./transaction.entity";
 import { Payment } from "./payment.entity";
 
 
-@Entity()
+@Entity({schema: 'tds'})
 export class Cart extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;

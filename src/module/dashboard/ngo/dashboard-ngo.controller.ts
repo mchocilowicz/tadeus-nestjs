@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, Logger, Param, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    Logger,
+    Param,
+    Post,
+    Put,
+    Res,
+    UploadedFile,
+    UseInterceptors
+} from "@nestjs/common";
 import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { NgoRequest } from "../../../models/request/ngo.request";
@@ -13,9 +25,12 @@ import { ExcelException } from "../../../common/exceptions/excel.exception";
 import { City } from "../../../database/entity/city.entity";
 import { CodeService } from "../../../common/service/code.service";
 import { PhysicalCard } from "../../../database/entity/physical-card.entity";
+import { diskStorage } from "multer";
+
+const moment = require("moment");
 
 @Controller()
-@ApiUseTags('dashboard/ngo')
+@ApiUseTags('ngo')
 export class DashboardNgoController {
     private readonly logger = new Logger(DashboardNgoController.name);
 
@@ -49,6 +64,10 @@ export class DashboardNgoController {
         ngo.bankNumber = dto.bankNumber;
         ngo.email = dto.email;
         ngo.phone = dto.phone;
+        ngo.phonePrefix = dto.phonePrefix;
+        ngo.longName = dto.longName;
+        ngo.description = dto.description;
+
         ngo.ID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
         let card = new PhysicalCard();
         card.ID = this.codeService.generatePhysicalCardNumber(ngo.ID);
@@ -60,10 +79,21 @@ export class DashboardNgoController {
         }
     }
 
-    @Post("upload")
+    @Post("import")
     @ApiConsumes('multipart/form-data')
     @ApiImplicitFile({name: 'file', required: true, description: 'XLSX file with Ngo definitions'})
-    @UseInterceptors(FileInterceptor('file'))
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination(req, file, cb) {
+                cb(null, 'public/import');
+            },
+            filename: (req, file, cb) => {
+                const newFileName = moment().format("YYYYMMDDHHmmss");
+
+                return cb(null, `${newFileName}_${file.originalname}`)
+            }
+        })
+    }))
     async uploadNgoWithFile(@UploadedFile() file) {
         const xlsx = require('xlsx');
         const workbook = xlsx.readFile(file.path);
@@ -80,6 +110,36 @@ export class DashboardNgoController {
             }
         }
         this.logger.log("Ended to process excel file with NGO");
+    }
+
+    @Put(':ID')
+    @UseInterceptors(FileInterceptor('image', {
+            storage: diskStorage({
+                destination(req, file, cb) {
+                    cb(null, 'public/image');
+                },
+                filename(req, file, cb) {
+                    cb(null, Date.now() + '-' + file.originalname);
+                },
+            }),
+        }),
+        FileInterceptor('thumbnail', {
+            storage: diskStorage({
+                destination(req, file, cb) {
+                    cb(null, 'public/image');
+                },
+                filename(req, file, cb) {
+                    cb(null, Date.now() + '-' + 'tbn-' + file.originalname);
+                },
+            }),
+        }))
+    async updateNgo(@UploadedFile() image, @UploadedFile() thumbnail) {
+
+    }
+
+    @Get('/excel')
+    getImage(@Res() response) {
+        response.download('public/excel/ngo.xlsx', 'Ngo.xlsx');
     }
 
     @Get(':ngoId')
@@ -121,10 +181,11 @@ export class DashboardNgoController {
         ngo.city = city;
         ngo.type = type;
         ngo.bankNumber = data.accountNumber;
+        ngo.phonePrefix = data.phonePrefix;
         ngo.phone = data.phone;
+        ngo.longName = data.longName;
+        ngo.description = data.description;
         ngo.email = data.email;
-        ngo.verified = data.verified;
-        ngo.verifiedAt = data.verificationDate;
         ngo.longitude = data.longitude;
         ngo.latitude = data.latitude;
         ngo.name = data.name;
@@ -152,14 +213,15 @@ export class DashboardNgoController {
     private mapRowColumns(row): NgoRowExcel {
         const columnMapping = {
             'Name': 'name',
+            'Long Name': 'longName',
+            'Description': 'description',
             'Type': 'type',
             'Account number': 'accountNumber',
+            'Phone Prefix': 'phonePrefix',
             'Phone': 'phone',
             'E-mail': 'email',
             'Latitude': 'latitude',
             'Longitude': 'longitude',
-            'Verified': 'verified',
-            'Verification Date': 'verificationDate',
             'City': 'city',
             'Address': 'address',
             'Post Code': 'postCode'

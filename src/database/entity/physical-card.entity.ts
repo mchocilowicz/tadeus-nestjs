@@ -8,7 +8,7 @@ import {
     UpdateDateColumn
 } from "typeorm";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class PhysicalCard extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;

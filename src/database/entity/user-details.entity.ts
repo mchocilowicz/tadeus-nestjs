@@ -12,7 +12,7 @@ import {
 import { Ngo } from "./ngo.entity";
 import { User } from "./user.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class UserDetails extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
@@ -21,7 +21,10 @@ export class UserDetails extends BaseEntity {
     xp: number;
 
     @Column({nullable: true})
-    fullName: string;
+    name: string;
+
+    @Column({nullable: true})
+    lastName: string;
 
     @Column({nullable: true})
     bankAccount: number;

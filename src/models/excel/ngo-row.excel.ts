@@ -1,15 +1,7 @@
-import {
-    IsAlpha,
-    IsBoolean,
-    IsDate,
-    IsEmail,
-    IsNotEmpty,
-    IsNumberString,
-    IsPhoneNumber,
-    NotContains
-} from "class-validator";
+import { IsAlpha, IsEmail, IsNotEmpty, IsNumberString } from "class-validator";
+import { PhoneRequest } from "../request/phone.request";
 
-export class NgoRowExcel {
+export class NgoRowExcel extends PhoneRequest {
     @IsNotEmpty({
         message: "excel_data_required"
     })
@@ -17,6 +9,22 @@ export class NgoRowExcel {
         message: "excel_name_format"
     })
     name: string;
+
+    @IsNotEmpty({
+        message: "excel_data_required"
+    })
+    @IsAlpha({
+        message: "excel_name_format"
+    })
+    longName: string;
+
+    @IsNotEmpty({
+        message: "excel_data_required"
+    })
+    @IsAlpha({
+        message: "excel_name_format"
+    })
+    description: string;
 
     @IsNotEmpty({
         message: "excel_data_required"
@@ -37,26 +45,10 @@ export class NgoRowExcel {
     @IsNotEmpty({
         message: "excel_data_required"
     })
-    @IsPhoneNumber('PL', {message: 'excel_phone_format'})
-    @NotContains("-", {message: 'excel_phone_format'})
-    @NotContains(" ", {message: 'excel_phone_format'})
-    phone: string;
-
-    @IsNotEmpty({
-        message: "excel_data_required"
-    })
     @IsEmail({}, {
         message: "excel_email_format"
     })
     email: string;
-
-    @IsNotEmpty({
-        message: "excel_data_required"
-    })
-    @IsBoolean({
-        message: "excel_verified_format"
-    })
-    verified: boolean;
 
     @IsNotEmpty({
         message: "excel_data_required"
@@ -67,11 +59,6 @@ export class NgoRowExcel {
         message: "excel_data_required"
     })
     longitude: number;
-
-    @IsDate({
-        message: 'excel_verification_date_format'
-    })
-    verificationDate: Date;
 
     @IsNotEmpty({
         message: "excel_data_required"
@@ -92,13 +79,15 @@ export class NgoRowExcel {
     postCode: string;
 
     constructor(row: any) {
+        super();
         this.name = row.name ? row.name : null;
+        this.longName = row.longName ? row.longName : null;
+        this.description = row.description ? row.description : null;
         this.type = row.type ? row.type : null;
         this.accountNumber = row.accountNumber ? row.accountNumber : null;
         this.email = row.email ? row.email : null;
         this.phone = row.phone ? row.phone : null;
-        this.verified = row.verified ? row.verified : null;
-        this.verificationDate = row.verificationDate ? row.verificationDate : null;
+        this.phonePrefix = row.phonePrefix ? row.phonePrefix : null;
         this.longitude = row.longitude ? Number(row.longitude) : null;
         this.latitude = row.latitude ? Number(row.latitude) : null;
         this.city = row.city ? row.city : null;

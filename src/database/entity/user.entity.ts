@@ -16,8 +16,10 @@ import { Account } from "./account.entity";
 import { UserDetails } from "./user-details.entity";
 import { Terminal } from "./terminal.entity";
 import { VirtualCard } from "./virtual-card.entity";
+import { Opinion } from "./opinion.entity";
+import { Notification } from "./notification.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class User extends BaseEntity {
 
     @PrimaryGeneratedColumn("uuid")
@@ -27,7 +29,7 @@ export class User extends BaseEntity {
     phone: string;
 
     @Column({nullable: true})
-    name: string;
+    phonePrefix: string;
 
     @Column({nullable: true})
     email: string;
@@ -43,6 +45,12 @@ export class User extends BaseEntity {
 
     @OneToMany(type => Transaction, transactions => transactions.user)
     transactions: Transaction[];
+
+    @OneToMany(type => Opinion, opinion => opinion.user)
+    opinions: Opinion[];
+
+    @OneToMany(type => Notification, notification => notification.user)
+    notifications: Notification[];
 
     @OneToMany(type => Donation, donation => donation.user)
     donations: Donation[];

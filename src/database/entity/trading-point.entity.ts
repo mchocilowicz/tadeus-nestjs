@@ -18,7 +18,7 @@ import { Cart } from "./cart.entity";
 import { Payment } from "./payment.entity";
 import { Terminal } from "./terminal.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 @Unique(["name"])
 export class TradingPoint extends BaseEntity {
 
@@ -27,22 +27,6 @@ export class TradingPoint extends BaseEntity {
 
     @Column()
     ID: string;
-
-    @OneToMany(type => Terminal, terminal => terminal.tradingPoint)
-    terminals: Terminal[];
-
-    @OneToMany(type => Cart, cart => cart.tradingPoint)
-    cartList: Cart[];
-
-    @OneToMany(type => Payment, payment => payment.tradingPoint)
-    payments: Payment[];
-
-    @ManyToOne(type => TradingPointType, {nullable: false})
-    @JoinColumn()
-    type: TradingPointType;
-
-    @OneToMany(type => Transaction, transactions => transactions.tradingPoint)
-    transactions: Transaction[];
 
     @Column()
     name: string;
@@ -55,6 +39,9 @@ export class TradingPoint extends BaseEntity {
 
     @Column({type: "decimal"})
     fee: number = 0.66;
+
+    @Column({nullable: true})
+    image: string;
 
     @ManyToOne(type => City, {nullable: false})
     @JoinColumn()
@@ -85,17 +72,33 @@ export class TradingPoint extends BaseEntity {
     @Column()
     xp: number = 0;
 
-    @Column({default: true})
+    @Column({default: false})
     active: boolean;
 
     @Column({nullable: true})
-    closedDate: Date;
+    closedAt: Date;
+
+    @OneToMany(type => Terminal, terminal => terminal.tradingPoint)
+    terminals: Terminal[];
+
+    @OneToMany(type => Cart, cart => cart.tradingPoint)
+    cartList: Cart[];
+
+    @OneToMany(type => Payment, payment => payment.tradingPoint)
+    payments: Payment[];
+
+    @ManyToOne(type => TradingPointType, {nullable: false})
+    @JoinColumn()
+    type: TradingPointType;
+
+    @OneToMany(type => Transaction, transactions => transactions.tradingPoint)
+    transactions: Transaction[];
 
     @CreateDateColumn()
-    createdDate: Date;
+    createdAt: Date;
 
     @UpdateDateColumn()
-    updatedDate: Date;
+    updatedAt: Date;
 
 
     @BeforeInsert()

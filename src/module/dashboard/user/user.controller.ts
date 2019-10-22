@@ -7,7 +7,7 @@ import { ApiUseTags } from "@nestjs/swagger";
 import { Account } from "../../../database/entity/account.entity";
 
 @Controller()
-@ApiUseTags('dashboard/user')
+@ApiUseTags('user')
 export class UserController {
     @Get()
     async getAllUsers() {
@@ -22,7 +22,7 @@ export class UserController {
             return {
                 id: user.id,
                 phone: user.phone,
-                name: user.name,
+                name: user.details.name,
                 email: user.email,
                 xp: user.details.xp,
                 status: user.accounts.find(a => a.role.name === RoleEnum.CLIENT).status,

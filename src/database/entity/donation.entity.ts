@@ -3,7 +3,7 @@ import { Ngo } from "./ngo.entity";
 import { User } from "./user.entity";
 import { DonationEnum } from "../../common/enum/donation.enum";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class Donation extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;

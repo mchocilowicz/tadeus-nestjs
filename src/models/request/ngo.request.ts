@@ -14,6 +14,10 @@ export class NgoRequest {
     @ApiModelProperty({required: true})
     name: string;
     @ApiModelProperty({required: true})
+    longName: string;
+    @ApiModelProperty({required: true})
+    description: string;
+    @ApiModelProperty({required: true})
     address: string;
     @ApiModelProperty({required: true})
     bankNumber: string;
@@ -21,4 +25,6 @@ export class NgoRequest {
     email: string;
     @ApiModelProperty({required: true})
     phone: string;
+    @ApiModelProperty({required: true})
+    phonePrefix: string;
 }

@@ -18,8 +18,9 @@ import { TransactionModule } from "../partner/transaction/transaction.module";
 import { TerminalModule } from "../partner/terminal/terminal.module";
 import { NgoModule } from "../client/ngo/ngo.module";
 import { RegisterModule } from "../client/register/register.module";
-import { CityModule } from "../client/city/city.module";
 import { PlaceModule } from "../client/place/place.module";
+import { ScheduleModule } from "nest-schedule";
+import { ConfigurationScheduler } from "../../schedulers/configuration.scheduler";
 
 const routes: Routes = [
     {
@@ -37,10 +38,6 @@ const routes: Routes = [
                     {
                         path: '/register',
                         module: RegisterModule
-                    },
-                    {
-                        path: '/city',
-                        module: CityModule
                     },
                     {
                         path: '/place',
@@ -98,12 +95,14 @@ const routes: Routes = [
 
 @Module({
     imports: [
+        ScheduleModule.register(),
         // MorganModule.forRoot(),
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRootAsync({
             useFactory: () => ({
                 url: process.env.DATABASE_URL,
                 type: "postgres",
+                schema: 'tds',
                 entities: [
                     join(__dirname, "../../**/*.entity{.ts,.js}")
                 ],
@@ -125,7 +124,6 @@ const routes: Routes = [
         TerminalModule,
         NgoModule,
         RegisterModule,
-        CityModule,
         PlaceModule
 
     ],
@@ -138,7 +136,8 @@ const routes: Routes = [
         {
             provide: APP_FILTER,
             useClass: TadeusExceptionFilter
-        }
+        },
+        ConfigurationScheduler,
     ],
 })
 

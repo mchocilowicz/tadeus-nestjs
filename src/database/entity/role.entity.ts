@@ -1,7 +1,7 @@
 import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
 import { Account } from "./account.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 @Unique(["name"])
 export class Role extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")

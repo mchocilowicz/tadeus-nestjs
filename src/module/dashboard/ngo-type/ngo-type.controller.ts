@@ -7,7 +7,7 @@ import { NgoType } from "../../../database/entity/ngo-type.entity";
 import { createQueryBuilder } from "typeorm";
 
 @Controller()
-@ApiUseTags('dashboard/trading-point-type')
+@ApiUseTags('trading-point-type')
 export class NgoTypeController {
     private readonly logger = new Logger(NgoTypeController.name);
 

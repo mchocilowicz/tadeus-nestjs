@@ -16,6 +16,8 @@ import { LoginService } from "../common/login.service";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { NewPhoneRequest } from "../../models/request/new-phone.request";
 import { SignInResponse } from "../../models/response/signIn.response";
+import { Notification } from "../../database/entity/notification.entity";
+import { Opinion } from "../../database/entity/opinion.entity";
 
 @Controller()
 export class ClientController {
@@ -25,7 +27,7 @@ export class ClientController {
     }
 
     @Post('signIn')
-    @ApiUseTags('client/auth')
+    @ApiUseTags('auth')
     @HttpCode(200)
     @ApiResponse({status: 200, type: SignInResponse})
     @ApiImplicitHeader({
@@ -41,7 +43,7 @@ export class ClientController {
     }
 
     @Post('anonymous')
-    @ApiUseTags('client/auth')
+    @ApiUseTags('auth')
     @ApiResponse({status: 200, type: "string", description: 'Authorization Token'})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -53,7 +55,7 @@ export class ClientController {
     }
 
     @Post('code')
-    @ApiUseTags('client/auth')
+    @ApiUseTags('auth')
     @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -68,7 +70,6 @@ export class ClientController {
     @Get()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiUseTags('client')
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -81,7 +82,6 @@ export class ClientController {
     })
     @ApiResponse({status: 200, type: MainResponse})
     @ApiBearerAuth()
-    @ApiUseTags('client')
     async mainScreen(@Req() req) {
         const user: User = req.user;
         const dto = new MainResponse();
@@ -90,7 +90,7 @@ export class ClientController {
         dto.donationPool = user.card.donationPool;
         dto.collectedMoney = user.details.collectedMoney;
         dto.xp = user.details.xp;
-        dto.name = user.name;
+        dto.name = user.details.name;
         return dto
     }
 
@@ -108,7 +108,6 @@ export class ClientController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    @ApiUseTags('client')
     @ApiBearerAuth()
     async history(@Req() req) {
         const user: User = req.user;
@@ -140,7 +139,6 @@ export class ClientController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    @ApiUseTags('client')
     @ApiBearerAuth()
     virtualCard(@Req() req) {
         const card = new VirtualCardResponse();
@@ -166,7 +164,6 @@ export class ClientController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    @ApiUseTags('client')
     @ApiBearerAuth()
     async getCorrections(@Req() req: any) {
         return await Transaction.find({user: req.user, isCorrection: true})
@@ -186,11 +183,113 @@ export class ClientController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    @ApiUseTags('client')
     @ApiBearerAuth()
     async approveCorrection(@Param('id') id: string) {
         let t = await Transaction.findOne({id: id});
         t.verifiedByUser = true;
         await t.save()
     }
+
+    @Put('user')
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: []})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiUseTags('user')
+    @ApiBearerAuth()
+    async updateUserData(@Req() req, @Body() dto: any) {
+        let user: User = req.user;
+        user.email = dto.email;
+        user.phonePrefix = dto.phonePrefix;
+        user.phone = dto.phone;
+        user.details.bankAccount = dto.bankAccount;
+        user.details.name = dto.name;
+        user.details.lastName = dto.lastName;
+        await user.details.save();
+        await user.save();
+    }
+
+    @Get('user')
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: []})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiUseTags('user')
+    @ApiBearerAuth()
+    getUserData(@Req() req) {
+        let user: User = req.user;
+        return {
+            firstName: user.details.name,
+            lastName: user.details.lastName,
+            bankAccount: user.details.bankAccount,
+            phone: user.phone,
+            email: user.email
+        }
+    }
+
+    @Get('notification')
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: []})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiBearerAuth()
+    async getNotificationForUser(@Req() req) {
+        let user: User = req.user;
+        let noti = await Notification.find({user: user});
+        if (noti.length > 0) {
+            await Notification.remove(noti)
+        }
+        return noti
+    }
+
+    @Post('opinion')
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: []})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiBearerAuth()
+    async createOpinion(@Req() req, @Body() dto: any) {
+        let opinion = new Opinion();
+        opinion.email = dto.email;
+        opinion.value = dto.value;
+        opinion.user = req.user;
+        await opinion.save();
+    }
+
 }

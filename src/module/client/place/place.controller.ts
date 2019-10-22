@@ -1,12 +1,13 @@
-import { Controller, Get, Logger, Query } from "@nestjs/common";
+import { Controller, Get, Logger, Param, Query, Res } from "@nestjs/common";
 import { createQueryBuilder } from "typeorm";
 import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { Const } from "../../../common/util/const";
 import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
+import { CityResponse } from "../../../models/response/city.response";
 
 @Controller()
-@ApiUseTags('client/place')
+@ApiUseTags('place')
 export class PlaceController {
     private readonly logger = new Logger(PlaceController.name);
 
@@ -58,5 +59,24 @@ export class PlaceController {
     @ApiResponse({status: 200, type: TradingPointType, isArray: true})
     getPlaceTypes() {
         return TradingPointType.find()
+    }
+
+    @Get('city')
+    @ApiResponse({status: 200, type: CityResponse, isArray: true})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    getCities() {
+        return createQueryBuilder('City', 'city')
+            .leftJoin('city.places', 'place')
+            .where('place IS NOT NULL')
+            .getMany()
+    }
+
+    @Get('/img/:name')
+    getImage(@Param('name') imageName: string, @Res() response) {
+        response.sendFile(imageName, {root: 'public/image'});
     }
 }

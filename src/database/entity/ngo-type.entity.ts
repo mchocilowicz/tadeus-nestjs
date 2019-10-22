@@ -2,7 +2,7 @@ import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique }
 import { ApiModelProperty } from "@nestjs/swagger";
 import { Ngo } from "./ngo.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 @Unique(["name"])
 export class NgoType extends BaseEntity {
 

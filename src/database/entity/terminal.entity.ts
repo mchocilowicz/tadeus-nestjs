@@ -4,7 +4,7 @@ import { TradingPoint } from "./trading-point.entity";
 import { Transaction } from "./transaction.entity";
 import { User } from "./user.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class Terminal extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
@@ -17,6 +17,9 @@ export class Terminal extends BaseEntity {
 
     @Column()
     ID: string;
+
+    @Column({default: false})
+    isMain: boolean = false;
 
     @ManyToOne(type => TradingPoint)
     @JoinColumn()

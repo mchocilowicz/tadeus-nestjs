@@ -7,7 +7,7 @@ import { ConfigurationResponse } from "../models/response/configuration.response
 const moment = require('moment');
 
 @Controller()
-@ApiUseTags('dashboard/configuration')
+@ApiUseTags('configuration')
 export class ConfigurationController {
 
     @Post()
@@ -18,9 +18,14 @@ export class ConfigurationController {
         }
         this.mapDtoToEntity(dto, config);
         const c = moment().subtract(5, 'months').toDate();
-        config.oldClientPaymentDate = c;
-        config.oldNgoPaymentDate = c;
-        config.oldPartnerPaymentDate = c;
+        config.oldClientPaymentAt = c;
+        config.oldNgoPaymentAt = c;
+        config.oldPartnerPaymentAt = c;
+
+        const o = moment().subtract(1, 'months').toDate();
+        config.previousClientPaymentAt = o;
+        config.previousPartnerPaymentAt = o;
+        config.previousNgoPaymentAt = o;
         let savedConfig = await config.save();
         return this.mapToResponse(savedConfig)
     }
@@ -53,14 +58,11 @@ export class ConfigurationController {
     private mapDtoToEntity(dto: ConfigurationRequest, config: Configuration) {
         config.minNgoTransfer = Number(dto.minNgoTransfer);
         config.minPersonalPool = Number(dto.minPersonalPool);
-        config.currentClientPaymentDate = dto.currentClientPaymentDate;
-        config.clientCycleDays = Number(dto.clientCycleDays);
-        config.nextClientPaymentDate = dto.nextClientPaymentDate;
-        config.currentPartnerPaymentDate = dto.currentPartnerPaymentDate;
-        config.partnerCycleDays = Number(dto.partnerCycleDays);
-        config.nextPartnerPaymentDate = dto.nextPartnerPaymentDate;
-        config.currentNgoPaymentDate = dto.currentNgoPaymentDate;
-        config.ngoCycleDays = Number(dto.ngoCycleDays);
-        config.nextNgoPaymentDate = dto.nextNgoPaymentDate;
+        config.currentClientPaymentAt = dto.currentClientPaymentAt;
+        config.clientInterval = Number(dto.clientInterval);
+        config.currentPartnerPaymentAt = dto.currentPartnerPaymentAt;
+        config.partnerInterval = Number(dto.partnerInterval);
+        config.currentNgoPaymentAt = dto.currentNgoPaymentAt;
+        config.ngoInterval = Number(dto.ngoInterval);
     }
 }

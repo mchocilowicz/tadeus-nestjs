@@ -1,6 +1,7 @@
 import { IsAlpha, IsNotEmpty, IsNumber } from "class-validator";
+import { PhoneRequest } from "../request/phone.request";
 
-export default class TradingPointExcelRow {
+export class TradingPointExcelRow extends PhoneRequest {
     @IsNotEmpty({
         message: "excel_data_required"
     })
@@ -61,6 +62,7 @@ export default class TradingPointExcelRow {
     city: string;
 
     constructor(row: any) {
+        super();
         this.name = row.name ? row.name : null;
         this.type = row.type ? row.type : null;
         this.donationPercentage = row.donationPercentage ? row.donationPercentage : null;
@@ -71,5 +73,7 @@ export default class TradingPointExcelRow {
         this.postCode = row.postCode ? row.postCode : null;
         this.xp = row.xp ? row.xp : null;
         this.city = row.city ? row.city : null;
+        this.phone = row.phone ? String(row.phone) : null;
+        this.phonePrefix = row.phonePrefix ? row.phonePrefix : null;
     }
 }

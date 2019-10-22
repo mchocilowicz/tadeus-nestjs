@@ -2,7 +2,7 @@ import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, Pr
 import { Cart } from "./cart.entity";
 import { TradingPoint } from "./trading-point.entity";
 
-@Entity()
+@Entity({schema: 'tds'})
 export class Payment extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
     id: string;
