@@ -21,6 +21,7 @@ import { RegisterModule } from "../client/register/register.module";
 import { PlaceModule } from "../client/place/place.module";
 import { ScheduleModule } from "nest-schedule";
 import { ConfigurationScheduler } from "../../schedulers/configuration.scheduler";
+import { DonationModule } from "../client/donation/donation.module";
 
 const routes: Routes = [
     {
@@ -42,6 +43,10 @@ const routes: Routes = [
                     {
                         path: '/place',
                         module: PlaceModule
+                    },
+                    {
+                        path: '/donation',
+                        module: DonationModule
                     }
                 ]
             },
@@ -124,7 +129,8 @@ const routes: Routes = [
         TerminalModule,
         NgoModule,
         RegisterModule,
-        PlaceModule
+        PlaceModule,
+        DonationModule
 
     ],
     controllers: [],

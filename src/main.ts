@@ -13,6 +13,10 @@ import { ClientModule } from "./module/client/client.module";
 import { PartnerModule } from "./module/partner/partner.module";
 import { DashboardModule } from "./module/dashboard/dashboard.module";
 import { join } from "path";
+import { RegisterModule } from "./module/client/register/register.module";
+import { PlaceModule } from "./module/client/place/place.module";
+import { NgoModule } from "./module/client/ngo/ngo.module";
+import { DonationModule } from "./module/client/donation/donation.module";
 import morgan = require("morgan");
 
 async function bootstrap() {
@@ -27,7 +31,7 @@ async function bootstrap() {
         .build();
 
     const clientDocument = SwaggerModule.createDocument(app, options, {
-        include: [ClientModule],
+        include: [ClientModule, RegisterModule, PlaceModule, NgoModule, DonationModule],
     });
     SwaggerModule.setup('api/docs/client', app, clientDocument);
 

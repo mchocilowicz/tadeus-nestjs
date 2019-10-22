@@ -8,7 +8,6 @@ import { UserInformationRequest } from "../../../models/request/user-Information
 import { LoginService } from "../../common/login.service";
 
 @Controller()
-@ApiUseTags('register')
 export class RegisterController {
     constructor(private readonly service: RegisterService, private readonly loginService: LoginService) {
     }
@@ -21,6 +20,7 @@ export class RegisterController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiUseTags('register')
     @ApiImplicitBody({name: '', type: NewPhoneRequest})
     async registerPhone(@Body() phone: NewPhoneRequest) {
         return await this.loginService.clientSignIn(phone);
@@ -34,6 +34,7 @@ export class RegisterController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiUseTags('register')
     @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     async checkCode(@Body() dto: CodeVerificationRequest) {
         await this.service.checkCode(dto);
@@ -47,6 +48,7 @@ export class RegisterController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiUseTags('register')
     @ApiImplicitBody({name: '', type: UserInformationRequest})
     async fillInformation(@Body() dto: UserInformationRequest) {
         return await this.service.fillUserInformation(dto);

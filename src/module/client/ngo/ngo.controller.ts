@@ -31,7 +31,6 @@ import { SelectedNgoRequest } from "../models/selected-ngo.request";
 
 
 @Controller()
-@ApiUseTags('ngo')
 export class NgoController {
     private readonly logger = new Logger(NgoController.name);
 
@@ -52,6 +51,7 @@ export class NgoController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiUseTags('ngo')
     @ApiImplicitBody({name: '', type: SelectedNgoRequest})
     async selectedNgo(@Req() req, @Body() dto: SelectedNgoRequest) {
         let user: User = req.user;
@@ -94,6 +94,7 @@ export class NgoController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiUseTags('ngo')
     async getAll(@Query() query: { city: string, ngoType: string }) {
         let sqlQuery = createQueryBuilder('Ngo')
             .leftJoinAndSelect('Ngo.city', 'city')
@@ -129,6 +130,7 @@ export class NgoController {
 
     @Get('type')
     @ApiResponse({status: 200, type: NgoType, isArray: true})
+    @ApiUseTags('ngo')
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -145,6 +147,7 @@ export class NgoController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
+    @ApiUseTags('ngo')
     getCities() {
         return createQueryBuilder('City', 'city')
             .innerJoin('city.ngoList', 'ngo')
@@ -152,6 +155,7 @@ export class NgoController {
     }
 
     @Get('/img/:name')
+    @ApiUseTags('ngo')
     @ApiResponse({status: 200, type: "File", description: "Image"})
     getImage(@Param('name') imageName: string, @Res() response) {
         response.sendFile(imageName, {root: 'public/image'});

@@ -25,6 +25,7 @@ export class DonationController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiUseTags('donation')
     @ApiResponse({status: 200, type: "boolean", description: "Check if user can make donation for selected NGO"})
     async getNgoSelectionCount(@Req() req) {
         let user: User = req.user;
@@ -42,6 +43,7 @@ export class DonationController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiUseTags('donation')
     async donationSelectedNgo(@Req() req: any) {
         const user: User = req.user;
         let details = user.details;
@@ -76,6 +78,7 @@ export class DonationController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiUseTags('donation')
     async donationAnotherNgo(@Req() req: any, @Param('ngoId') ngoId: string) {
         const user: User = req.user;
         let ngo = await Ngo.findOne({id: ngoId});
@@ -109,6 +112,7 @@ export class DonationController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiUseTags('donation')
     async donationTadeus() {
 
     }
