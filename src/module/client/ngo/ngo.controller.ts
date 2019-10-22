@@ -6,7 +6,7 @@ import {
     HttpCode,
     Logger,
     Param,
-    Post,
+    Put,
     Query,
     Req,
     Res,
@@ -27,6 +27,7 @@ import { DonationEnum } from "../../../common/enum/donation.enum";
 import { CodeService } from "../../../common/service/code.service";
 import { CityResponse } from "../../../models/response/city.response";
 import { City } from "../../../database/entity/city.entity";
+import { SelectedNgoRequest } from "../models/selected-ngo.request";
 
 
 @Controller()
@@ -37,7 +38,7 @@ export class NgoController {
     constructor(private readonly codeService: CodeService) {
     }
 
-    @Post()
+    @Put()
     @HttpCode(200)
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -51,9 +52,10 @@ export class NgoController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    @ApiImplicitBody({name: '', type: Ngo})
-    async selectedNgo(@Req() req, @Body() ngo: Ngo) {
+    @ApiImplicitBody({name: '', type: SelectedNgoRequest})
+    async selectedNgo(@Req() req, @Body() dto: SelectedNgoRequest) {
         let user: User = req.user;
+        let ngo = await Ngo.findOne({id: dto.id});
         if (user.details.ngoSelectionCount > 2) {
             throw new BadRequestException("user_ngo_max_reached")
         } else if (user.details.ngoSelectionCount === 1) {
