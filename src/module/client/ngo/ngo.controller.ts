@@ -150,6 +150,7 @@ export class NgoController {
     }
 
     @Get('/img/:name')
+    @ApiResponse({status: 200, type: "File", description: "Image"})
     getImage(@Param('name') imageName: string, @Res() response) {
         response.sendFile(imageName, {root: 'public/image'});
     }

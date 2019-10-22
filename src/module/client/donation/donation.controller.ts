@@ -1,5 +1,5 @@
 import { BadRequestException, Controller, Get, Param, Post, Req } from "@nestjs/common";
-import { ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { User } from "../../../database/entity/user.entity";
 import { Donation } from "../../../database/entity/donation.entity";
@@ -25,6 +25,7 @@ export class DonationController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
+    @ApiResponse({status: 200, type: "boolean", description: "Check if user can make donation for selected NGO"})
     async getNgoSelectionCount(@Req() req) {
         let user: User = req.user;
         return user.details.ngoSelectionCount > 1;
