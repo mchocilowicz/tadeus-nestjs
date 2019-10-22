@@ -47,7 +47,9 @@ export class PlaceController {
                 sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
             }
         });
-        return await sqlQuery.getMany();
+        return await sqlQuery
+            .andWhere('TradingPoint.active = true')
+            .getMany();
     }
 
     @Get('type')
@@ -70,8 +72,7 @@ export class PlaceController {
     })
     getCities() {
         return createQueryBuilder('City', 'city')
-            .leftJoin('city.places', 'place')
-            .where('place IS NOT NULL')
+            .innerJoin('city.places', 'place')
             .getMany()
     }
 

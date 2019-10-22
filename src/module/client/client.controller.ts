@@ -68,8 +68,6 @@ export class ClientController {
     }
 
     @Get()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -82,6 +80,8 @@ export class ClientController {
     })
     @ApiResponse({status: 200, type: MainResponse})
     @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async mainScreen(@Req() req) {
         const user: User = req.user;
         const dto = new MainResponse();
@@ -219,6 +219,7 @@ export class ClientController {
     }
 
     @Get('user')
+    @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: []})

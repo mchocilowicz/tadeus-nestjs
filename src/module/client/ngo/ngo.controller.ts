@@ -119,7 +119,10 @@ export class NgoController {
             }
         });
 
-        return await sqlQuery.getMany()
+        return await sqlQuery
+            .andWhere('Ngo.verified = true')
+            .andWhere('Ngo.isTadeus = false')
+            .getMany()
     }
 
     @Get('type')
@@ -142,8 +145,7 @@ export class NgoController {
     })
     getCities() {
         return createQueryBuilder('City', 'city')
-            .leftJoin('city.ngoList', 'ngo')
-            .where('ngo IS NOT NULL')
+            .innerJoin('city.ngoList', 'ngo')
             .getMany()
     }
 
