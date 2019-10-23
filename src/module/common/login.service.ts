@@ -7,7 +7,7 @@ import { CodeVerificationRequest } from "../../models/request/code-verification.
 import { PhoneRequest } from "../../models/request/phone.request";
 import { Status, Step } from "../../common/enum/status.enum";
 import { CryptoService } from "../../common/service/crypto.service";
-import { createQueryBuilder, getConnection } from "typeorm";
+import { createQueryBuilder, getConnection, getRepository } from "typeorm";
 import { Account } from "../../database/entity/account.entity";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
@@ -121,15 +121,15 @@ export class LoginService {
     }
 
     async clientSignIn(dto: NewPhoneRequest): Promise<boolean> {
-        let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = await createQueryBuilder('User', 'user')
+        let user: User = await getRepository(User).createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .where('role.name = :name', {name: RoleEnum.CLIENT})
-            .andWhere('user.phone = :phone', {phone: phoneNumber})
+            .andWhere('user.phone = :phone', {phone: dto.phone})
+            .andWhere('user.phonePrefix = :prefix', {prefix: dto.phonePrefix})
             .getOne();
 
-        let anonymousUser: any = await createQueryBuilder('User', 'user')
+        let anonymousUser: User = await getRepository(User).createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .where('role.name = :name', {name: RoleEnum.CLIENT})
@@ -146,13 +146,15 @@ export class LoginService {
         } else {
             if (anonymousUser) {
                 anonymousUser.isAnonymous = false;
-                anonymousUser.phone = phoneNumber;
+                anonymousUser.phone = dto.phone;
+                anonymousUser.phonePrefix = dto.phonePrefix;
                 await this.registerUser(anonymousUser)
             } else if (user) {
                 await this.registerUser(user)
             } else {
                 user = new User();
-                user.phone = phoneNumber;
+                user.phone = dto.phone;
+                user.phonePrefix = dto.phonePrefix;
                 await this.registerUser(user)
             }
             return false;
@@ -160,14 +162,14 @@ export class LoginService {
     }
 
     private async registerUser(user: User) {
-        let role = await Role.findOne({name: RoleEnum.CLIENT});
+        let role: Role = await Role.findOne({name: RoleEnum.CLIENT});
         if (!role) {
             throw new BadRequestException('user_not_created')
         }
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         try {
             if (user.accounts) {
-                let account = user.accounts.find(a => a.role == role);
+                let account: Account = user.accounts.find(a => a.role == role);
                 if (!account) {
                     let account = new Account();
                     account.role = role;
@@ -201,8 +203,8 @@ export class LoginService {
         return account.role.name === role && account.status === Status.ACTIVE
     }
 
-    private async getUser(phone: string, code: number, role: string) {
-        return await createQueryBuilder('User', 'user')
+    private getUser(phone: string, code: number, role: string): Promise<User> {
+        return getRepository(User).createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .where(`user.phone = :phone`, {phone: phone})

@@ -6,7 +6,7 @@ import { UserInformationRequest } from "../../../models/request/user-Information
 import { handleException } from "../../../common/util/functions";
 import { CodeVerificationRequest } from "../../../models/request/code-verification.request";
 import { RoleEnum } from "../../../common/enum/role.enum";
-import { createQueryBuilder, getConnection } from "typeorm";
+import { getConnection, getRepository } from "typeorm";
 import { UserDetails } from "../../../database/entity/user-details.entity";
 import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 import { CryptoService } from "../../../common/service/crypto.service";
@@ -22,12 +22,14 @@ export class RegisterService {
     }
 
     async fillUserInformation(dto: UserInformationRequest): Promise<string> {
-        let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = await createQueryBuilder('User', 'user')
+        let user: User = await getRepository(User)
+            .createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
+            .leftJoinAndSelect('user.details', 'details')
             .where('role.name = :name', {name: RoleEnum.CLIENT})
-            .andWhere('user.phone = :phone', {phone: phoneNumber})
+            .andWhere('user.phone = :phone', {phone: dto.phone})
+            .andWhere('user.phonePrefix = :prefix', {prefix: dto.phonePrefix})
             .getOne();
         if (user === null) {
             throw new NotFoundException('user_not_exists')
@@ -36,13 +38,13 @@ export class RegisterService {
             throw new BadRequestException("user_active")
         } else {
             user.email = dto.email;
-            user.name = dto.name;
             user.registered = true;
 
             const card = new VirtualCard();
             card.ID = this.codeService.generateVirtualCardNumber();
 
             const details = new UserDetails();
+            details.name = dto.name;
             details.xp = 50;
 
             let account = user.accounts.find(a => a.role.name === RoleEnum.CLIENT);
@@ -62,12 +64,13 @@ export class RegisterService {
     }
 
     async checkCode(dto: CodeVerificationRequest) {
-        let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = await createQueryBuilder('User', 'user')
+        let user: User = await getRepository(User)
+            .createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .where('role.name = :name', {name: RoleEnum.CLIENT})
-            .andWhere('user.phone = :phone', {phone: phoneNumber})
+            .andWhere('user.phone = :phone', {phone: dto.phone})
+            .andWhere('user.phonePrefix = :prefix', {prefix: dto.phonePrefix})
             .getOne();
         if (!user) {
             throw new NotFoundException('invalid_code')

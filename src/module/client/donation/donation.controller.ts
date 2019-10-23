@@ -7,6 +7,9 @@ import { DonationEnum } from "../../../common/enum/donation.enum";
 import { CodeService } from "../../../common/service/code.service";
 import { Ngo } from "../../../database/entity/ngo.entity";
 import { getConnection } from "typeorm";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { UserDetails } from "../../../database/entity/user-details.entity";
 
 @Controller()
 @ApiUseTags('donation')
@@ -46,12 +49,16 @@ export class DonationController {
     @ApiUseTags('donation')
     async donationSelectedNgo(@Req() req: any) {
         const user: User = req.user;
-        let details = user.details;
-        const ngo = details.ngo;
+        let details: UserDetails = user.details;
+        const config: Configuration = await Configuration.findOne({type: 'MAIN'});
+        if (config && config.minPersonalPool > user.card.personalPool) {
+            throw new BadRequestException('personal_pool_to_low')
+        }
+        const ngo: Ngo = details.ngo;
         if (!ngo) {
             throw new BadRequestException('ngo_not_selected')
         }
-        const donation = new Donation();
+        const donation: Donation = new Donation();
         donation.ngo = ngo;
         donation.user = user;
         donation.type = DonationEnum.NGO;
@@ -81,18 +88,22 @@ export class DonationController {
     @ApiUseTags('donation')
     async donationAnotherNgo(@Req() req: any, @Param('ngoId') ngoId: string) {
         const user: User = req.user;
-        let ngo = await Ngo.findOne({id: ngoId});
+        const config: Configuration = await Configuration.findOne({type: 'MAIN'});
+        if (config && config.minPersonalPool > user.card.personalPool) {
+            throw new BadRequestException('personal_pool_to_low')
+        }
+        let ngo: Ngo = await Ngo.findOne({id: ngoId});
         if (!ngo) {
             throw new BadRequestException('ngo_not_exists')
         }
-        const donation = new Donation();
+        const donation: Donation = new Donation();
         donation.ngo = ngo;
         donation.user = user;
         donation.type = DonationEnum.NGO;
         donation.pool = 'PERSONAL';
         donation.ID = this.codeService.generateDonationID();
-        let card = user.card;
-        let price = card.personalPool;
+        let card: VirtualCard = user.card;
+        let price: number = card.personalPool;
         donation.price = price;
         await getConnection().transaction(async entityManager => {
             await entityManager.save(donation);
@@ -113,7 +124,27 @@ export class DonationController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiUseTags('donation')
-    async donationTadeus() {
+    async donationTadeus(@Req() req) {
+        const user: User = req.user;
+        const ngo: Ngo = await Ngo.findOne({isTadeus: true});
+        const config: Configuration = await Configuration.findOne({type: 'MAIN'});
+        if (config && config.minPersonalPool > user.card.personalPool) {
+            throw new BadRequestException('personal_pool_to_low')
+        }
 
+        const donation = new Donation();
+        donation.ngo = ngo;
+        donation.user = user;
+        donation.type = DonationEnum.NGO;
+        donation.pool = 'PERSONAL';
+        donation.ID = this.codeService.generateDonationID();
+        let card = user.card;
+        let price = card.personalPool;
+        donation.price = price;
+        await getConnection().transaction(async entityManager => {
+            await entityManager.save(donation);
+            card.personalPool -= price;
+            await entityManager.save(card);
+        })
     }
 }

@@ -45,7 +45,8 @@ export const messages = {
         'partner_bad_phone': 'Podany numer nie został zarejestrowany w systemie Tadeus',
 
         'phone_prefix_not_exists': 'Podany prefix telefonu nie jest obsługiwany',
-        'phone_prefix_required': 'Prefix telefonu jest wymagany'
+        'phone_prefix_required': 'Prefix telefonu jest wymagany',
+        'personal_pool_to_low': 'Wartość puli osobistej jest za mała'
     },
     eng: {
         'user_data_required': 'Name and E-mail is required',
@@ -94,7 +95,8 @@ export const messages = {
         'partner_bad_qr': 'Scanned QR code does not belong to Tadeus system',
         'partner_bad_phone': 'Provided number was not registered in Tadeus system',
         'phone_prefix_not_exists': 'Provided phone prefix is not supported by Tadeus system',
-        'phone_prefix_required': 'Phone prefix is required'
+        'phone_prefix_required': 'Phone prefix is required',
+        'personal_pool_to_low': 'Dontation pool is to low for donation.'
     }
 };
 

@@ -55,8 +55,8 @@ export class NgoController {
     @ApiImplicitBody({name: '', type: SelectedNgoRequest})
     async selectedNgo(@Req() req, @Body() dto: SelectedNgoRequest) {
         let user: User = req.user;
-        let ngo = await Ngo.findOne({id: dto.id});
-        if (user.details.ngoSelectionCount > 2) {
+        let ngo: Ngo = await Ngo.findOne({id: dto.id});
+        if (user.details.ngoSelectionCount === 2) {
             throw new BadRequestException("user_ngo_max_reached")
         } else if (user.details.ngoSelectionCount === 1) {
             const donation = new Donation();
@@ -70,13 +70,20 @@ export class NgoController {
             user.details.ngo = ngo;
             await getConnection().transaction(async entityManager => {
                 await entityManager.save(donation);
+                await entityManager.save(user.card);
+                await entityManager.save(user.details);
                 await entityManager.save(user);
             });
         } else {
             user.details.ngo = ngo;
+            user.card.donationPool = user.details.ngoTempMoney;
+            user.details.ngoTempMoney -= user.details.ngoTempMoney;
             user.details.ngoSelectionCount++;
             try {
-                await user.save()
+                await getConnection().transaction(async entityManager => {
+                    await entityManager.save(user.details);
+                    await entityManager.save(user.card);
+                });
             } catch (e) {
                 throw new BadRequestException("ngo_not_assigned")
             }

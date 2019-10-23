@@ -5,7 +5,7 @@ import { Roles } from "../../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
-import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import {
     CorrectionResponse,
@@ -19,6 +19,7 @@ import { TransactionResponse } from "../../../models/response/transaction.respon
 import { handleException } from "../../../common/util/functions";
 import { Cart } from "../../../database/entity/cart.entity";
 import { createQueryBuilder, getConnection } from "typeorm";
+import { TransactionRequest } from "../models/transaction.request";
 
 const moment = require('moment');
 
@@ -187,7 +188,8 @@ export class TransactionController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    async saveTransaction(@Req() req, @Body() dto: { price, clientCode }) {
+    @ApiImplicitBody({name: '', type: TransactionRequest})
+    async saveTransaction(@Req() req, @Body() dto: TransactionRequest) {
         let partner: User = req.user;
         let tradingPoint: TradingPoint = partner.terminal.tradingPoint;
 
