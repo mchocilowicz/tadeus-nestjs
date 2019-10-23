@@ -5,9 +5,9 @@ import { Role } from "../../database/entity/role.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { CodeVerificationRequest } from "../../models/request/code-verification.request";
 import { PhoneRequest } from "../../models/request/phone.request";
-import { Status, Step } from "../../common/enum/status.enum";
+import { Status } from "../../common/enum/status.enum";
 import { CryptoService } from "../../common/service/crypto.service";
-import { createQueryBuilder, getConnection, getRepository } from "typeorm";
+import { getConnection, getRepository } from "typeorm";
 import { Account } from "../../database/entity/account.entity";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
@@ -52,8 +52,7 @@ export class LoginService {
     }
 
     async checkTerminalCode(dto: CodeVerificationRequest): Promise<string> {
-        let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = await this.getUser(phoneNumber, dto.code, RoleEnum.TERMINAL);
+        let user: User = await this.getUser(dto, RoleEnum.TERMINAL);
 
         if (!user) {
             throw new NotFoundException('invalid_code')
@@ -68,8 +67,7 @@ export class LoginService {
     }
 
     async checkDashboardCode(dto: CodeVerificationRequest): Promise<string> {
-        let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = await this.getUser(phoneNumber, dto.code, RoleEnum.DASHBOARD);
+        let user: User = await this.getUser(dto, RoleEnum.DASHBOARD);
 
         if (!user) {
             throw new NotFoundException('invalid_code')
@@ -84,8 +82,7 @@ export class LoginService {
     }
 
     async checkClientCode(dto: CodeVerificationRequest): Promise<string> {
-        let phoneNumber = dto.phonePrefix + dto.phone;
-        let user: any = await this.getUser(phoneNumber, dto.code, RoleEnum.CLIENT);
+        let user: User = await this.getUser(dto, RoleEnum.CLIENT);
 
         if (!user) {
             throw new NotFoundException('invalid_code')
@@ -99,23 +96,22 @@ export class LoginService {
         return this.jwtService.signToken({id: id})
     }
 
-    async signIn(phone: PhoneRequest, role: RoleEnum): Promise<void> {
-        let phoneNumber = phone.phonePrefix + phone.phone;
-        let user: any = await createQueryBuilder('User', 'user')
+    async signIn(dto: PhoneRequest, role: RoleEnum): Promise<void> {
+        let user: User = await getRepository(User).createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
-            .where(`user.phone = :phone`, {phone: phoneNumber})
+            .where(`user.phone = :phone`, {phone: dto.phone})
+            .where(`user.phonePrefix = :prefix`, {prefix: dto.phonePrefix})
             .andWhere(`role.name = :role`, {role: role})
             .getOne();
         if (!user) {
             throw new NotFoundException('user_no_exists')
         }
 
-        let account = user.accounts.find(a => a.role.name == role);
+        let account: Account = user.accounts.find(a => a.role.name == role);
         this.checkUserRights(account, role);
 
         account.code = this.codeService.generateSmsCode();
-        account.step = Step.CODE;
         // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         await account.save()
     }
@@ -203,12 +199,13 @@ export class LoginService {
         return account.role.name === role && account.status === Status.ACTIVE
     }
 
-    private getUser(phone: string, code: number, role: string): Promise<User> {
+    private getUser(dto: CodeVerificationRequest, role: string): Promise<User> {
         return getRepository(User).createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
-            .where(`user.phone = :phone`, {phone: phone})
-            .andWhere(`accounts.code = :code`, {code: code})
+            .where(`user.phone = :phone`, {phone: dto.phone})
+            .where(`user.phonePrefix = :prefix`, {prefix: dto.phonePrefix})
+            .andWhere(`accounts.code = :code`, {code: dto.code})
             .andWhere(`role.name = :role`, {role: role})
             .getOne();
     }

@@ -36,7 +36,7 @@ export class PartnerController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @ApiUseTags('partner/auth')
+    @ApiUseTags('auth')
     @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
         return this.service.checkTerminalCode(dto);
@@ -49,7 +49,7 @@ export class PartnerController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    @ApiUseTags('partner/auth')
+    @ApiUseTags('auth')
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async partnerSignIn(@Body() phone: PhoneRequest) {
         await this.service.signIn(phone, RoleEnum.TERMINAL);
