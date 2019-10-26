@@ -83,7 +83,7 @@ export class LoginService {
             .leftJoin('phone.prefix', 'prefix')
             .where(`phone.value = :phone`, {phone: dto.phone})
             .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
-            .andWhere(`role.name = :role`, {role: role})
+            .andWhere(`role.value = :role`, {role: role})
             .getOne();
 
         if (!user) {
@@ -118,13 +118,13 @@ export class LoginService {
             .leftJoin('phone.prefix', 'prefix')
             .where(`phone.value = :phone`, {phone: dto.phone})
             .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
-            .andWhere('role.name = :name', {name: RoleEnum.CLIENT})
+            .andWhere('role.value = :name', {name: RoleEnum.CLIENT})
             .getOne();
 
         let anonymousUser: User | undefined = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
-            .where('role.name = :name', {name: RoleEnum.CLIENT})
+            .where('role.value = :name', {name: RoleEnum.CLIENT})
             .andWhere(`accounts.id = :id`, {id: this.cryptoService.decrypt(dto.anonymousKey)})
             .andWhere('user.isAnonymous = true')
             .getOne();
@@ -135,7 +135,7 @@ export class LoginService {
             .andWhere('prefix.value = :prefix', {prefix: dto.phonePrefix})
             .getOne();
 
-        await getConnection().transaction(async entityManager => {
+        return await getConnection().transaction(async entityManager => {
             if (!phone) {
                 const prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
                 if (!prefix) {
@@ -175,7 +175,6 @@ export class LoginService {
                 return false;
             }
         });
-        return false;
     }
 
     private async registerUser(entityManager: EntityManager, user: User) {
@@ -248,6 +247,9 @@ export class LoginService {
         }
 
         account.token = this.cryptoService.generateToken(account.id, account.code);
+
+        await account.save();
+
         let id: string = this.cryptoService.encryptId(account.id, role);
 
         return this.jwtService.signToken({id: id})

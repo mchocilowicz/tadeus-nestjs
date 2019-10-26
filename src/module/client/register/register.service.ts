@@ -29,7 +29,7 @@ export class RegisterService {
             .leftJoinAndSelect('user.details', 'details')
             .leftJoin('user.phone', 'phone')
             .leftJoin('phone.prefix', 'prefix')
-            .where('role.name = :name', {name: RoleEnum.CLIENT})
+            .where('role.value = :name', {name: RoleEnum.CLIENT})
             .andWhere('phone.value = :phone', {phone: dto.phone})
             .andWhere('prefix.value = :prefix', {prefix: dto.phonePrefix})
             .getOne();
@@ -53,11 +53,6 @@ export class RegisterService {
 
         let account: Account | undefined = accounts.find(a => a.role.value === RoleEnum.CLIENT);
 
-        if (!account) {
-            this.logger.error(`User ${user.id} does not have CLIENT account`);
-            throw new BadRequestException('internal_server_error');
-        }
-
         try {
             await getConnection().transaction(async entityManager => {
                 if (user) {
@@ -71,7 +66,7 @@ export class RegisterService {
             handleException(e, 'user', this.logger)
         }
 
-        if (!account.id) {
+        if (!account || !account.id) {
             this.logger.error(`User ${user.id} does not have CLIENT account`);
             throw new BadRequestException('internal_server_error')
         }
@@ -87,9 +82,10 @@ export class RegisterService {
             .leftJoin('phone.prefix', 'prefix')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
-            .where('role.name = :name', {name: RoleEnum.CLIENT})
+            .where('role.value = :name', {name: RoleEnum.CLIENT})
             .andWhere('phone.value = :phone', {phone: dto.phone})
             .andWhere('prefix.value = :prefix', {prefix: dto.phonePrefix})
+            .andWhere('accounts.code = :code', {code: dto.code})
             .getOne();
 
         if (!user) {
@@ -105,7 +101,7 @@ export class RegisterService {
 
         if (!account || !account.id || !account.code) {
             this.logger.error(`User ${user.id} does not have CLIENT account`);
-            throw new BadRequestException('internal_error');
+            throw new BadRequestException('internal_server_error');
         }
 
         account.token = this.cryptoService.generateToken(account.id, account.code);

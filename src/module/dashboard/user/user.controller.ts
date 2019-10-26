@@ -15,7 +15,7 @@ export class UserController {
             .leftJoinAndSelect(`user.accounts`, 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .leftJoinAndSelect('user.details', 'details')
-            .where(`role.name = :role`, {role: RoleEnum.CLIENT})
+            .where(`role.value = :role`, {role: RoleEnum.CLIENT})
             .andWhere('accounts.status = :status', {status: Status.ACTIVE})
             .getMany();
         return users.map((user: User) => {
@@ -25,7 +25,7 @@ export class UserController {
                 name: user.details.name,
                 email: user.email,
                 xp: user.details.xp,
-                status: user.accounts.find(a => a.role.name === RoleEnum.CLIENT).status,
+                status: user.accounts.find(a => a.role.value === RoleEnum.CLIENT).status,
                 updatedDate: user.details.updatedAt
             }
         })
@@ -57,7 +57,7 @@ export class UserController {
             throw new BadRequestException('user_not_exists')
         }
         let accounts = await Account.find({user: user});
-        let a = accounts.find(a => a.role.name == RoleEnum.CLIENT);
+        let a = accounts.find(a => a.role.value == RoleEnum.CLIENT);
         a.status = dto.status;
         await a.save();
     }

@@ -49,7 +49,7 @@ export class DashboardController {
     async getUsersStats() {
         let users = await createQueryBuilder('User', 'user')
             .leftJoinAndSelect('user.roles', 'role')
-            .where('role.name = :name', {name: RoleEnum.CLIENT}).getMany();
+            .where('role.value = :name', {name: RoleEnum.CLIENT}).getMany();
 
         return {
             registered: users.filter((user: any) => user.registered).length,

@@ -46,7 +46,9 @@ export const messages = {
 
         'phone_prefix_not_exists': 'Podany prefix telefonu nie jest obsługiwany',
         'phone_prefix_required': 'Prefix telefonu jest wymagany',
-        'personal_pool_to_low': 'Wartość puli osobistej jest za mała'
+
+        'personal_pool_to_low': 'Wartość puli osobistej jest za mała',
+        'donation_value_to_low': 'Podana wartość dotacji jest za mała'
     },
     eng: {
         'user_data_required': 'Name and E-mail is required',
@@ -96,7 +98,8 @@ export const messages = {
         'partner_bad_phone': 'Provided number was not registered in Tadeus system',
         'phone_prefix_not_exists': 'Provided phone prefix is not supported by Tadeus system',
         'phone_prefix_required': 'Phone prefix is required',
-        'personal_pool_to_low': 'Dontation pool is to low for donation.'
+        'personal_pool_to_low': 'Donation pool is too low for donation.',
+        'donation_value_to_low': 'Donation Value is too low'
     }
 };
 

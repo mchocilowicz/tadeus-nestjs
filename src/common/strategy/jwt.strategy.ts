@@ -31,23 +31,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         }
 
         if (!user) {
-            throw new UnauthorizedException()
+            throw new UnauthorizedException('user_does_not_exists')
         }
 
         let accounts = user.accounts;
 
         if (!accounts) {
-            throw new UnauthorizedException()
+            throw new UnauthorizedException('user_does_not_exists')
         }
 
         let account = accounts.find(a => a.role.value == role);
         if (account && account.code) {
             let token = this.cryptoService.generateToken(id, account.code);
             if (account.token !== token) {
-                throw new UnauthorizedException('tokenExpired');
+                throw new UnauthorizedException('token_Expired');
             }
         } else {
-            throw new UnauthorizedException('tokenExpired');
+            throw new UnauthorizedException('token_Expired');
         }
 
         return user;
@@ -60,7 +60,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .leftJoinAndSelect('user.terminal', 'terminal')
             .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
             .where(`accounts.id = :id`, {id: id})
-            .andWhere(`role.name = :role`, {role: role})
+            .andWhere(`role.value = :role`, {role: role})
             .getOne();
     }
 
@@ -69,7 +69,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .where(`accounts.id = :id`, {id: id})
-            .andWhere(`role.name = :role`, {role: role})
+            .andWhere(`role.value = :role`, {role: role})
             .getOne();
     }
 
@@ -81,7 +81,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .leftJoinAndSelect('user.details', 'details')
             .leftJoinAndSelect('details.ngo', 'ngo')
             .where(`accounts.id = :id`, {id: id})
-            .andWhere(`role.name = :role`, {role: role})
+            .andWhere(`role.value = :role`, {role: role})
             .getOne();
     }
 }
