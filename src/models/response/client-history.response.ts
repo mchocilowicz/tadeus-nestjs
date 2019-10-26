@@ -5,9 +5,9 @@ import { Donation } from "../../database/entity/donation.entity";
 
 export class ClientHistoryResponse {
     @ApiModelProperty()
-    donations: Donation[];
+    donations?: Donation[];
     @ApiModelProperty()
-    transactions: Transaction[];
+    transactions?: Transaction[];
 
     constructor(user: User) {
         this.transactions = user.transactions;

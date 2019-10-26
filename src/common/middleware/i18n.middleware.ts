@@ -3,7 +3,7 @@ import { messages } from "../../i18n/i18n";
 const Polyglot = require('node-polyglot');
 
 
-export function i18nMiddleware(req, res, next) {
+export function i18nMiddleware(req: any, res: any, next: any) {
     const language = req.headers['accept-language'];
 
     req.polyglot = new Polyglot();

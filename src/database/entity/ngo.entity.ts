@@ -1,29 +1,15 @@
-import {
-    BaseEntity,
-    BeforeInsert,
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    OneToMany,
-    OneToOne,
-    PrimaryGeneratedColumn,
-    Unique,
-    UpdateDateColumn
-} from "typeorm";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, Unique } from "typeorm";
 import { NgoType } from "./ngo-type.entity";
 import { City } from "./city.entity";
 import { Donation } from "./donation.entity";
 import { UserDetails } from "./user-details.entity";
 import { PhysicalCard } from "./physical-card.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
-export class Ngo extends BaseEntity {
-
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+export class Ngo extends TadeusEntity {
 
     @Column()
     ID: string;
@@ -32,19 +18,13 @@ export class Ngo extends BaseEntity {
     bankNumber: string;
 
     @Column()
-    phone: string;
-
-    @Column()
-    phonePrefix: string;
-
-    @Column()
     email: string;
 
     @Column()
     verified: boolean = false;
 
     @Column({nullable: true})
-    verifiedAt: Date;
+    verifiedAt?: Date;
 
     @Column({type: "decimal"})
     longitude: number;
@@ -53,14 +33,14 @@ export class Ngo extends BaseEntity {
     latitude: number;
 
     @Column({nullable: true})
-    distance: number;
+    distance?: number;
 
     @Column("geometry", {
         nullable: true,
         spatialFeatureType: "Point",
         srid: 4326
     })
-    coordinate: object;
+    coordinate?: object;
 
     @Column()
     name: string;
@@ -87,34 +67,59 @@ export class Ngo extends BaseEntity {
     postCode: string;
 
     @Column({nullable: true})
-    totalDonation: number = 0;
+    totalDonation?: number;
 
     @Column({nullable: true})
-    lastDonation: number = 0;
+    lastDonation?: number;
+
+    @ManyToOne(type => Phone)
+    @JoinColumn()
+    phone?: Phone;
 
     @OneToOne(type => PhysicalCard)
     @JoinColumn()
-    card: PhysicalCard;
+    card?: PhysicalCard;
 
-    @ManyToOne(type => City, {nullable: false})
+    @ManyToOne(type => City)
     @JoinColumn()
     city: City;
 
-    @ManyToOne(type => NgoType, {nullable: false})
+    @ManyToOne(type => NgoType)
     @JoinColumn()
     type: NgoType;
 
     @OneToMany(type => UserDetails, user => user.ngo)
-    userDetails: UserDetails[];
+    userDetails?: UserDetails[];
 
     @OneToMany(type => Donation, donation => donation.ngo)
-    donations: Donation[];
+    donations?: Donation[];
 
-    @CreateDateColumn()
-    creationAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
+    constructor(ID: string,
+                email: string,
+                bankNumber: string,
+                name: string,
+                longName: string,
+                description: string,
+                longitude: number,
+                latitude: number,
+                address: string,
+                postCode: string,
+                city: City,
+                type: NgoType) {
+        super();
+        this.ID = ID;
+        this.email = email;
+        this.bankNumber = bankNumber;
+        this.name = name;
+        this.longName = longName;
+        this.description = description;
+        this.longitude = Number(longitude);
+        this.latitude = Number(latitude);
+        this.address = address;
+        this.postCode = postCode;
+        this.city = city;
+        this.type = type;
+    }
 
     @BeforeInsert()
     assignPointData() {
@@ -123,4 +128,5 @@ export class Ngo extends BaseEntity {
             coordinates: [this.longitude, this.latitude]
         };
     }
+
 }

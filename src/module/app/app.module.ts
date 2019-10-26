@@ -7,13 +7,6 @@ import { ClientModule } from "../client/client.module";
 import { APP_FILTER } from "@nestjs/core";
 import { TadeusExceptionFilter } from "../../common/filter/tadeus-exception.filter";
 import { PartnerModule } from "../partner/partner.module";
-import { DashboardModule } from "../dashboard/dashboard.module";
-import { UserModule } from "../dashboard/user/user.module";
-import { TradingPointModule } from "../dashboard/trading-point/trading-point.module";
-import { TradingPointTypeModule } from "../dashboard/trading-point-type/trading-point-type.module";
-import { ConfigurationModule } from "../dashboard/configuration/configuration.module";
-import { DashboardNgoModule } from "../dashboard/ngo/dashboard-ngo.module";
-import { NgoTypeModule } from "../dashboard/ngo-type/ngo-type.module";
 import { TransactionModule } from "../partner/transaction/transaction.module";
 import { TerminalModule } from "../partner/terminal/terminal.module";
 import { NgoModule } from "../client/ngo/ngo.module";
@@ -22,6 +15,9 @@ import { PlaceModule } from "../client/place/place.module";
 import { ScheduleModule } from "nest-schedule";
 import { ConfigurationScheduler } from "../../schedulers/configuration.scheduler";
 import { DonationModule } from "../client/donation/donation.module";
+import { DashboardNgoModule } from "../dashboard/ngo/dashboard-ngo.module";
+import { TradingPointModule } from "../dashboard/trading-point/trading-point.module";
+import { DashboardModule } from "../dashboard/dashboard.module";
 
 const routes: Routes = [
     {
@@ -68,30 +64,30 @@ const routes: Routes = [
                 path: '/dashboard',
                 module: DashboardModule,
                 children: [
-                    {
-                        path: '/user',
-                        module: UserModule
-                    },
+                    //         {
+                    //             path: '/user',
+                    //             module: UserModule
+                    //         },
                     {
                         path: '/trading-point',
                         module: TradingPointModule,
                     },
-                    {
-                        path: '/configuration',
-                        module: ConfigurationModule
-                    },
+                    //         {
+                    //             path: '/configuration',
+                    //             module: ConfigurationModule
+                    //         },
                     {
                         path: '/ngo',
                         module: DashboardNgoModule
                     },
-                    {
-                        path: '/trading-point-type',
-                        module: TradingPointTypeModule
-                    },
-                    {
-                        path: '/ngo-type',
-                        module: NgoTypeModule
-                    }
+                    //         {
+                    //             path: '/trading-point-type',
+                    //             module: TradingPointTypeModule
+                    //         },
+                    //         {
+                    //             path: '/ngo-type',
+                    //             module: NgoTypeModule
+                    //         }
                 ]
             }
         ]
@@ -116,22 +112,27 @@ const routes: Routes = [
             })
         }),
         ApiModule,
+        //Client Module
+
         ClientModule,
-        PartnerModule,
-        DashboardModule,
-        UserModule,
-        TradingPointModule,
-        TradingPointTypeModule,
-        ConfigurationModule,
-        DashboardNgoModule,
-        NgoTypeModule,
-        TransactionModule,
-        TerminalModule,
         NgoModule,
         RegisterModule,
         PlaceModule,
-        DonationModule
+        DonationModule,
+        //Partner Module
 
+        PartnerModule,
+        TransactionModule,
+        TerminalModule,
+        //Dashboard Module
+
+        DashboardModule,
+        // UserModule,
+        TradingPointModule,
+        // TradingPointTypeModule,
+        // ConfigurationModule,
+        DashboardNgoModule,
+        // NgoTypeModule,
     ],
     controllers: [],
     providers: [

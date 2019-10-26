@@ -6,9 +6,9 @@ export class ResponseDto<T> {
     @ApiModelProperty()
     data: T;
     @ApiModelProperty()
-    message: string;
+    message: string | undefined;
 
-    constructor(data?: T) {
+    constructor(data: T) {
         this.data = data;
     }
 }

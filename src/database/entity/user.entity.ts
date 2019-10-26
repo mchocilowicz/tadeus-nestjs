@@ -1,15 +1,4 @@
-import {
-    BaseEntity,
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    OneToMany,
-    OneToOne,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
 import { Transaction } from "./transaction.entity";
 import { Donation } from "./donation.entity";
 import { Account } from "./account.entity";
@@ -18,58 +7,50 @@ import { Terminal } from "./terminal.entity";
 import { VirtualCard } from "./virtual-card.entity";
 import { Opinion } from "./opinion.entity";
 import { Notification } from "./notification.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class User extends BaseEntity {
-
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
-    @Column({nullable: true, unique: true})
-    phone: string;
-
-    @Column({nullable: true})
-    phonePrefix: string;
-
-    @Column({nullable: true})
-    email: string;
+export class User extends TadeusEntity {
+    @Column({default: false})
+    registered: boolean = false;
 
     @Column({default: false})
-    registered: boolean;
-
-    @Column({default: false})
-    isAnonymous: boolean;
-
-    @OneToMany(type => Account, account => account.user)
-    accounts: Account[];
-
-    @OneToMany(type => Transaction, transactions => transactions.user)
-    transactions: Transaction[];
-
-    @OneToMany(type => Opinion, opinion => opinion.user)
-    opinions: Opinion[];
-
-    @OneToMany(type => Notification, notification => notification.user)
-    notifications: Notification[];
-
-    @OneToMany(type => Donation, donation => donation.user)
-    donations: Donation[];
+    isAnonymous: boolean = false;
 
     @ManyToOne(type => Terminal)
     @JoinColumn()
-    terminal: Terminal;
+    terminal?: Terminal;
 
     @ManyToOne(type => UserDetails)
     @JoinColumn()
-    details: UserDetails;
+    details?: UserDetails;
 
     @OneToOne(type => VirtualCard)
     @JoinColumn()
-    card: VirtualCard;
+    card?: VirtualCard;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    @ManyToOne(type => Phone)
+    @JoinColumn()
+    phone?: Phone;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+    @OneToMany(type => Account, account => account.user)
+    accounts?: Account[];
+
+    @OneToMany(type => Transaction, transactions => transactions.user)
+    transactions?: Transaction[];
+
+    @OneToMany(type => Opinion, opinion => opinion.user)
+    opinions?: Opinion[];
+
+    @OneToMany(type => Notification, notification => notification.user)
+    notifications?: Notification[];
+
+    @OneToMany(type => Donation, donation => donation.user)
+    donations?: Donation[];
+
+    constructor(phone?: Phone) {
+        super();
+        this.phone = phone;
+    }
 }

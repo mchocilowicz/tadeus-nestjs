@@ -1,11 +1,23 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Put, Req, UseGuards } from "@nestjs/common";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    HttpCode,
+    Logger,
+    Param,
+    Post,
+    Put,
+    Req,
+    UseGuards
+} from "@nestjs/common";
 import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { User } from "../../database/entity/user.entity";
 import { JwtAuthGuard } from "../../common/guards/jwt.guard";
 import { RolesGuard } from "../../common/guards/roles.guard";
-import { createQueryBuilder } from "typeorm";
+import { getConnection } from "typeorm";
 import { Const } from "../../common/util/const";
 import { MainResponse } from "../../models/response/main.response";
 import { ClientHistoryResponse } from "../../models/response/client-history.response";
@@ -21,9 +33,14 @@ import { Opinion } from "../../database/entity/opinion.entity";
 import { UserDetailsResponse } from "./models/response/user-details.response";
 import { UserDetailsRequest } from "./models/user-details.request";
 import { NotificationRequest } from "./models/notification.request";
+import { UserDetails } from "../../database/entity/user-details.entity";
+import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { Phone } from "../../database/entity/phone.entity";
 
 @Controller()
 export class ClientController {
+
+    private readonly logger = new Logger(ClientController.name);
 
     constructor(private readonly codeService: CodeService,
                 private readonly service: LoginService) {
@@ -39,10 +56,9 @@ export class ClientController {
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     @ApiImplicitBody({name: '', type: NewPhoneRequest})
-    async signIn(@Body() dto: NewPhoneRequest) {
-        return {
-            userExists: await this.service.clientSignIn(dto)
-        }
+    async signIn(@Body() dto: NewPhoneRequest): Promise<SignInResponse> {
+        const userExists = await this.service.clientSignIn(dto);
+        return new SignInResponse(userExists);
     }
 
     @Post('anonymous')
@@ -53,7 +69,7 @@ export class ClientController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    createAnonymous() {
+    createAnonymous(): Promise<string> {
         return this.service.createAnonymousUser();
     }
 
@@ -85,8 +101,17 @@ export class ClientController {
     @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    async mainScreen(@Req() req) {
-        return new MainResponse(req.user);
+    async mainScreen(@Req() req: any) {
+        const user: User = req.user;
+        const details = user.details;
+        const card = user.card;
+
+        if (!card || !details) {
+            this.logger.error(`User ${user.id} does not have assigned Details or VirtualCard`);
+            throw new BadRequestException('internal_server_error')
+        }
+
+        return new MainResponse(details, card);
     }
 
     @Get('history')
@@ -104,15 +129,20 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiBearerAuth()
-    async history(@Req() req) {
+    async history(@Req() req: any) {
         const user: User = req.user;
 
-        let tempUser: any = await createQueryBuilder("User")
-            .leftJoinAndSelect("User.transactions", "transactions")
-            .leftJoinAndSelect("User.donations", "donations")
+        let tempUser: User | undefined = await User.createQueryBuilder("user")
+            .leftJoinAndSelect("user.transactions", "transactions")
+            .leftJoinAndSelect("user.donations", "donations")
             .leftJoinAndSelect("donations.ngo", 'ngo')
-            .where("User.id = :id", {id: user.id})
+            .where("user.id = :id", {id: user.id})
             .getOne();
+
+        if (!tempUser) {
+            this.logger.error(`User ${user.id} does not exists`);
+            throw new BadRequestException('internal_server_error')
+        }
 
         return new ClientHistoryResponse(tempUser)
     }
@@ -132,9 +162,16 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiBearerAuth()
-    virtualCard(@Req() req) {
-        let user: User = req.user;
-        return new VirtualCardResponse(user.card);
+    virtualCard(@Req() req: any) {
+        const user: User = req.user;
+        const virtualCard: VirtualCard | undefined = user.card;
+
+        if (!virtualCard) {
+            this.logger.error(`User ${user.id} does not have assigned VirtualCard`);
+            throw new BadRequestException('internal_server_error')
+        }
+
+        return new VirtualCardResponse(virtualCard);
     }
 
 
@@ -174,8 +211,10 @@ export class ClientController {
     @ApiBearerAuth()
     async approveCorrection(@Param('id') id: string) {
         let t = await Transaction.findOne({id: id});
-        t.verifiedByUser = true;
-        await t.save()
+        if (t) {
+            t.verifiedByUser = true;
+            await t.save()
+        }
     }
 
     @Put('user')
@@ -195,16 +234,27 @@ export class ClientController {
     @ApiUseTags('user')
     @ApiBearerAuth()
     @ApiImplicitBody({name: '', type: UserDetailsRequest})
-    async updateUserData(@Req() req, @Body() dto: UserDetailsRequest) {
-        let user: User = req.user;
-        user.email = dto.email;
-        user.phonePrefix = dto.phonePrefix;
-        user.phone = dto.phone;
-        user.details.bankAccount = dto.bankAccount;
-        user.details.name = dto.firstName;
-        user.details.lastName = dto.lastName;
-        await user.details.save();
-        await user.save();
+    async updateUserData(@Req() req: any, @Body() dto: UserDetailsRequest) {
+        const user: User = req.user;
+        const details: UserDetails | undefined = user.details;
+        const phone = user.phone;
+
+        if (!details || !phone) {
+            this.logger.error(`User ${user.id} does not have assigned Details or Phone`);
+            throw new BadRequestException('internal_server_error')
+        }
+
+        details.email = dto.email;
+        phone.value = dto.phone;
+
+        await getConnection().transaction(async entityManager => {
+            details.bankAccount = dto.bankAccount;
+            details.name = dto.firstName;
+            details.lastName = dto.lastName;
+
+            await entityManager.save(details);
+            await entityManager.save(phone);
+        });
     }
 
     @Get('user')
@@ -224,10 +274,17 @@ export class ClientController {
     })
     @ApiUseTags('user')
     @ApiBearerAuth()
-    getUserData(@Req() req) {
+    getUserData(@Req() req: any): UserDetailsResponse {
         let user: User = req.user;
-        return new UserDetailsResponse(user);
+        let details: UserDetails | undefined = user.details;
+        let phone: Phone | undefined = user.phone;
 
+        if (!details || !phone) {
+            this.logger.error(`User ${user.id} does not have assigned Details or Phone`);
+            throw new BadRequestException('internal_server_error')
+        }
+
+        return new UserDetailsResponse(details, phone);
     }
 
     @Get('notification')
@@ -245,7 +302,7 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiBearerAuth()
-    async getNotificationForUser(@Req() req) {
+    async getNotificationForUser(@Req() req: any) {
         let user: User = req.user;
         let noti = await Notification.find({user: user});
         if (noti.length > 0) {
@@ -269,7 +326,7 @@ export class ClientController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiBearerAuth()
-    async getEmailForOption(@Req() req) {
+    async getEmailForOption(@Req() req: any) {
         return req.user.email;
     }
 
@@ -289,11 +346,8 @@ export class ClientController {
     })
     @ApiBearerAuth()
     @ApiImplicitBody({name: '', type: NotificationRequest})
-    async createOpinion(@Req() req, @Body() dto: NotificationRequest) {
-        let opinion = new Opinion();
-        opinion.email = dto.email;
-        opinion.value = dto.value;
-        opinion.user = req.user;
+    async createOpinion(@Req() req: any, @Body() dto: NotificationRequest) {
+        let opinion = new Opinion(dto.email, dto.value, req.user);
         await opinion.save();
     }
 

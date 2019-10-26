@@ -4,7 +4,6 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { User } from "../../database/entity/user.entity";
 import { CryptoService } from "../service/crypto.service";
 import { RoleEnum } from "../enum/role.enum";
-import { createQueryBuilder } from "typeorm";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -18,7 +17,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     async validate(payload: { id: string }) {
         let {id, role} = this.cryptoService.decryptId(payload.id);
 
-        let user: any;
+        let user: User | undefined;
         switch (role) {
             case RoleEnum.CLIENT:
                 user = await this.getClient(id, role);
@@ -31,14 +30,20 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 break;
         }
 
-        if (user) {
-            let account = user.accounts.find(a => a.role.name == role);
-            if (account) {
-                let token = this.cryptoService.generateToken(id, account.code);
-                if (account.token !== token) {
-                    throw new UnauthorizedException('tokenExpired');
-                }
-            } else {
+        if (!user) {
+            throw new UnauthorizedException()
+        }
+
+        let accounts = user.accounts;
+
+        if (!accounts) {
+            throw new UnauthorizedException()
+        }
+
+        let account = accounts.find(a => a.role.value == role);
+        if (account && account.code) {
+            let token = this.cryptoService.generateToken(id, account.code);
+            if (account.token !== token) {
                 throw new UnauthorizedException('tokenExpired');
             }
         } else {
@@ -48,8 +53,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         return user;
     }
 
-    async getTerminal(id, role) {
-        return await createQueryBuilder('User', 'user')
+    async getTerminal(id: string, role: RoleEnum): Promise<User | undefined> {
+        return await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .leftJoinAndSelect('user.terminal', 'terminal')
@@ -59,8 +64,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .getOne();
     }
 
-    async getDashboard(id, role) {
-        return await createQueryBuilder('User', 'user')
+    async getDashboard(id: string, role: RoleEnum): Promise<User | undefined> {
+        return await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .where(`accounts.id = :id`, {id: id})
@@ -68,12 +73,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .getOne();
     }
 
-    async getClient(id, role) {
-        return await createQueryBuilder('User', 'user')
+    async getClient(id: string, role: RoleEnum): Promise<User | undefined> {
+        return await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'accounts')
             .leftJoinAndSelect('accounts.role', 'role')
             .leftJoinAndSelect('user.card', 'card')
             .leftJoinAndSelect('user.details', 'details')
+            .leftJoinAndSelect('details.ngo', 'ngo')
             .where(`accounts.id = :id`, {id: id})
             .andWhere(`role.name = :role`, {role: role})
             .getOne();

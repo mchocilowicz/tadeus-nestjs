@@ -7,17 +7,11 @@ import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
 import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
-import { TransactionSuccessResponse } from "../../../models/response/transaction-success.response";
 import { Transaction } from "../../../database/entity/transaction.entity";
-import { User } from "../../../database/entity/user.entity";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { TransactionResponse } from "../../../models/response/transaction.response";
-import { handleException } from "../../../common/util/functions";
-import { Cart } from "../../../database/entity/cart.entity";
-import { createQueryBuilder, getConnection, getRepository } from "typeorm";
+import { getRepository } from "typeorm";
 import { TransactionRequest } from "../models/transaction.request";
 import { UserDetails } from "../../../database/entity/user-details.entity";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 
 const moment = require('moment');
 
@@ -187,98 +181,100 @@ export class TransactionController {
         description: Const.HEADER_AUTHORIZATION_DESC
     })
     @ApiImplicitBody({name: '', type: TransactionRequest})
-    async saveTransaction(@Req() req, @Body() dto: TransactionRequest) {
-        let partner: User = req.user;
-        let tradingPoint: TradingPoint = partner.terminal.tradingPoint;
-
-        let currentCart: Cart = await Cart.findOne({
-            tradingPoint: partner.terminal.tradingPoint,
-            isPaid: false,
-            paymentDate: null
-        }, {relations: ['transactions']});
-        let user: User = await getRepository(User).createQueryBuilder('user')
-            .leftJoinAndSelect('user.card', 'virtual-card')
-            .leftJoinAndSelect('user.details', 'details')
-            .leftJoinAndSelect('details.ngo', 'ngo')
-            .leftJoinAndSelect('ngo.card', 'physical-card')
-            .where('virtual-card.code = :code', {code: dto.clientCode})
-            .getOne();
-
-        if (!currentCart) {
-            currentCart = new Cart();
-            currentCart.transactions = [];
-        }
-        try {
-            let transaction: Transaction = new Transaction();
-            transaction.ID = this.codeService.generateTransactionID();
-            transaction.user = user;
-            transaction.tradingPoint = partner.terminal.tradingPoint;
-            transaction.price = dto.price;
-            transaction.donationPercentage = tradingPoint.donationPercentage;
-
-            const userXp = await this.calculateXpForUser(user, transaction);
-            const tradingPointXp = this.calService.calculateTradingPointXp(currentCart);
-
-            transaction.userXp = userXp;
-            transaction.tradingPointXp = tradingPointXp;
-            tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
-            const userDetails: UserDetails = user.details;
-            const virtualCard: VirtualCard = user.card;
-
-            userDetails.xp += userXp;
-
-            let pool = this.calService.calculateX(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
-            let t = this.calService.calculateY(dto.price, tradingPoint.fee, tradingPoint.vat);
-
-            transaction.donationValue = t + pool;
-            virtualCard.personalPool = (pool / 2) + Number(virtualCard.personalPool);
-            virtualCard.donationPool = (pool / 2) + Number(virtualCard.donationPool);
-            userDetails.collectedMoney = pool + Number(userDetails.collectedMoney);
-            transaction.terminal = partner.terminal;
-
-            await getConnection().transaction(async entityManager => {
-                if (!currentCart.id) {
-                    currentCart = await entityManager.save(currentCart);
-                }
-
-                currentCart.price += transaction.price;
-                let savedTransaction = await entityManager.save(transaction);
-                currentCart.transactions.push(savedTransaction);
-                if (user.details.ngo) {
-                    let card = user.details.ngo.card;
-                    card.collectedMoney += pool;
-                    await entityManager.save(card)
-                } else {
-                    user.details.ngoTempMoney += pool;
-                }
-                await entityManager.save(currentCart);
-                await entityManager.save(virtualCard);
-                await entityManager.save(tradingPoint);
-                await entityManager.save(userDetails);
-            });
-
-            let result = new TransactionSuccessResponse();
-            result.date = moment().format('YYYY-MM-DD');
-            result.price = dto.price;
-            result.xp = userXp;
-            return result;
-        } catch (e) {
-            handleException(e, 'transaction', this.logger)
-        }
+    async saveTransaction(@Req() req: any, @Body() dto: TransactionRequest) {
+        // let partner: User = req.user;
+        // let tradingPoint: TradingPoint = partner.terminal.tradingPoint;
+        //
+        // let currentCart: Cart = await Cart.findOne({
+        //     tradingPoint: partner.terminal.tradingPoint,
+        //     isPaid: false,
+        //     paymentDate: null
+        // }, {relations: ['transactions']});
+        //
+        // let user: User = await getRepository(User).createQueryBuilder('user')
+        //     .leftJoinAndSelect('user.card', 'virtual-card')
+        //     .leftJoinAndSelect('user.details', 'details')
+        //     .leftJoinAndSelect('details.ngo', 'ngo')
+        //     .leftJoinAndSelect('ngo.card', 'physical-card')
+        //     .where('virtual-card.code = :code', {code: dto.clientCode})
+        //     .getOne();
+        //
+        // if (!currentCart) {
+        //     currentCart = new Cart();
+        //     currentCart.transactions = [];
+        // }
+        // try {
+        //     let transaction: Transaction = new Transaction();
+        //     transaction.ID = this.codeService.generateTransactionID();
+        //     transaction.user = user;
+        //     transaction.tradingPoint = partner.terminal.tradingPoint;
+        //     transaction.price = dto.price;
+        //     transaction.donationPercentage = tradingPoint.donationPercentage;
+        //
+        //     const userXp = await this.calculateXpForUser(user, transaction);
+        //     const tradingPointXp = this.calService.calculateTradingPointXp(currentCart);
+        //
+        //     transaction.userXp = userXp;
+        //     transaction.tradingPointXp = tradingPointXp;
+        //     tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
+        //     const userDetails: UserDetails = user.details;
+        //     const virtualCard: VirtualCard = user.card;
+        //
+        //     userDetails.xp += userXp;
+        //
+        //     let pool = this.calService.calculateX(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
+        //     let t = this.calService.calculateY(dto.price, tradingPoint.fee, tradingPoint.vat);
+        //
+        //     transaction.donationValue = t + pool;
+        //     virtualCard.personalPool = (pool / 2) + Number(virtualCard.personalPool);
+        //     virtualCard.donationPool = (pool / 2) + Number(virtualCard.donationPool);
+        //     userDetails.collectedMoney = pool + Number(userDetails.collectedMoney);
+        //     transaction.terminal = partner.terminal;
+        //
+        //     await getConnection().transaction(async entityManager => {
+        //         if (!currentCart.id) {
+        //             currentCart = await entityManager.save(currentCart);
+        //         }
+        //
+        //         currentCart.price += transaction.price;
+        //         let savedTransaction = await entityManager.save(transaction);
+        //         currentCart.transactions.push(savedTransaction);
+        //         if (user.details.ngo) {
+        //             let card = user.details.ngo.card;
+        //             card.collectedMoney += pool;
+        //             await entityManager.save(card)
+        //         } else {
+        //             user.details.ngoTempMoney += pool;
+        //         }
+        //         await entityManager.save(currentCart);
+        //         await entityManager.save(virtualCard);
+        //         await entityManager.save(tradingPoint);
+        //         await entityManager.save(userDetails);
+        //     });
+        //
+        //     let result = new TransactionSuccessResponse();
+        //     result.date = moment().format('YYYY-MM-DD');
+        //     result.price = dto.price;
+        //     result.xp = userXp;
+        //     return result;
+        // } catch (e) {
+        //     handleException(e, 'transaction', this.logger)
+        // }
     }
 
 
-    private async calculateXpForUser(user: User, currenctTransaction: Transaction): Promise<number> {
-        let transactions = await createQueryBuilder("Transaction", 'transaction')
+    private async calculateXpForUser(userId: string, details: UserDetails, currenctTransaction: Transaction): Promise<number> {
+        let transactions: Transaction[] = await getRepository(Transaction)
+            .createQueryBuilder('transaction')
             .leftJoinAndSelect("transaction.user", 'user')
             .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
             .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
             .andWhere('transaction.isCorrection = false')
-            .andWhere('user.id = :user', {user: user.id})
+            .andWhere('user.id = :user', {user: userId})
             .getMany();
 
         transactions.push(currenctTransaction);
-        return this.calService.calculate(transactions, currenctTransaction.tradingPoint, user.details.xp)
+        return this.calService.calculate(transactions, currenctTransaction.tradingPoint, details.xp)
     }
 
 }

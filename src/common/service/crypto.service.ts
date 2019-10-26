@@ -1,14 +1,25 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { RoleEnum } from "../enum/role.enum";
 
 const crypto = require('crypto');
 
 @Injectable()
 export class CryptoService {
+    private vi: string;
+    private pwd: string;
+
+
+    constructor() {
+        if (!process.env.TADEUS_VI) throw new BadRequestException();
+        if (!process.env.TADEUS_PWD) throw new BadRequestException();
+        this.vi = process.env.TADEUS_VI;
+        this.pwd = process.env.TADEUS_PWD;
+    }
+
 
     encrypt(text: string): string {
-        const vi = new Buffer(process.env.TADEUS_VI);
-        let cipher = crypto.createCipheriv(process.env.TADEUS_ALG, Buffer.from(process.env.TADEUS_PWD), vi, {
+        const vi = new Buffer(this.vi);
+        let cipher = crypto.createCipheriv(process.env.TADEUS_ALG, Buffer.from(this.pwd), vi, {
             authTagLength: 16
         });
         let encrypted = cipher.update(text);
@@ -21,12 +32,16 @@ export class CryptoService {
     decrypt(text: string): string {
         if (!text) return text;
 
-        let textParts = text.split(':');
-        let iv = Buffer.from(textParts.shift(), 'hex');
+        let textParts: string[] = text.split(':');
+        let part = textParts.shift();
+        if (!part) return text;
+
+        let iv = Buffer.from(part, 'hex');
         let encryptedText = Buffer.from(textParts.join(':'), 'hex');
-        let decipher = crypto.createDecipheriv(process.env.TADEUS_ALG, Buffer.from(process.env.TADEUS_PWD), iv, {
+        let decipher = crypto.createDecipheriv(process.env.TADEUS_ALG, Buffer.from(this.pwd), iv, {
             authTagLength: 16
         });
+
         let decrypted = decipher.update(encryptedText);
 
         decrypted = Buffer.concat([decrypted, decipher.final()]);
@@ -44,10 +59,13 @@ export class CryptoService {
 
     generateToken(id: string, code: number): string {
         let c = id.split('-').reverse().join();
+
         let hash = this.encrypt(c);
+
         let md5a = hash.split('').reverse().join();
         let md5b = md5a.split('').sort().join();
         let parts = id.split('-');
+
         let a = parts[1];
         parts[1] = parts[2];
         parts[2] = a;
@@ -61,9 +79,11 @@ export class CryptoService {
     encryptId(id: string, role: RoleEnum): string {
         let idParts = id.split('-');
         let p = idParts[1];
+
         idParts[1] = idParts[2];
         idParts[2] = idParts[3];
         idParts[3] = p.split('').reverse().join('');
+
         return this.encrypt([idParts.join('-'), role].join(':'));
     }
 
@@ -72,9 +92,11 @@ export class CryptoService {
         let obj = id.split(':');
         let idParts = obj[0].split('-');
         let p = idParts[3];
+
         idParts[3] = idParts[2];
         idParts[2] = idParts[1];
         idParts[1] = p.split('').reverse().join('');
+
         return {id: idParts.join('-'), role: obj[1]}
     }
 }

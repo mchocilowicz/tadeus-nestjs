@@ -1,15 +1,18 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, OneToMany } from "typeorm";
 import { Account } from "./account.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-@Unique(["name"])
-export class Role extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+export class Role extends TadeusEntity {
 
-    @Column()
-    name: string;
+    @Column({unique: true})
+    value: string;
 
     @OneToMany(account => Account, account => account.role)
-    accounts: Account[];
+    accounts?: Account[];
+
+    constructor(value: string) {
+        super();
+        this.value = value;
+    }
 }

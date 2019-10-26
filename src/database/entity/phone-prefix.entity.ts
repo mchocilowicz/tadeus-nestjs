@@ -1,11 +1,10 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, OneToMany, Unique } from "typeorm";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-@Unique(['value', 'code'])
-export class PhonePrefix extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+@Unique(['value'])
+export class PhonePrefix extends TadeusEntity {
     @Column()
     value: string;
 
@@ -14,4 +13,14 @@ export class PhonePrefix extends BaseEntity {
 
     @Column()
     maxLength: number;
+
+    @OneToMany(type => Phone, phone => phone.prefix)
+    phone?: Phone[];
+
+    constructor(value: string, code: string, max: number) {
+        super();
+        this.value = value;
+        this.code = code;
+        this.maxLength = max
+    }
 }

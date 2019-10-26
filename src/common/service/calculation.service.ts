@@ -36,17 +36,22 @@ export class CalculationService {
 
     calculateTradingPointXp(cart: Cart): number {
         const defaultXp = 20;
-        if (cart.transactions.length === 0) {
+        const transactions: Transaction[] | undefined = cart.transactions;
+
+        if (!transactions) {
             return 50;
-        } else if (cart.transactions.length < 20) {
+        }
+
+        if (transactions.length < 20) {
             return defaultXp;
-        } else if ((cart.transactions.length % 50) === 0) {
+        } else if ((transactions.length % 50) === 0) {
             return defaultXp + 200;
-        } else if ((cart.transactions.length % 20) === 0) {
+        } else if ((transactions.length % 20) === 0) {
             return defaultXp + 50;
         } else {
             return defaultXp;
         }
+
     }
 
     calculateX(price: number, donationPercentage: number, defaultVat: number): number {

@@ -3,7 +3,7 @@ import { VirtualCard } from "../../database/entity/virtual-card.entity";
 
 export class VirtualCardResponse {
     @ApiModelProperty()
-    code: string;
+    code?: string;
     @ApiModelProperty()
     cardNumber: string;
 

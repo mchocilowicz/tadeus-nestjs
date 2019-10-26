@@ -1,18 +1,17 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne } from "typeorm";
 import { Ngo } from "./ngo.entity";
 import { User } from "./user.entity";
 import { DonationEnum } from "../../common/enum/donation.enum";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class Donation extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+export class Donation extends TadeusEntity {
 
     @Column()
     ID: string;
 
     @Column({nullable: true})
-    invoiceNumber: string;
+    invoiceNumber?: string;
 
     @Column({type: 'text'})
     type: DonationEnum;
@@ -24,10 +23,10 @@ export class Donation extends BaseEntity {
     price: number;
 
     @Column({default: false})
-    isPaid: boolean;
+    isPaid: boolean = false;
 
     @Column({nullable: true})
-    payedAt: Date;
+    payedAt?: Date;
 
     @ManyToOne(type => Ngo, ngo => ngo.donations, {nullable: false})
     ngo: Ngo;
@@ -35,6 +34,13 @@ export class Donation extends BaseEntity {
     @ManyToOne(type => User, user => user.donations, {nullable: false})
     user: User;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    constructor(ID: string, type: DonationEnum, pool: string, price: number, ngo: Ngo, user: User) {
+        super();
+        this.ID = ID;
+        this.type = type;
+        this.pool = pool;
+        this.price = price;
+        this.ngo = ngo;
+        this.user = user;
+    }
 }

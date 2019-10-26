@@ -21,13 +21,16 @@ import { Roles } from "../../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
-import { User } from "../../../database/entity/user.entity";
-import { Donation } from "../../../database/entity/donation.entity";
-import { DonationEnum } from "../../../common/enum/donation.enum";
 import { CodeService } from "../../../common/service/code.service";
 import { CityResponse } from "../../../models/response/city.response";
 import { City } from "../../../database/entity/city.entity";
 import { SelectedNgoRequest } from "../models/selected-ngo.request";
+import { NgoQuery } from "../models/ngo.query";
+import { UserDetails } from "../../../database/entity/user-details.entity";
+import { DonationEnum } from "../../../common/enum/donation.enum";
+import { Donation } from "../../../database/entity/donation.entity";
+import { User } from "../../../database/entity/user.entity";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 
 
 @Controller()
@@ -53,36 +56,62 @@ export class NgoController {
     })
     @ApiUseTags('ngo')
     @ApiImplicitBody({name: '', type: SelectedNgoRequest})
-    async selectedNgo(@Req() req, @Body() dto: SelectedNgoRequest) {
+    async selectedNgo(@Req() req: any, @Body() dto: SelectedNgoRequest) {
         let user: User = req.user;
-        let ngo: Ngo = await Ngo.findOne({id: dto.id});
-        if (user.details.ngoSelectionCount === 2) {
+        let ngo: Ngo | undefined = await Ngo.findOne({id: dto.id});
+        let details: UserDetails | undefined = user.details;
+        let virtualCard: VirtualCard | undefined = user.card;
+
+        if (!ngo) {
+            throw new BadRequestException("ngo_does_not_exists")
+        }
+
+        if (!details || !virtualCard) {
+            this.logger.error(`User details or Virtual Card for user ${user.id} does not exists.`);
+            throw new BadRequestException("internal_server_error")
+        }
+
+        if (details.ngoSelectionCount === 2) {
             throw new BadRequestException("user_ngo_max_reached")
-        } else if (user.details.ngoSelectionCount === 1) {
-            const donation = new Donation();
-            donation.type = DonationEnum.NGO;
-            donation.price = user.card.donationPool;
-            user.card.donationPool -= user.card.donationPool;
-            donation.user = user;
-            donation.ngo = user.details.ngo;
-            donation.pool = 'DONATION';
-            donation.ID = this.codeService.generateDonationID();
-            user.details.ngo = ngo;
-            await getConnection().transaction(async entityManager => {
-                await entityManager.save(donation);
-                await entityManager.save(user.card);
-                await entityManager.save(user.details);
-                await entityManager.save(user);
-            });
+        } else if (details.ngoSelectionCount === 1) {
+            if (details.ngo) {
+                let price = virtualCard.donationPool;
+                if (details.ngoTempMoney > 0) {
+                    price += details.ngoTempMoney;
+                    details.ngoTempMoney = 0;
+                }
+
+                const donation = new Donation(
+                    this.codeService.generateDonationID(),
+                    DonationEnum.NGO,
+                    "DONATION",
+                    price,
+                    details.ngo,
+                    user);
+
+                virtualCard.donationPool = 0;
+                details.ngoSelectionCount++;
+                details.ngo = ngo;
+                try {
+                    await getConnection().transaction(async entityManager => {
+                        await entityManager.save(donation);
+                        await entityManager.save(virtualCard);
+                        await entityManager.save(details);
+                    });
+                } catch (e) {
+                    throw new BadRequestException("ngo_not_assigned")
+                }
+            }
         } else {
-            user.details.ngo = ngo;
-            user.card.donationPool = user.details.ngoTempMoney;
-            user.details.ngoTempMoney -= user.details.ngoTempMoney;
-            user.details.ngoSelectionCount++;
+            details.ngo = ngo;
+            virtualCard.donationPool += details.ngoTempMoney;
+            details.ngoTempMoney = 0;
+            details.ngoSelectionCount++;
+
             try {
                 await getConnection().transaction(async entityManager => {
-                    await entityManager.save(user.details);
-                    await entityManager.save(user.card);
+                    await entityManager.save(details);
+                    await entityManager.save(virtualCard);
                 });
             } catch (e) {
                 throw new BadRequestException("ngo_not_assigned")
@@ -102,7 +131,7 @@ export class NgoController {
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     @ApiUseTags('ngo')
-    async getAll(@Query() query: { city: string, ngoType: string }) {
+    async getAll(@Query() query: NgoQuery) {
         let sqlQuery = createQueryBuilder('Ngo')
             .leftJoinAndSelect('Ngo.city', 'city')
             .leftJoinAndSelect('Ngo.type', 'ngoType');
@@ -112,7 +141,7 @@ export class NgoController {
             const la = Number(query['latitude']);
 
             const a = `ST_Distance(ST_Transform(Ngo.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
-            const c = {};
+            const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
@@ -124,7 +153,9 @@ export class NgoController {
         }
 
         Object.keys(query).forEach(key => {
+            // @ts-ignore
             if (query[key] && key !== 'longitude' && key !== 'latitude') {
+                // @ts-ignore
                 sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
             }
         });
@@ -161,10 +192,10 @@ export class NgoController {
             .getMany()
     }
 
-    @Get('/img/:name')
+    @Get('/img/:imageName')
     @ApiUseTags('ngo')
     @ApiResponse({status: 200, type: "File", description: "Image"})
-    getImage(@Param('name') imageName: string, @Res() response) {
-        response.sendFile(imageName, {root: 'public/image'});
+    getImage(@Param('imageName') imageName: string, @Res() res: any) {
+        res.sendFile(imageName, {root: 'public/image'});
     }
 }

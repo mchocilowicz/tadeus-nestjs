@@ -1,12 +1,10 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { Cart } from "./cart.entity";
 import { TradingPoint } from "./trading-point.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class Payment extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+export class Payment extends TadeusEntity {
     @Column()
     ID: string;
 
@@ -15,12 +13,15 @@ export class Payment extends BaseEntity {
 
     @ManyToOne(type => Cart, cart => cart.payments)
     @JoinColumn()
-    cart: Cart;
+    cart?: Cart;
 
     @ManyToOne(type => TradingPoint)
     @JoinColumn()
-    tradingPoint: TradingPoint;
+    tradingPoint?: TradingPoint;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    constructor(ID: string, invoiceNumber: string) {
+        super();
+        this.ID = ID;
+        this.invoiceNumber = invoiceNumber;
+    }
 }

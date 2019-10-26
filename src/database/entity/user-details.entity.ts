@@ -1,53 +1,45 @@
-import {
-    BaseEntity,
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinTable,
-    ManyToOne,
-    OneToMany,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
+import { Column, Entity, JoinTable, ManyToOne, OneToMany } from "typeorm";
 import { Ngo } from "./ngo.entity";
 import { User } from "./user.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class UserDetails extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+export class UserDetails extends TadeusEntity {
     @Column({default: 0})
-    xp: number;
+    xp: number = 0;
 
     @Column({nullable: true})
     name: string;
 
     @Column({nullable: true})
-    lastName: string;
+    email: string;
 
     @Column({nullable: true})
-    bankAccount: number;
+    lastName?: string;
+
+    @Column({nullable: true})
+    bankAccount?: number;
 
     @Column({type: 'decimal', default: 0})
-    collectedMoney: number;
+    collectedMoney: number = 0;
 
     @Column({type: 'decimal', default: 0})
-    ngoTempMoney: number;
+    ngoTempMoney: number = 0;
 
     @Column({default: 0})
-    ngoSelectionCount: number;
+    ngoSelectionCount: number = 0;
 
     @OneToMany(type => User, user => user.details)
-    user: User[];
+    user?: User[];
 
     @ManyToOne(type => Ngo)
     @JoinTable()
-    ngo: Ngo;
+    ngo?: Ngo;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
+    constructor(name: string, email: string, xp: number) {
+        super();
+        this.name = name;
+        this.email = email;
+        this.xp = xp;
+    }
 }

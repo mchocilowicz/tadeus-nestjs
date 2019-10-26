@@ -1,24 +1,14 @@
-import {
-    BaseEntity,
-    Column,
-    CreateDateColumn,
-    Entity,
-    Generated,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
+import { Column, Entity, Generated } from "typeorm";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class VirtualCard extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+export class VirtualCard extends TadeusEntity {
     @Column()
     ID: string;
 
     @Column()
     @Generated("uuid")
-    code: string;
+    code?: string;
 
     @Column({type: 'decimal'})
     donationPool: number = 0;
@@ -26,9 +16,8 @@ export class VirtualCard extends BaseEntity {
     @Column({type: 'decimal'})
     personalPool: number = 0;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
+    constructor(ID: string) {
+        super();
+        this.ID = ID;
+    }
 }

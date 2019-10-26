@@ -5,6 +5,7 @@ import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { Const } from "../../../common/util/const";
 import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
 import { CityResponse } from "../../../models/response/city.response";
+import { PlaceQuery } from "../models/place.query";
 
 @Controller()
 @ApiUseTags('place')
@@ -22,7 +23,7 @@ export class PlaceController {
         required: true,
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
-    async getAll(@Query() query: { city: string, placeType: string }) {
+    async getAll(@Query() query: PlaceQuery) {
         let sqlQuery = createQueryBuilder('TradingPoint')
             .leftJoinAndSelect('TradingPoint.city', 'city')
             .leftJoinAndSelect('TradingPoint.type', 'placeType');
@@ -32,7 +33,7 @@ export class PlaceController {
             const la = Number(query['latitude']);
 
             const a = `ST_Distance(ST_Transform(TradingPoint.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
-            const c = {};
+            const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
@@ -42,8 +43,9 @@ export class PlaceController {
                 .orderBy(c).limit(10);
         }
 
-        Object.keys(query).forEach(key => {
+        Object.keys(query).forEach((key: string) => {
             if (key !== 'longitude' && key !== 'latitude') {
+                // @ts-ignore
                 sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
             }
         });
@@ -76,9 +78,9 @@ export class PlaceController {
             .getMany()
     }
 
-    @Get('/img/:name')
+    @Get('/img/:imageName')
     @ApiResponse({status: 200, type: "File", description: "Image"})
-    getImage(@Param('name') imageName: string, @Res() response) {
-        response.sendFile(imageName, {root: 'public/image'});
+    getImage(@Param('imageName') imageName: string, @Res() res: any) {
+        res.sendFile(imageName, {root: 'public/image'});
     }
 }

@@ -1,14 +1,12 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { TradingPoint } from "./trading-point.entity";
 import { User } from "./user.entity";
 import { Cart } from "./cart.entity";
 import { Terminal } from "./terminal.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class Transaction extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+export class Transaction extends TadeusEntity {
     @Column()
     ID: string;
 
@@ -16,16 +14,16 @@ export class Transaction extends BaseEntity {
     price: number;
 
     @Column({type: 'decimal'})
-    donationPercentage: number;
+    donationPercentage: number = 0;
 
     @Column({type: 'decimal'})
-    donationValue: number;
+    donationValue: number = 0;
 
     @Column()
-    userXp: number;
+    userXp: number = 0;
 
     @Column()
-    tradingPointXp: number;
+    tradingPointXp: number = 0;
 
     @Column()
     isCorrection: boolean = false;
@@ -46,7 +44,18 @@ export class Transaction extends BaseEntity {
     @ManyToOne(type => Terminal, terminal => terminal.transactions)
     terminal: Terminal;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
+    constructor(terminal: Terminal,
+                user: User,
+                tradingPoint: TradingPoint,
+                cart: Cart,
+                ID: string,
+                price: number) {
+        super();
+        this.terminal = terminal;
+        this.user = user;
+        this.tradingPoint = tradingPoint;
+        this.cart = cart;
+        this.ID = ID;
+        this.price = price;
+    }
 }

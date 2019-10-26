@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -15,7 +16,7 @@ import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUs
 import { Const } from "../../../common/util/const";
 import { NgoRequest } from "../../../models/request/ngo.request";
 import { Ngo } from "../../../database/entity/ngo.entity";
-import { createQueryBuilder, QueryFailedError } from "typeorm";
+import { EntityManager, getConnection, QueryFailedError } from "typeorm";
 import { extractErrors, handleException } from "../../../common/util/functions";
 import { NgoType } from "../../../database/entity/ngo-type.entity";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -26,6 +27,8 @@ import { City } from "../../../database/entity/city.entity";
 import { CodeService } from "../../../common/service/code.service";
 import { PhysicalCard } from "../../../database/entity/physical-card.entity";
 import { diskStorage } from "multer";
+import { Phone } from "../../../database/entity/phone.entity";
+import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
 
 const moment = require("moment");
 
@@ -55,28 +58,45 @@ export class DashboardNgoController {
     })
     @ApiImplicitBody({name: '', type: NgoRequest})
     async create(@Body() dto: NgoRequest) {
-        const ngo = new Ngo();
-        ngo.city = dto.city;
-        ngo.latitude = dto.latitude;
-        ngo.longitude = dto.longitude;
-        ngo.name = dto.name;
-        ngo.type = dto.type;
-        ngo.bankNumber = dto.bankNumber;
-        ngo.email = dto.email;
-        ngo.phone = dto.phone;
-        ngo.phonePrefix = dto.phonePrefix;
-        ngo.longName = dto.longName;
-        ngo.description = dto.description;
 
-        ngo.ID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
-        let card = new PhysicalCard();
-        card.ID = this.codeService.generatePhysicalCardNumber(ngo.ID);
-        try {
-            ngo.card = await card.save();
-            await createQueryBuilder('Ngo').insert().values(ngo).execute();
-        } catch (e) {
-            handleException(e, 'ngo', this.logger)
-        }
+        const ngoID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
+        const ngo = new Ngo(
+            ngoID,
+            dto.email,
+            dto.bankNumber,
+            dto.name,
+            dto.longName,
+            dto.description,
+            dto.longitude,
+            dto.latitude,
+            dto.address,
+            dto.postCode,
+            dto.city,
+            dto.type,
+        );
+
+        await getConnection().transaction(async (entityManager: EntityManager) => {
+            let phone: Phone | undefined = await Phone.findOne({value: dto.phone});
+
+            if (!phone) {
+                const prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
+                if (!prefix) {
+                    throw new BadRequestException();
+                }
+                phone = await entityManager.save(new Phone(dto.phone, prefix));
+            }
+
+            let card = new PhysicalCard(ngoID);
+
+            try {
+                ngo.card = await entityManager.save(card);
+                ngo.phone = phone;
+                await entityManager.save(ngo);
+            } catch (e) {
+                handleException(e, 'ngo', this.logger)
+            }
+        });
+
     }
 
     @Post("import")
@@ -94,12 +114,12 @@ export class DashboardNgoController {
             }
         })
     }))
-    async uploadNgoWithFile(@UploadedFile() file) {
+    async uploadNgoWithFile(@UploadedFile() file: any) {
         const xlsx = require('xlsx');
         const workbook = xlsx.readFile(file.path);
         const sheetNames = workbook.SheetNames;
         const sheetData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetNames[0]]);
-        const errors = [];
+        const errors: object[] = [];
         this.logger.log("Started to process excel file with NGO");
         if (sheetData.constructor.name !== 'Array') {
             await this.saveNgoRow(sheetData, 1, errors)
@@ -133,12 +153,12 @@ export class DashboardNgoController {
                 },
             }),
         }))
-    async updateNgo(@UploadedFile() image, @UploadedFile() thumbnail) {
+    async updateNgo(@UploadedFile() image: any, @UploadedFile() thumbnail: any) {
 
     }
 
     @Get('/excel')
-    getImage(@Res() response) {
+    getImage(@Res() response: any) {
         response.download('public/excel/ngo.xlsx', 'Ngo.xlsx');
     }
 
@@ -163,55 +183,53 @@ export class DashboardNgoController {
             let code = extractErrors(validationErrors);
             throw new ExcelException({row: index, message: code});
         }
-        let ngo = new Ngo();
-        let city = await City.findOne({name: data.city});
-        let type = await NgoType.findOne({name: data.type});
-
-        if (!city) {
-            city = new City();
-            city.name = data.city;
-            city = await city.save()
-        }
-        if (!type) {
-            type = new NgoType();
-            type.name = data.type;
-            type.code = await this.getNgoCode();
-            type = await type.save();
-        }
-        ngo.city = city;
-        ngo.type = type;
-        ngo.bankNumber = data.accountNumber;
-        ngo.phonePrefix = data.phonePrefix;
-        ngo.phone = data.phone;
-        ngo.longName = data.longName;
-        ngo.description = data.description;
-        ngo.email = data.email;
-        ngo.longitude = data.longitude;
-        ngo.latitude = data.latitude;
-        ngo.name = data.name;
-        ngo.address = data.address;
-        ngo.postCode = data.postCode;
-        ngo.ID = this.codeService.generateNgoNumber(type.code, this.codeService.generateNumber());
-        try {
-            let ngoCard = new PhysicalCard();
-            ngoCard.ID = this.codeService.generatePhysicalCardNumber(ngo.ID);
-            ngo.card = await ngoCard.save();
-            await ngo.save();
-        } catch (e) {
-            if (e instanceof QueryFailedError) {
-                let error: any = e;
-                if (error.code === '23505') {
-                    errors.push({row: index, message: 'excel_ngo_name'})
-                }
-            } else {
-                throw e;
+        await getConnection().transaction(async (entityManager: EntityManager) => {
+            let city = await City.findOne({name: data.city});
+            if (!city) {
+                city = new City(data.city);
+                city = await entityManager.save(city)
             }
-        }
 
+            let type = await NgoType.findOne({name: data.type});
+            if (!type) {
+                type = new NgoType(data.type);
+                type = await entityManager.save(type);
+            }
+
+            let ngo = new Ngo(
+                this.codeService.generateNgoNumber(type.code, this.codeService.generateNumber()),
+                data.email,
+                data.accountNumber,
+                data.name,
+                data.longName,
+                data.description,
+                data.longitude,
+                data.latitude,
+                data.address,
+                data.postCode,
+                city,
+                type
+            );
+
+            try {
+                let card = new PhysicalCard(this.codeService.generatePhysicalCardNumber(ngo.ID));
+                ngo.card = await entityManager.save(card);
+                await entityManager.save(ngo);
+            } catch (e) {
+                if (e instanceof QueryFailedError) {
+                    let error: any = e;
+                    if (error.code === '23505') {
+                        errors.push({row: index, message: 'excel_ngo_name'})
+                    }
+                } else {
+                    throw e;
+                }
+            }
+        });
     }
 
-    private mapRowColumns(row): NgoRowExcel {
-        const columnMapping = {
+    private mapRowColumns(row: any): NgoRowExcel {
+        const columnMapping: any = {
             'Name': 'name',
             'Long Name': 'longName',
             'Description': 'description',
@@ -226,8 +244,12 @@ export class DashboardNgoController {
             'Address': 'address',
             'Post Code': 'postCode'
         };
-        const newRow = {};
-        Object.keys(columnMapping).forEach(key => newRow[columnMapping[key]] = row[key]);
+        const newRow: any = {};
+        for (let props in columnMapping) {
+            if (row.hasOwnProperty(props)) {
+                newRow[columnMapping[props]] = row[props];
+            }
+        }
         return new NgoRowExcel(newRow);
     }
 

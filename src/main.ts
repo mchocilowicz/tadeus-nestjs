@@ -17,6 +17,10 @@ import { RegisterModule } from "./module/client/register/register.module";
 import { PlaceModule } from "./module/client/place/place.module";
 import { NgoModule } from "./module/client/ngo/ngo.module";
 import { DonationModule } from "./module/client/donation/donation.module";
+import { TransactionModule } from "./module/partner/transaction/transaction.module";
+import { TerminalModule } from "./module/partner/terminal/terminal.module";
+import { DashboardNgoModule } from "./module/dashboard/ngo/dashboard-ngo.module";
+import { TradingPointModule } from "./module/dashboard/trading-point/trading-point.module";
 import morgan = require("morgan");
 
 async function bootstrap() {
@@ -36,12 +40,12 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs/client', app, clientDocument);
 
     const partnerDocument = SwaggerModule.createDocument(app, options, {
-        include: [PartnerModule],
+        include: [PartnerModule, TransactionModule, TerminalModule],
     });
     SwaggerModule.setup('api/docs/partner', app, partnerDocument);
 
     const dashboardDocument = SwaggerModule.createDocument(app, options, {
-        include: [DashboardModule],
+        include: [DashboardModule, DashboardNgoModule, TradingPointModule],
     });
     SwaggerModule.setup('api/docs/dashboard', app, dashboardDocument);
 

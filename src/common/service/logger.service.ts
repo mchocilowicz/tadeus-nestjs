@@ -21,7 +21,7 @@ export class LoggerService {
     private readonly logger: Logger;
     private readonly prettyError = new PrettyError();
 
-    constructor(private context: string, transport?) {
+    constructor(private context: string, transport?: any) {
         this.logger = (winston as any).createLogger(LoggerService.loggerOptions);
         this.prettyError.skipNodeFiles();
         this.prettyError.skipPackage('express', '@nestjs/common', '@nestjs/core');
@@ -74,7 +74,7 @@ export class LoggerService {
     }
 
     // this method just for printing a cool log in your terminal , using chalk
-    private formatedLog(level: string, message: string, error?): void {
+    private formatedLog(level: string, message: string, error?: any): void {
         let result = '';
         const color = chalk.default;
         const currentDate = new Date();

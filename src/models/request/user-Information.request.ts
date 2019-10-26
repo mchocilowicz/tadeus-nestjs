@@ -20,4 +20,10 @@ export class UserInformationRequest extends PhoneRequest {
         message: "email_format"
     })
     email: string;
+
+    constructor(name: string, email: string, phone: string, prefix: string) {
+        super(phone, prefix);
+        this.name = name;
+        this.email = email;
+    }
 }

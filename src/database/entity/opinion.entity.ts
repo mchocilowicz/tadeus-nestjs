@@ -1,11 +1,9 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne } from "typeorm";
 import { User } from "./user.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class Opinion extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+export class Opinion extends TadeusEntity {
     @Column()
     value: string;
 
@@ -15,6 +13,10 @@ export class Opinion extends BaseEntity {
     @ManyToOne(type => User, user => user.opinions)
     user: User;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    constructor(email: string, value: string, user: User) {
+        super();
+        this.email = email;
+        this.value = value;
+        this.user = user;
+    }
 }

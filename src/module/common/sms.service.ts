@@ -17,6 +17,6 @@ export class SmsService {
             body: code,
             from: '+48732230089',
             to: '+48' + phone
-        }).then(message => console.log(message));
+        }).then((message: string) => console.log(message));
     }
 }

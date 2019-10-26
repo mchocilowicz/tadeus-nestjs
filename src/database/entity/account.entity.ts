@@ -1,34 +1,23 @@
-import {
-    BaseEntity,
-    Column,
-    CreateDateColumn,
-    Entity,
-    JoinColumn,
-    ManyToOne,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { Role } from "./role.entity";
 import { User } from "./user.entity";
 import { Status } from "../../common/enum/status.enum";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class Account extends BaseEntity {
-
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+export class Account extends TadeusEntity {
 
     @Column()
     ID: string;
 
     @Column({nullable: true})
-    code: number;
+    code?: number;
 
     @Column({nullable: true})
-    token: string;
+    token?: string;
 
     @Column({type: 'text', default: Status.ACTIVE})
-    status: Status;
+    status: Status = Status.ACTIVE;
 
     @ManyToOne(type => Role, {nullable: false})
     @JoinColumn()
@@ -37,9 +26,10 @@ export class Account extends BaseEntity {
     @ManyToOne(type => User, user => user.accounts)
     user: User;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
+    constructor(id: string, role: Role, user: User) {
+        super();
+        this.ID = id;
+        this.role = role;
+        this.user = user;
+    }
 }

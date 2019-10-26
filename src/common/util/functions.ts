@@ -23,8 +23,8 @@ function parseQueryFailedError(e: any, prefix: string) {
 
 export function extractErrors(errors: ValidationError[]): string[] {
     let constraints = _.map(errors, 'constraints');
-    let errorCodes = [];
-    constraints.forEach(c => {
+    let errorCodes: string[] = [];
+    constraints.forEach((c: any) => {
         errorCodes.push(_.values(c))
     });
     return _.uniq(_.flatten(errorCodes))[0]

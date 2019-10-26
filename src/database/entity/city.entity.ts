@@ -1,23 +1,22 @@
-import { BaseEntity, Column, Entity, OneToMany, PrimaryGeneratedColumn, Unique } from "typeorm";
+import { Column, Entity, OneToMany, Unique } from "typeorm";
 import { Ngo } from "./ngo.entity";
-import { ApiModelProperty } from "@nestjs/swagger";
 import { TradingPoint } from "./trading-point.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
-export class City extends BaseEntity {
-
-    @ApiModelProperty()
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+export class City extends TadeusEntity {
     @Column()
-    @ApiModelProperty()
     name: string;
 
     @OneToMany(ngo => Ngo, ngo => ngo.city)
-    ngoList: Ngo[];
+    ngoList?: Ngo[];
 
     @OneToMany(place => TradingPoint, place => place.city)
-    places: TradingPoint[];
+    places?: TradingPoint[];
+
+    constructor(name: string) {
+        super();
+        this.name = name;
+    }
 }

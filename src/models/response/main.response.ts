@@ -1,26 +1,28 @@
 import { ApiModelProperty } from "@nestjs/swagger";
 import { Ngo } from "../../database/entity/ngo.entity";
-import { User } from "../../database/entity/user.entity";
+import { UserDetails } from "../../database/entity/user-details.entity";
+import { VirtualCard } from "../../database/entity/virtual-card.entity";
 
 export class MainResponse {
     @ApiModelProperty()
-    name: string = '';
+    name: string;
     @ApiModelProperty()
-    donationPool: number = 0;
+    donationPool: number;
     @ApiModelProperty()
-    personalPool: number = 0;
+    personalPool: number;
     @ApiModelProperty()
-    ngo: Ngo = null;
+    ngo?: Ngo;
     @ApiModelProperty()
-    collectedMoney: number = 0;
+    collectedMoney: number;
     @ApiModelProperty()
-    xp: number = 0;
+    xp: number;
 
-    constructor(user: User) {
-        this.ngo = user.details.ngo;
-        this.donationPool = user.card.donationPool;
-        this.collectedMoney = user.details.collectedMoney;
-        this.xp = user.details.xp;
-        this.name = user.details.name;
+    constructor(details: UserDetails, card: VirtualCard) {
+        this.ngo = details.ngo;
+        this.donationPool = card.donationPool;
+        this.personalPool = card.personalPool;
+        this.collectedMoney = details.collectedMoney;
+        this.xp = details.xp;
+        this.name = details.name;
     }
 }

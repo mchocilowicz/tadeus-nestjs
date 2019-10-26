@@ -8,11 +8,8 @@ import { RolesGuard } from "../../../common/guards/roles.guard";
 import { createQueryBuilder, getConnection } from "typeorm";
 import { PhoneRequest } from "../../../models/request/phone.request";
 import { User } from "../../../database/entity/user.entity";
-import { Role } from "../../../database/entity/role.entity";
 import { Transaction } from "../../../database/entity/transaction.entity";
 import { CodeService } from "../../../common/service/code.service";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { Account } from "../../../database/entity/account.entity";
 import { Terminal } from "../../../database/entity/terminal.entity";
 
 @Controller()
@@ -38,10 +35,12 @@ export class TerminalController {
     @ApiBearerAuth()
     async getPartnerTerminals(@Req() req: any) {
         let user = req.user;
+
         let terminals = await createQueryBuilder('Terminal', 'terminal')
             .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
             .andWhere('terminal.id != :id', {id: user.terminal.id})
             .getMany();
+
         return {
             phone: user.phone,
             terminals: terminals.map((t: any) => {
@@ -71,37 +70,39 @@ export class TerminalController {
     @ApiBearerAuth()
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async assignNewTerminal(@Req() req: any, @Body() dto: PhoneRequest) {
-        let phoneNumber = dto.phonePrefix + dto.phone;
-        let point = await TradingPoint.findOne({id: req.user.terminal.tradingPoint.id});
-        let user = await User.findOne({phone: phoneNumber}, {relations: ['terminal']});
-        const role = await Role.findOne({name: RoleEnum.TERMINAL});
-
-        if (!user) {
-            user = new User();
-            let account = new Account();
-            account.role = role;
-            let counts = await Terminal.count({tradingPoint: point});
-            account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
-            let terminal = new Terminal();
-            terminal.tradingPoint = point;
-            await getConnection().transaction(async entityManager => {
-                user.terminal = await entityManager.save(terminal);
-                account.user = await entityManager.save(user);
-                await entityManager.save(account);
-            })
-        } else {
-            let terminal = new Terminal();
-            terminal.tradingPoint = point;
-            let account = new Account();
-            account.role = role;
-            await getConnection().transaction(async entityManager => {
-                user.terminal = await entityManager.save(terminal);
-                let counts = await Terminal.count({tradingPoint: point});
-                account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
-                account.user = await entityManager.save(user);
-                await entityManager.save(account);
-            })
-        }
+        // let phoneNumber = dto.phonePrefix + dto.phone;
+        // let point = await TradingPoint.findOne({id: req.user.terminal.tradingPoint.id});
+        // let user = await User.findOne({phone: phoneNumber}, {relations: ['terminal']});
+        // const role = await Role.findOne({name: RoleEnum.TERMINAL});
+        //
+        // if (!user) {
+        //     user = new User();
+        //     let account = new Account();
+        //     account.role = role;
+        //     let counts = await Terminal.count({tradingPoint: point});
+        //     account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+        //     let terminal = new Terminal();
+        //     terminal.tradingPoint = point;
+        //
+        //     await getConnection().transaction(async entityManager => {
+        //         user.terminal = await entityManager.save(terminal);
+        //         account.user = await entityManager.save(user);
+        //         await entityManager.save(account);
+        //     })
+        // } else {
+        //     let terminal = new Terminal();
+        //     terminal.tradingPoint = point;
+        //     let account = new Account();
+        //     account.role = role;
+        //
+        //     await getConnection().transaction(async entityManager => {
+        //         user.terminal = await entityManager.save(terminal);
+        //         let counts = await Terminal.count({tradingPoint: point});
+        //         account.ID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+        //         account.user = await entityManager.save(user);
+        //         await entityManager.save(account);
+        //     })
+        // }
     }
 
     @Delete(':id')
@@ -123,10 +124,12 @@ export class TerminalController {
             .leftJoinAndSelect('Transaction.user', 'user')
             .where('user.id = :id', {id: id})
             .getMany();
+
         if (transactions.length > 0) {
             transactions.forEach((t: any) => {
                 t.user = null;
             });
+
             await getConnection().transaction(async entityManager => {
                 await entityManager.save(transactions);
                 await User.delete({id: id});

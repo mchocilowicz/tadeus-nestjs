@@ -1,58 +1,51 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, Entity } from "typeorm";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class Configuration extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
+export class Configuration extends TadeusEntity {
 
     @Column({type: 'decimal'})
-    minNgoTransfer: number;
+    minNgoTransfer: number = 0;
 
     @Column({type: 'decimal'})
-    minPersonalPool: number;
+    minPersonalPool: number = 0;
 
     @Column()
-    oldClientPaymentAt: Date;
+    oldClientPaymentAt?: Date;
 
     @Column()
-    previousClientPaymentAt: Date;
+    previousClientPaymentAt?: Date;
 
     @Column()
-    currentClientPaymentAt: Date;
+    currentClientPaymentAt?: Date;
 
     @Column()
-    clientInterval: number;
+    clientInterval: number = 1;
 
     @Column()
-    oldPartnerPaymentAt: Date;
+    oldPartnerPaymentAt?: Date;
 
     @Column()
-    previousPartnerPaymentAt: Date;
+    previousPartnerPaymentAt?: Date;
 
     @Column()
-    currentPartnerPaymentAt: Date;
+    currentPartnerPaymentAt?: Date;
 
     @Column()
-    partnerInterval: number;
+    partnerInterval: number = 1;
 
     @Column()
-    oldNgoPaymentAt: Date;
+    oldNgoPaymentAt?: Date;
 
     @Column()
-    previousNgoPaymentAt: Date;
+    previousNgoPaymentAt?: Date;
 
     @Column()
-    currentNgoPaymentAt: Date;
+    currentNgoPaymentAt?: Date;
 
     @Column()
-    ngoInterval: number;
+    ngoInterval: number = 1;
 
     @Column()
     type: string = 'MAIN';
-
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
 }

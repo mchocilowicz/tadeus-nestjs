@@ -13,4 +13,18 @@ export class UserDetailsRequest {
     phone: string;
     @ApiModelProperty()
     email: string;
+
+    constructor(firstName: string,
+                lastName: string,
+                bankAccount: number,
+                phonePrefix: string,
+                email: string,
+                phone: string) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.bankAccount = bankAccount;
+        this.phonePrefix = phonePrefix;
+        this.email = email;
+        this.phone = phone;
+    }
 }

@@ -7,7 +7,7 @@ const crypto = require('crypto');
 
 @Injectable()
 export class CodeService {
-    generateTradingPointNumber(typeCode): string {
+    generateTradingPointNumber(typeCode: number): string {
         const result = [`B${typeCode}`, Const.CONTROL_NUMBER, this.generateNumber()];
         return result.join('-');
     }
@@ -32,12 +32,12 @@ export class CodeService {
         return result.join('-');
     }
 
-    generatePhysicalCardNumber(ngoCode): string {
+    generatePhysicalCardNumber(ngoCode: string): string {
         const result = ['F001', Const.CONTROL_NUMBER, ngoCode, this.hashId(moment().toISOString() + this.createCode(1, 9999), 13), '00'];
         return result.join('-');
     }
 
-    generateNgoNumber(ngoTypeCode, ngoCode): string {
+    generateNgoNumber(ngoTypeCode: number, ngoCode: string): string {
         const result = [`B${ngoTypeCode}`, Const.CONTROL_NUMBER, ngoCode];
         return result.join('-');
     }
@@ -53,18 +53,18 @@ export class CodeService {
         return 1234;
     }
 
-    generateTerminalNumber(count): string {
+    generateTerminalNumber(count: number): string {
         if (count < 10) {
             return '0' + count
         }
-        return count;
+        return '' + count;
     }
 
     private createCode(min: number, max: number) {
         return Math.random() * (max - min) + min;
     }
 
-    private hashId(d, size: number) {
+    private hashId(d: string, size: number) {
         const salt = crypto.randomBytes(16).toString('hex');
 
         const hash = crypto.pbkdf2Sync(d, salt,

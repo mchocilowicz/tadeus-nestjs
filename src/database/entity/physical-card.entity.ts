@@ -1,31 +1,20 @@
-import {
-    BaseEntity,
-    Column,
-    CreateDateColumn,
-    Entity,
-    Generated,
-    PrimaryGeneratedColumn,
-    UpdateDateColumn
-} from "typeorm";
+import { Column, Entity, Generated } from "typeorm";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
-export class PhysicalCard extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    id: string;
-
+export class PhysicalCard extends TadeusEntity {
     @Column()
     ID: string;
 
     @Column()
     @Generated("uuid")
-    code: string;
+    code?: string;
 
     @Column({type: 'decimal', default: 0})
-    collectedMoney: number;
+    collectedMoney: number = 0;
 
-    @CreateDateColumn()
-    createdAt: Date;
-
-    @UpdateDateColumn()
-    updatedAt: Date;
+    constructor(ID: string) {
+        super();
+        this.ID = ID;
+    }
 }

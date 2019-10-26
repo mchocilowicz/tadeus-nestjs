@@ -19,4 +19,9 @@ export class PhoneRequest {
     @NotContains("+", {message: 'phone_format'})
     @PhoneLength('phonePrefix', {message: 'phone_format'})
     phone: string;
+
+    constructor(phone: string, prefix: string) {
+        this.phone = String(phone);
+        this.phonePrefix = prefix;
+    }
 }

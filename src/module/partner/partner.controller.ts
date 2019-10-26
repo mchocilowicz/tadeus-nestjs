@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards } from "@nestjs/common";
 import {
     ApiBearerAuth,
     ApiImplicitBody,
@@ -21,11 +21,15 @@ import { PartnerDetailsResponse } from "../../models/response/partner-details.re
 import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { Transaction } from "../../database/entity/transaction.entity";
 import { CodeService } from "../../common/service/code.service";
+import { Terminal } from "../../database/entity/terminal.entity";
+import { Account } from "../../database/entity/account.entity";
 
 const moment = require('moment');
 
 @Controller()
 export class PartnerController {
+    private readonly logger = new Logger(PartnerController.name);
+
     constructor(private readonly service: LoginService, private readonly codeService: CodeService) {
     }
 
@@ -73,20 +77,29 @@ export class PartnerController {
     @ApiResponse({status: 200, type: PartnerDetailsResponse})
     async getPartnerData(@Req() req: any) {
         const user: User = req.user;
-        const partner: any = await createQueryBuilder('TradingPoint')
-            .leftJoinAndSelect('TradingPoint.city', 'city')
-            .where('TradingPoint.id = :id', {id: user.terminal.tradingPoint.id})
-            .andWhere('TradingPoint.active = true')
+        const terminal: Terminal | undefined = user.terminal;
+        const accounts: Account[] | undefined = user.accounts;
+
+        if (!terminal || !accounts) {
+            this.logger.error(`Terminal or Accounts does not exists for User(Terminal) ${user.id}`);
+            throw new BadRequestException('internal_server_error')
+        }
+
+        const partner: TradingPoint | undefined = await TradingPoint.createQueryBuilder('point')
+            .leftJoinAndSelect('point.city', 'city')
+            .where('point.id = :id', {id: terminal.tradingPoint.id})
+            .andWhere('point.active = true')
             .getOne();
 
-        return {
-            id: user.accounts.find(a => a.role.name === RoleEnum.TERMINAL).ID,
-            name: partner.name,
-            city: partner.city.name,
-            address: partner.address,
-            postCode: partner.postCode,
-            xp: partner.xp
+        const terminalAccount: Account | undefined = accounts.find(a => a.role.value === RoleEnum.TERMINAL);
+
+        if (!terminalAccount || !partner) {
+            this.logger.error(`Partner or Terminal Role does not exists for User(Terminal) ${user.id}`);
+            throw new BadRequestException('internal_server_error')
         }
+
+
+        return new PartnerDetailsResponse(terminalAccount.ID, partner)
     }
 
     @Get('history')

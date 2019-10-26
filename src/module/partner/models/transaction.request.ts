@@ -2,7 +2,7 @@ import { ApiModelProperty } from "@nestjs/swagger";
 
 export class TransactionRequest {
     @ApiModelProperty()
-    price: number;
+    price: number | undefined;
     @ApiModelProperty()
-    clientCode: string;
+    clientCode: string | undefined;
 }

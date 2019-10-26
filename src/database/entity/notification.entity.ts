@@ -1,14 +1,11 @@
-import { BaseEntity, Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne } from "typeorm";
 import { User } from "./user.entity";
 import { ApiModelProperty } from "@nestjs/swagger";
+import { TadeusEntity } from "./base.entity";
 
 
 @Entity({schema: 'tds'})
-export class Notification extends BaseEntity {
-    @PrimaryGeneratedColumn("uuid")
-    @ApiModelProperty()
-    id: string;
-
+export class Notification extends TadeusEntity {
     @ManyToOne(type => User, user => user.notifications)
     user: User;
 
@@ -16,6 +13,9 @@ export class Notification extends BaseEntity {
     @ApiModelProperty()
     value: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+    constructor(value: string, user: User) {
+        super();
+        this.value = value;
+        this.user = user;
+    }
 }

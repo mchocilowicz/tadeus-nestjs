@@ -108,16 +108,17 @@ export class DashboardController {
 
     @Post('city')
     async createCity(@Body() dto: any) {
-        let city = new City();
-        city.name = dto.name;
+        let city = new City(dto.name);
         return await city.save();
     }
 
     @Put('city/:id')
     async updateCity(@Param('id') id: string, @Body() dto: any) {
         let city = await City.findOne({id: id});
-        city.name = dto.name;
-        await city.save()
+        if (city) {
+            city.name = dto.name;
+            await city.save()
+        }
     }
 
     @Get('trading-point-type')

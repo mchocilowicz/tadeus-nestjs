@@ -8,4 +8,9 @@ export class CodeVerificationRequest extends PhoneRequest {
     @Max(9999, {message: 'code_max_value'})
     @Min(1000, {message: 'code_max_value'})
     readonly code: number;
+
+    constructor(phone: string, code: number, prefix: string) {
+        super(phone, prefix);
+        this.code = code;
+    }
 }
