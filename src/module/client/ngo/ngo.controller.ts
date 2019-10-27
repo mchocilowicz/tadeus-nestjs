@@ -58,7 +58,7 @@ export class NgoController {
     @ApiImplicitBody({name: '', type: SelectedNgoRequest})
     async selectedNgo(@Req() req: any, @Body() dto: SelectedNgoRequest) {
         let user: User = req.user;
-        let ngo: Ngo | undefined = await Ngo.findOne({id: dto.id, verified: true});
+        let ngo: Ngo | undefined = await Ngo.findOne({id: dto.id, verified: true, isTadeus: false});
         let details: UserDetails | undefined = user.details;
         let virtualCard: VirtualCard | undefined = user.card;
 

@@ -185,8 +185,8 @@ export class LoginService {
         }
         // await user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
         try {
-            if (user.accounts) {
-                let account: Account | undefined = user.accounts.find(a => a.role == role);
+            if (user.accounts && role) {
+                let account: Account | undefined = user.accounts.find(a => a.role.value === RoleEnum.CLIENT);
                 if (!account) {
                     const account: Account = this.createAccount(user, role);
                     await entityManager.save(account);
