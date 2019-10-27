@@ -12,18 +12,23 @@ export class Cart extends TadeusEntity {
     isPaid: boolean = false;
 
     @Column({nullable: true, type: 'decimal'})
-    price?: number;
+    price: number = 0;
 
     @Column({nullable: true})
     paymentDate?: Date;
 
     @ManyToOne(type => TradingPoint)
     @JoinColumn()
-    tradingPoint?: TradingPoint;
+    tradingPoint: TradingPoint;
 
     @OneToMany(type => Transaction, transaction => transaction.cart)
     transactions?: Transaction[];
 
     @OneToMany(type => Payment, payment => payment.cart)
     payments?: Payment[];
+
+    constructor(tradingPoint: TradingPoint) {
+        super();
+        this.tradingPoint = tradingPoint;
+    }
 }

@@ -7,6 +7,12 @@ export class TransactionSuccessResponse {
     price: number;
     @ApiModelProperty()
     xp: number;
+
+    constructor(date: string, price: number, xp: number) {
+        this.date = date;
+        this.price = price;
+        this.xp = xp;
+    }
 }
 
 export class CorrectionResponse {

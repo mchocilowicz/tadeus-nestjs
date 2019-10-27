@@ -74,7 +74,7 @@ export class NgoController {
         if (details.ngoSelectionCount === 2) {
             throw new BadRequestException("user_ngo_max_reached")
         } else if (details.ngoSelectionCount === 1) {
-            if (details.ngo) {
+            if (details.ngo && (virtualCard.donationPool > 0 || details.ngoTempMoney > 0)) {
                 let price = virtualCard.donationPool;
                 if (details.ngoTempMoney > 0) {
                     price += details.ngoTempMoney;
@@ -95,6 +95,17 @@ export class NgoController {
                 try {
                     await getConnection().transaction(async entityManager => {
                         await entityManager.save(donation);
+                        await entityManager.save(virtualCard);
+                        await entityManager.save(details);
+                    });
+                } catch (e) {
+                    throw new BadRequestException("ngo_not_assigned")
+                }
+            } else {
+                details.ngoSelectionCount++;
+                details.ngo = ngo;
+                try {
+                    await getConnection().transaction(async entityManager => {
                         await entityManager.save(virtualCard);
                         await entityManager.save(details);
                     });
