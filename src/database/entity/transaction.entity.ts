@@ -44,6 +44,9 @@ export class Transaction extends TadeusEntity {
     @ManyToOne(type => Terminal, terminal => terminal.transactions)
     terminal: Terminal;
 
+    @Column({default: 'TRANSACTION'})
+    class: string = 'TRANSACTION';
+
     constructor(terminal: Terminal,
                 user: User,
                 tradingPoint: TradingPoint,

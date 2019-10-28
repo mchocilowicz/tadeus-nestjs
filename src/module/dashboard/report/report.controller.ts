@@ -1,6 +1,7 @@
 import { Controller, Get } from "@nestjs/common";
 import { createQueryBuilder } from "typeorm";
 import { DonationEnum } from "../../../common/enum/donation.enum";
+import { Donation } from "../../../database/entity/donation.entity";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -17,7 +18,7 @@ export class ReportController {
             .where('donation.type = :type', {type: DonationEnum.NGO})
             .getMany();
 
-        let a = [];
+        let a: object[] = [];
 
         ngo.forEach((n: any) => {
             let donations = n.donations;
@@ -28,13 +29,13 @@ export class ReportController {
                 let firstDate = moment(sortedDonations[0].createdAt).format('YYYY-MM');
 
                 while (moment(firstDate).isSameOrAfter(lastDate)) {
-                    let z = donations.find(d => moment(d.createdAt).format('YYYY-MM') == firstDate);
+                    let z = donations.find((d: Donation) => moment(d.createdAt).format('YYYY-MM') == firstDate);
                     if (z.length > 0) {
                         a.push({
                             name: n.name,
                             ID: n.ID,
                             users: _.uniqBy(z, 'user').length,
-                            price: _.reduce(z, (sum, p) => sum + p.price, 0)
+                            price: _.reduce(z, (sum: number, p: Donation) => sum + p.price, 0)
                         })
                     }
                     firstDate = moment(firstDate).subtract(1, 'months').format('YYYY-MM')

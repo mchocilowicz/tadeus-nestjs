@@ -36,6 +36,10 @@ import { NotificationRequest } from "./models/notification.request";
 import { UserDetails } from "../../database/entity/user-details.entity";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { Phone } from "../../database/entity/phone.entity";
+import { TadeusEntity } from "../../database/entity/base.entity";
+import { groupDatesByComponent } from "../../common/util/functions";
+
+const _ = require('lodash');
 
 @Controller()
 export class ClientController {
@@ -134,6 +138,7 @@ export class ClientController {
 
         let tempUser: User | undefined = await User.createQueryBuilder("user")
             .leftJoinAndSelect("user.transactions", "transactions")
+            .leftJoinAndSelect('user.payouts', 'payouts')
             .leftJoinAndSelect("user.donations", "donations")
             .leftJoinAndSelect("donations.ngo", 'ngo')
             .where("user.id = :id", {id: user.id})
@@ -144,7 +149,19 @@ export class ClientController {
             throw new BadRequestException('internal_server_error')
         }
 
-        return new ClientHistoryResponse(tempUser)
+        let transactions: TadeusEntity[] = [];
+
+        if (tempUser.transactions) {
+            transactions = transactions.concat(tempUser.transactions)
+        }
+        if (tempUser.payouts) {
+            transactions = transactions.concat(tempUser.payouts)
+        }
+
+        let transactionHistoryWithPayouts = groupDatesByComponent(transactions, 'Y')
+            .map((i: TadeusEntity[]) => groupDatesByComponent(i, 'DDD'));
+
+        return new ClientHistoryResponse(tempUser.donations, _.flatten(transactionHistoryWithPayouts))
     }
 
     @Get('card')

@@ -18,6 +18,7 @@ import { DonationModule } from "../client/donation/donation.module";
 import { DashboardNgoModule } from "../dashboard/ngo/dashboard-ngo.module";
 import { TradingPointModule } from "../dashboard/trading-point/trading-point.module";
 import { DashboardModule } from "../dashboard/dashboard.module";
+import { StatsModule } from "../dashboard/stats/stats.module";
 
 const routes: Routes = [
     {
@@ -64,6 +65,11 @@ const routes: Routes = [
                 path: '/dashboard',
                 module: DashboardModule,
                 children: [
+                    {
+                        path: '/stats',
+                        module: StatsModule
+                    },
+
                     //         {
                     //             path: '/user',
                     //             module: UserModule
@@ -133,6 +139,7 @@ const routes: Routes = [
         // ConfigurationModule,
         DashboardNgoModule,
         // NgoTypeModule,
+        StatsModule
     ],
     controllers: [],
     providers: [

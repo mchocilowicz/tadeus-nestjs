@@ -1,8 +1,11 @@
 import { BadRequestException, Logger } from "@nestjs/common";
 import { QueryFailedError } from "typeorm";
 import { ValidationError } from "class-validator";
+import { TadeusEntity } from "../../database/entity/base.entity";
+import { Const } from "./const";
 
 const _ = require("lodash");
+const moment = require("moment");
 
 export function handleException(e: any, prefix: string, logger: Logger) {
     logger.error(e);
@@ -28,4 +31,20 @@ export function extractErrors(errors: ValidationError[]): string[] {
         errorCodes.push(_.values(c))
     });
     return _.uniq(_.flatten(errorCodes))[0]
+}
+
+export function groupDatesByComponent(data: TadeusEntity[], token: string): Array<TadeusEntity[]> {
+    const groupedMap = data.reduce(function (val: Map<string, TadeusEntity[]>, obj: TadeusEntity) {
+        let comp = moment(obj.createdAt, Const.DATE_FORMAT).format(token);
+        const value = val.get(comp);
+        if (value) {
+            value.push(obj);
+        } else {
+            val.set(comp, [obj])
+        }
+        return val;
+    }, new Map<string, []>());
+    const result: Array<TadeusEntity[]> = [];
+    groupedMap.forEach(value => result.push(value));
+    return result;
 }

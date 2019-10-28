@@ -9,6 +9,7 @@ import { Opinion } from "./opinion.entity";
 import { Notification } from "./notification.entity";
 import { Phone } from "./phone.entity";
 import { TadeusEntity } from "./base.entity";
+import { UserPayout } from "./user-payment.entity";
 
 @Entity({schema: 'tds'})
 export class User extends TadeusEntity {
@@ -48,6 +49,9 @@ export class User extends TadeusEntity {
 
     @OneToMany(type => Donation, donation => donation.user)
     donations?: Donation[];
+
+    @OneToMany(type => UserPayout, payment => payment.user)
+    payouts?: UserPayout[];
 
     constructor(phone?: Phone) {
         super();
