@@ -1,5 +1,5 @@
-import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Req } from "@nestjs/common";
-import { ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { BadRequestException, Body, Controller, Get, Logger, Param, Post, Req, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { User } from "../../../database/entity/user.entity";
 import { Donation } from "../../../database/entity/donation.entity";
@@ -11,6 +11,10 @@ import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 import { Configuration } from "../../../database/entity/configuration.entity";
 import { NgoDonationRequest, TadeusDonationRequest } from "../models/response/donation.request";
 import { UserDetails } from "../../../database/entity/user-details.entity";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
 
 @Controller()
 @ApiUseTags('donation')
@@ -21,6 +25,9 @@ export class DonationController {
     }
 
     @Get()
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -55,8 +62,63 @@ export class DonationController {
         }
     }
 
+    @Post("tadeus")
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiUseTags('donation')
+    async donationTadeus(@Req() req: any, @Body() request: TadeusDonationRequest) {
+        const user: User = req.user;
+        const ngo: Ngo | undefined = await Ngo.findOne({isTadeus: true});
+        const card: VirtualCard | undefined = user.card;
+        const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
+
+        if (!ngo) {
+            this.logger.error('TADEUS NGO Object is not available');
+            throw new BadRequestException("ngo_does_not_exists")
+        }
+        if (!card) {
+            this.logger.error('Details Object is not available for User: ' + user.id);
+            throw new BadRequestException("internal_server_error")
+        }
+
+        if (!config) {
+            this.logger.error('Configuration Table is not available');
+            throw new BadRequestException("internal_server_error")
+        }
+
+        if (config.minPersonalPool > request.donationValue) {
+            throw new BadRequestException('donation_value_to_low')
+        }
+        if (request.donationValue > card.personalPool) {
+            throw new BadRequestException('personal_pool_to_low')
+        }
+
+        await getConnection().transaction(async entityManager => {
+            if (request.donationValue > 0) {
+                const ID = this.codeService.generateDonationID();
+                const donation: Donation = new Donation(ID, DonationEnum.TADEUS, 'PERSONAL', request.donationValue, ngo, user);
+                card.personalPool -= request.donationValue;
+                await entityManager.save(donation);
+                await entityManager.save(card);
+            }
+        });
+    }
 
     @Post(":ngoId")
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -116,55 +178,5 @@ export class DonationController {
             await entityManager.save(virtualCard);
         });
 
-    }
-
-    @Post("tadeus")
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiUseTags('donation')
-    async donationTadeus(@Req() req: any, @Body() request: TadeusDonationRequest) {
-        const user: User = req.user;
-        const ngo: Ngo | undefined = await Ngo.findOne({isTadeus: true});
-        const card: VirtualCard | undefined = user.card;
-        const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
-
-        if (!ngo) {
-            this.logger.error('TADEUS NGO Object is not available');
-            throw new BadRequestException("ngo_does_not_exists")
-        }
-        if (!card) {
-            this.logger.error('Details Object is not available for User: ' + user.id);
-            throw new BadRequestException("internal_server_error")
-        }
-
-        if (!config) {
-            this.logger.error('Configuration Table is not available');
-            throw new BadRequestException("internal_server_error")
-        }
-
-        if (config.minPersonalPool > request.donationValue) {
-            throw new BadRequestException('donation_value_to_low')
-        }
-        if (request.donationValue > card.personalPool) {
-            throw new BadRequestException('personal_pool_to_low')
-        }
-
-        await getConnection().transaction(async entityManager => {
-            if (request.donationValue > 0) {
-                const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, DonationEnum.TADEUS, 'PERSONAL', request.donationValue, ngo, user);
-                card.personalPool -= request.donationValue;
-                await entityManager.save(donation);
-                await entityManager.save(card);
-            }
-        });
     }
 }

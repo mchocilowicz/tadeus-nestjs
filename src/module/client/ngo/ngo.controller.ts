@@ -13,7 +13,14 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { createQueryBuilder, getConnection } from "typeorm";
-import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import {
+    ApiBearerAuth,
+    ApiImplicitBody,
+    ApiImplicitHeader,
+    ApiImplicitQuery,
+    ApiResponse,
+    ApiUseTags
+} from "@nestjs/swagger";
 import { Ngo } from "../../../database/entity/ngo.entity";
 import { Const } from "../../../common/util/const";
 import { NgoType } from "../../../database/entity/ngo-type.entity";
@@ -42,6 +49,7 @@ export class NgoController {
 
     @Put()
     @HttpCode(200)
+    @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
@@ -67,7 +75,7 @@ export class NgoController {
         }
 
         if (!details || !virtualCard) {
-            this.logger.error(`User details or Virtual Card for user ${user.id} does not exists.`);
+            this.logger.error(`User Details or Virtual Card for user ${user.id} does not exists.`);
             throw new BadRequestException("internal_server_error")
         }
 
@@ -90,7 +98,10 @@ export class NgoController {
                     user);
 
                 virtualCard.donationPool = 0;
-                details.ngoSelectionCount++;
+                if (details.ngo.id !== ngo.id) {
+                    details.ngoSelectionCount++;
+                }
+
                 details.ngo = ngo;
                 try {
                     await getConnection().transaction(async entityManager => {

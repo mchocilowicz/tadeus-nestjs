@@ -70,7 +70,41 @@ export class StatsController {
         }
 
         let a = transactions.filter((t: Transaction) => moment(t.updatedAt).isBetween(moment().format(Const.DATE_FORMAT), moment().subtract(1, 'days').format(Const.DATE_FORMAT)));
-        let b = a.reduce((o, e: Transaction) => o + e.price, 0)
+        let b = a.reduce((o, e: Transaction) => o + e.price, 0);
+
+        const week = allweeks.map(value => {
+            if (value.length === 1) {
+                return {
+                    period: value[0].createdAt,
+                    price: value[0].price
+                }
+            } else {
+                return {
+                    period: `${value[0].createdAt} - ${value[value.length - 1].createdAt}`,
+                    price: value.reduce((p: number, v: any) => p + v.price, 0)
+                }
+            }
+        });
+
+        const months = allMonths.map(value => {
+            if (value.length === 1) {
+                return {
+                    period: value[0].createdAt,
+                    price: value[0].price
+                }
+            } else {
+                return {
+                    period: `${value[0].createdAt} - ${value[value.length - 1].createdAt}`,
+                    price: value.reduce((p: number, v: any) => p + v.price, 0)
+                }
+            }
+        });
+
+        return {
+            today: b,
+            weeks: week,
+            months: months
+        }
     }
 
     getTimeStats(list?: TadeusEntity[]) {

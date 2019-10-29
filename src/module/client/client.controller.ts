@@ -107,8 +107,8 @@ export class ClientController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     async mainScreen(@Req() req: any) {
         const user: User = req.user;
-        const details = user.details;
-        const card = user.card;
+        const details: UserDetails | undefined = user.details;
+        const card: VirtualCard | undefined = user.card;
 
         if (!card || !details) {
             this.logger.error(`User ${user.id} does not have assigned Details or VirtualCard`);
@@ -138,6 +138,8 @@ export class ClientController {
 
         let tempUser: User | undefined = await User.createQueryBuilder("user")
             .leftJoinAndSelect("user.transactions", "transactions")
+            .leftJoinAndSelect('transactions.tradingPoint', 'tradingPoint')
+            .leftJoinAndSelect('tradingPoint.city', 'city')
             .leftJoinAndSelect('user.payouts', 'payouts')
             .leftJoinAndSelect("user.donations", "donations")
             .leftJoinAndSelect("donations.ngo", 'ngo')
