@@ -16,13 +16,16 @@ export class MainResponse {
     collectedMoney: number;
     @ApiModelProperty()
     xp: number;
+    @ApiModelProperty()
+    userActivity: number;
 
-    constructor(details: UserDetails, card: VirtualCard) {
+    constructor(details: UserDetails, card: VirtualCard, activity: number) {
         this.ngo = details.ngo;
         this.donationPool = card.donationPool;
         this.personalPool = card.personalPool;
         this.collectedMoney = details.collectedMoney;
         this.xp = details.xp;
         this.name = details.name;
+        this.userActivity = activity;
     }
 }

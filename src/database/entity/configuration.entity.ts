@@ -11,6 +11,9 @@ export class Configuration extends TadeusEntity {
     minPersonalPool: number = 0;
 
     @Column()
+    userExpirationAfterDays: number = 365;
+
+    @Column()
     oldClientPaymentAt?: Date;
 
     @Column()

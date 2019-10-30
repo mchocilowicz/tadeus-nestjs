@@ -80,6 +80,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .leftJoinAndSelect('user.card', 'card')
             .leftJoinAndSelect('user.details', 'details')
             .leftJoinAndSelect('details.ngo', 'ngo')
+            .leftJoinAndSelect('ngo.type', 'type')
             .where(`accounts.id = :id`, {id: id})
             .andWhere(`role.value = :role`, {role: role})
             .getOne();

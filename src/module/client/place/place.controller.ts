@@ -1,11 +1,15 @@
-import { Controller, Get, Logger, Param, Query, Res } from "@nestjs/common";
+import { Controller, Get, Logger, Param, Query, Res, UseGuards } from "@nestjs/common";
 import { createQueryBuilder } from "typeorm";
-import { ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { Const } from "../../../common/util/const";
 import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
 import { CityResponse } from "../../../models/response/city.response";
 import { PlaceQuery } from "../models/place.query";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
 
 @Controller()
 @ApiUseTags('place')
@@ -13,6 +17,9 @@ export class PlaceController {
     private readonly logger = new Logger(PlaceController.name);
 
     @Get()
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})
     @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place-type id', required: false})
     @ApiImplicitQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
@@ -55,6 +62,9 @@ export class PlaceController {
     }
 
     @Get('type')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -66,6 +76,9 @@ export class PlaceController {
     }
 
     @Get('city')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: CityResponse, isArray: true})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -79,6 +92,9 @@ export class PlaceController {
     }
 
     @Get('/img/:imageName')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: "File", description: "Image"})
     getImage(@Param('imageName') imageName: string, @Res() res: any) {
         res.sendFile(imageName, {root: 'public/image'});

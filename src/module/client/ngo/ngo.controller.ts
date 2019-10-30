@@ -142,6 +142,9 @@ export class NgoController {
     }
 
     @Get()
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})
     @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo-type id', required: false})
     @ApiImplicitQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
@@ -189,6 +192,9 @@ export class NgoController {
     }
 
     @Get('type')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: NgoType, isArray: true})
     @ApiUseTags('ngo')
     @ApiImplicitHeader({
@@ -201,6 +207,9 @@ export class NgoController {
     }
 
     @Get('city')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: CityResponse, isArray: true})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
@@ -215,6 +224,9 @@ export class NgoController {
     }
 
     @Get('/img/:imageName')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiUseTags('ngo')
     @ApiResponse({status: 200, type: "File", description: "Image"})
     getImage(@Param('imageName') imageName: string, @Res() res: any) {

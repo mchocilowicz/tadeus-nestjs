@@ -97,7 +97,7 @@ export class DonationController {
             throw new BadRequestException("internal_server_error")
         }
 
-        if (config.minPersonalPool > request.donationValue) {
+        if (config.minNgoTransfer > request.donationValue) {
             throw new BadRequestException('donation_value_to_low')
         }
         if (request.donationValue > card.personalPool) {
@@ -152,7 +152,7 @@ export class DonationController {
 
         const totalPrice = request.ngoDonationValue + request.tadeusDonationValue;
 
-        if (config.minPersonalPool > totalPrice) {
+        if (config.minNgoTransfer > totalPrice) {
             throw new BadRequestException('donation_value_to_low')
         }
 
