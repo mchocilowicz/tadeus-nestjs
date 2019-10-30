@@ -9,12 +9,16 @@ import { TadeusEntity } from "../../../database/entity/base.entity";
 import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 import { Transaction } from "../../../database/entity/transaction.entity";
 import { groupDatesByComponent } from "../../../common/util/functions";
+import { StatsService } from "./stats.service";
 
 const moment = require("moment");
 const _ = require('lodash');
 
 @Controller()
 export class StatsController {
+
+    constructor(private readonly service: StatsService) {
+    }
 
     @Get('user')
     async getUsersStats() {
@@ -29,7 +33,7 @@ export class StatsController {
 
         return {
             activePoints: users.filter((points: User) => points.registered).length,
-            ...this.getTimeStats(details)
+            ...this.service.getTimeStats(details)
         }
     }
 
@@ -53,7 +57,7 @@ export class StatsController {
         const points: TradingPoint[] = await TradingPoint.find();
         return {
             activePoints: points.length,
-            ...this.getTimeStats(points)
+            ...this.service.getTimeStats(points)
         }
     }
 
@@ -69,79 +73,12 @@ export class StatsController {
             allMonths.push(_.flatten(groupDatesByComponent(year, 'M')));
         }
 
-        let a = transactions.filter((t: Transaction) => moment(t.updatedAt).isBetween(moment().format(Const.DATE_FORMAT), moment().subtract(1, 'days').format(Const.DATE_FORMAT)));
-        let b = a.reduce((o, e: Transaction) => o + e.price, 0);
-
-        const week = allweeks.map(value => {
-            if (value.length === 1) {
-                return {
-                    period: value[0].createdAt,
-                    price: value[0].price
-                }
-            } else {
-                return {
-                    period: `${value[0].createdAt} - ${value[value.length - 1].createdAt}`,
-                    price: value.reduce((p: number, v: any) => p + v.price, 0)
-                }
-            }
-        });
-
-        const months = allMonths.map(value => {
-            if (value.length === 1) {
-                return {
-                    period: value[0].createdAt,
-                    price: value[0].price
-                }
-            } else {
-                return {
-                    period: `${value[0].createdAt} - ${value[value.length - 1].createdAt}`,
-                    price: value.reduce((p: number, v: any) => p + v.price, 0)
-                }
-            }
-        });
+        let transactionsIn24Hours = transactions.filter((t: Transaction) => moment(t.updatedAt).isBetween(moment().format(Const.DATE_FORMAT), moment().subtract(1, 'days').format(Const.DATE_FORMAT)));
 
         return {
-            today: b,
-            weeks: week,
-            months: months
-        }
-    }
-
-    getTimeStats(list?: TadeusEntity[]) {
-        let activeToday: TadeusEntity[] = [];
-        let activeInWeek: TadeusEntity[] = [];
-        let activeInMonth: TadeusEntity[] = [];
-        let activeOneMonthAgo: TadeusEntity[] = [];
-        let activeMonthsAgo: TadeusEntity[] = [];
-
-        const todayDate = moment().format(Const.DATE_FORMAT);
-        const weekAgoDate = moment().subtract(7, 'days').format(Const.DATE_FORMAT);
-        const monthAgoDate = moment().subtract(1, 'months').format(Const.DATE_FORMAT);
-
-        if (list) {
-            list.forEach((point: TadeusEntity) => {
-                const pointLastUpdatteAt = moment(point.updatedAt);
-
-                if (pointLastUpdatteAt.format(Const.DATE_FORMAT) === todayDate) {
-                    activeToday.push(point);
-                } else if (pointLastUpdatteAt.isBetween(todayDate, weekAgoDate)) {
-                    activeInWeek.push(point);
-                } else if (pointLastUpdatteAt.isBetween(todayDate, monthAgoDate)) {
-                    activeInMonth.push(point);
-                } else if (pointLastUpdatteAt.isBetween(moment().subtract(1, 'months').format(Const.DATE_FORMAT), moment().subtract(2, 'months').format(Const.DATE_FORMAT))) {
-                    activeOneMonthAgo.push(point);
-                } else if (pointLastUpdatteAt.isBetween(moment().subtract(3, 'months').format(Const.DATE_FORMAT), moment().subtract(100, 'years').format(Const.DATE_FORMAT))) {
-                    activeMonthsAgo.push(point);
-                }
-            });
-        }
-
-        return {
-            today: activeToday.length,
-            week: activeInWeek.length,
-            month: activeInMonth.length,
-            overMonth: activeOneMonthAgo.length,
-            months: activeMonthsAgo.length
+            today: transactionsIn24Hours.reduce((o, e: Transaction) => o + e.price, 0),
+            weeks: this.service.getPeriodOverview(allweeks),
+            months: this.service.getPeriodOverview(allMonths)
         }
     }
 
