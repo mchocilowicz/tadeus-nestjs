@@ -109,6 +109,7 @@ const routes: Routes = [
             useFactory: () => ({
                 url: process.env.DATABASE_URL,
                 type: "postgres",
+                ssl: true,
                 schema: 'tds',
                 entities: [
                     join(__dirname, "../../**/*.entity{.ts,.js}")
