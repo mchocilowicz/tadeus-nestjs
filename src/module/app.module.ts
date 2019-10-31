@@ -70,32 +70,30 @@ const routes: Routes = [
                         module: StatsModule
                     },
 
-                    //         {
-                    //             path: '/user',
-                    //             module: UserModule
-                    //         },
-                    {
-                        path: '/trading-point',
-                        module: TradingPointModule,
-                    },
-                    //         {
-                    //             path: '/configuration',
-                    //             module: ConfigurationModule
-                    //         },
-                    {
-                        path: '/ngo',
-                        module: DashboardNgoModule
-                    },
-                    //         {
-                    //             path: '/trading-point-type',
-                    //             module: TradingPointTypeModule
-                    //         },
-                    //         {
-                    //             path: '/ngo-type',
-                    //             module: NgoTypeModule
-                    //         }
-                ]
-            }
+            //         {
+            //             path: '/user',
+            //             module: UserModule
+            //         },
+            {
+                path: '/trading-point',
+                module: TradingPointModule,
+            },
+            //         {
+            //             path: '/configuration',
+            //             module: ConfigurationModule
+            //         },
+            {
+                path: '/ngo',
+                module: DashboardNgoModule
+            },
+            //         {
+            //             path: '/trading-point-type',
+            //             module: TradingPointTypeModule
+            //         },
+            //         {
+            //             path: '/ngo-type',
+            //             module: NgoTypeModule
+            //         }
         ]
     }
 ];
@@ -118,7 +116,6 @@ const routes: Routes = [
                 logging: true
             })
         }),
-        ApiModule,
         //Client Module
 
         ClientModule,
