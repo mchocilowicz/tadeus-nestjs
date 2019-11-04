@@ -1,15 +1,16 @@
-import { Controller, Get, Logger, Param, Query, Res, UseGuards } from "@nestjs/common";
-import { createQueryBuilder } from "typeorm";
-import { ApiBearerAuth, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { Const } from "../../../common/util/const";
-import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
-import { CityResponse } from "../../../models/response/city.response";
-import { PlaceQuery } from "../models/place.query";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
+import {Controller, Get, Logger, Param, Query, Res, UseGuards} from "@nestjs/common";
+import {createQueryBuilder} from "typeorm";
+import {ApiBearerAuth, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags} from "@nestjs/swagger";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {Const} from "../../../common/util/const";
+import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
+import {CityResponse} from "../../../models/response/city.response";
+import {PlaceQuery} from "../models/place.query";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {City} from "../../../database/entity/city.entity";
 
 @Controller()
 @ApiUseTags('place')
@@ -86,9 +87,7 @@ export class PlaceController {
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     getCities() {
-        return createQueryBuilder('City', 'city')
-            .innerJoin('city.places', 'place')
-            .getMany()
+        return City.findWhereTradingPointExists();
     }
 
     @Get('/img/:imageName')

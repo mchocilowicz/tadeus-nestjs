@@ -12,7 +12,7 @@ import {
     Res,
     UseGuards
 } from "@nestjs/common";
-import { createQueryBuilder, getConnection } from "typeorm";
+import {createQueryBuilder, getConnection} from "typeorm";
 import {
     ApiBearerAuth,
     ApiImplicitBody,
@@ -21,23 +21,23 @@ import {
     ApiResponse,
     ApiUseTags
 } from "@nestjs/swagger";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { Const } from "../../../common/util/const";
-import { NgoType } from "../../../database/entity/ngo-type.entity";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { CodeService } from "../../../common/service/code.service";
-import { CityResponse } from "../../../models/response/city.response";
-import { City } from "../../../database/entity/city.entity";
-import { SelectedNgoRequest } from "../models/selected-ngo.request";
-import { NgoQuery } from "../models/ngo.query";
-import { UserDetails } from "../../../database/entity/user-details.entity";
-import { DonationEnum } from "../../../common/enum/donation.enum";
-import { Donation } from "../../../database/entity/donation.entity";
-import { User } from "../../../database/entity/user.entity";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {Const} from "../../../common/util/const";
+import {NgoType} from "../../../database/entity/ngo-type.entity";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {CodeService} from "../../../common/service/code.service";
+import {CityResponse} from "../../../models/response/city.response";
+import {City} from "../../../database/entity/city.entity";
+import {SelectedNgoRequest} from "../models/selected-ngo.request";
+import {NgoQuery} from "../models/ngo.query";
+import {UserDetails} from "../../../database/entity/user-details.entity";
+import {DonationEnum} from "../../../common/enum/donation.enum";
+import {Donation} from "../../../database/entity/donation.entity";
+import {User} from "../../../database/entity/user.entity";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 
 
 @Controller()
@@ -218,9 +218,7 @@ export class NgoController {
     })
     @ApiUseTags('ngo')
     getCities() {
-        return createQueryBuilder('City', 'city')
-            .innerJoin('city.ngoList', 'ngo')
-            .getMany()
+        return City.findWhereNgoExists();
     }
 
     @Get('/img/:imageName')

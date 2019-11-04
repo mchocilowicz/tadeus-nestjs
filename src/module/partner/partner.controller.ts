@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards } from "@nestjs/common";
+import {BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards} from "@nestjs/common";
 import {
     ApiBearerAuth,
     ApiImplicitBody,
@@ -7,22 +7,22 @@ import {
     ApiResponse,
     ApiUseTags
 } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { CodeVerificationRequest } from "../../models/request/code-verification.request";
-import { PhoneRequest } from "../../models/request/phone.request";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { LoginService } from "../common/login.service";
-import { User } from "../../database/entity/user.entity";
-import { createQueryBuilder } from "typeorm";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { PartnerDetailsResponse } from "../../models/response/partner-details.response";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { CodeService } from "../../common/service/code.service";
-import { Terminal } from "../../database/entity/terminal.entity";
-import { Account } from "../../database/entity/account.entity";
+import {Const} from "../../common/util/const";
+import {CodeVerificationRequest} from "../../models/request/code-verification.request";
+import {PhoneRequest} from "../../models/request/phone.request";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {LoginService} from "../common/login.service";
+import {User} from "../../database/entity/user.entity";
+import {createQueryBuilder} from "typeorm";
+import {Roles} from "../../common/decorators/roles.decorator";
+import {JwtAuthGuard} from "../../common/guards/jwt.guard";
+import {RolesGuard} from "../../common/guards/roles.guard";
+import {PartnerDetailsResponse} from "../../models/response/partner-details.response";
+import {TradingPoint} from "../../database/entity/trading-point.entity";
+import {Transaction} from "../../database/entity/transaction.entity";
+import {CodeService} from "../../common/service/code.service";
+import {Terminal} from "../../database/entity/terminal.entity";
+import {Account} from "../../database/entity/account.entity";
 
 const moment = require('moment');
 
@@ -85,11 +85,7 @@ export class PartnerController {
             throw new BadRequestException('internal_server_error')
         }
 
-        const partner: TradingPoint | undefined = await TradingPoint.createQueryBuilder('point')
-            .leftJoinAndSelect('point.city', 'city')
-            .where('point.id = :id', {id: terminal.tradingPoint.id})
-            .andWhere('point.active = true')
-            .getOne();
+        const partner: TradingPoint | undefined = await TradingPoint.findActivePointWithCityById(terminal.tradingPoint.id);
 
         const terminalAccount: Account | undefined = accounts.find(a => a.role.value === RoleEnum.TERMINAL);
 

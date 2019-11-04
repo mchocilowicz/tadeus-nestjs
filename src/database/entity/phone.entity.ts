@@ -1,16 +1,16 @@
-import { Column, Entity, ManyToOne, OneToMany, Unique } from "typeorm";
-import { PhonePrefix } from "./phone-prefix.entity";
-import { TradingPoint } from "./trading-point.entity";
-import { User } from "./user.entity";
-import { Terminal } from "./terminal.entity";
-import { Ngo } from "./ngo.entity";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, ManyToOne, OneToMany, Unique} from "typeorm";
+import {PhonePrefix} from "./phone-prefix.entity";
+import {TradingPoint} from "./trading-point.entity";
+import {User} from "./user.entity";
+import {Terminal} from "./terminal.entity";
+import {Ngo} from "./ngo.entity";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: 'tds'})
 @Unique(['value'])
 export class Phone extends TadeusEntity {
     @Column({unique: true})
-    value: string;
+    value: number;
 
     @ManyToOne(type => PhonePrefix, prefix => prefix.phone)
     prefix: PhonePrefix;
@@ -27,7 +27,7 @@ export class Phone extends TadeusEntity {
     @OneToMany(type => Ngo, ngo => ngo.phone)
     ngo?: Ngo[];
 
-    constructor(phoneNumber: string, phonePrefix: PhonePrefix) {
+    constructor(phoneNumber: number, phonePrefix: PhonePrefix) {
         super();
         this.value = phoneNumber;
         this.prefix = phonePrefix

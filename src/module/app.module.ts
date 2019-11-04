@@ -1,74 +1,71 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { RouterModule, Routes } from "nest-router";
-import { join } from "path";
-import { ApiModule } from "../api/api.module";
-import { ClientModule } from "../client/client.module";
-import { APP_FILTER } from "@nestjs/core";
-import { TadeusExceptionFilter } from "../../common/filter/tadeus-exception.filter";
-import { PartnerModule } from "../partner/partner.module";
-import { TransactionModule } from "../partner/transaction/transaction.module";
-import { TerminalModule } from "../partner/terminal/terminal.module";
-import { NgoModule } from "../client/ngo/ngo.module";
-import { RegisterModule } from "../client/register/register.module";
-import { PlaceModule } from "../client/place/place.module";
-import { ScheduleModule } from "nest-schedule";
-import { ConfigurationScheduler } from "../../schedulers/configuration.scheduler";
-import { DonationModule } from "../client/donation/donation.module";
-import { DashboardNgoModule } from "../dashboard/ngo/dashboard-ngo.module";
-import { TradingPointModule } from "../dashboard/trading-point/trading-point.module";
-import { DashboardModule } from "../dashboard/dashboard.module";
-import { StatsModule } from "../dashboard/stats/stats.module";
+import {Module} from '@nestjs/common';
+import {TypeOrmModule} from '@nestjs/typeorm';
+import {RouterModule, Routes} from "nest-router";
+import {join} from "path";
+import {ClientModule} from "./client/client.module";
+import {APP_FILTER, APP_INTERCEPTOR} from "@nestjs/core";
+import {TadeusExceptionFilter} from "../common/filter/tadeus-exception.filter";
+import {PartnerModule} from "./partner/partner.module";
+import {TransactionModule} from "./partner/transaction/transaction.module";
+import {TerminalModule} from "./partner/terminal/terminal.module";
+import {NgoModule} from "./client/ngo/ngo.module";
+import {RegisterModule} from "./client/register/register.module";
+import {PlaceModule} from "./client/place/place.module";
+import {ScheduleModule} from "nest-schedule";
+import {ConfigurationScheduler} from "../schedulers/configuration.scheduler";
+import {DonationModule} from "./client/donation/donation.module";
+import {DashboardNgoModule} from "./dashboard/ngo/dashboard-ngo.module";
+import {TradingPointModule} from "./dashboard/trading-point/trading-point.module";
+import {DashboardModule} from "./dashboard/dashboard.module";
+import {StatsModule} from "./dashboard/stats/stats.module";
+import {TadeusTransformInterceptor} from "../common/interceptors/tadeus-transform.interceptor";
 
 const routes: Routes = [
     {
-        path: '/api',
-        module: ApiModule,
+
+        path: '/client',
+        module: ClientModule,
         children: [
             {
-                path: '/client',
-                module: ClientModule,
-                children: [
-                    {
-                        path: '/ngo',
-                        module: NgoModule
-                    },
-                    {
-                        path: '/register',
-                        module: RegisterModule
-                    },
-                    {
-                        path: '/place',
-                        module: PlaceModule
-                    },
-                    {
-                        path: '/donation',
-                        module: DonationModule
-                    }
-                ]
+                path: '/ngo',
+                module: NgoModule
             },
             {
-                path: '/partner',
-                module: PartnerModule,
-                children: [
-                    {
-                        path: '/transaction',
-                        module: TransactionModule
-                    },
-                    {
-                        path: '/terminal',
-                        module: TerminalModule
-                    }
-                ]
+                path: '/register',
+                module: RegisterModule
             },
             {
-                path: '/dashboard',
-                module: DashboardModule,
-                children: [
-                    {
-                        path: '/stats',
-                        module: StatsModule
-                    },
+                path: '/place',
+                module: PlaceModule
+            },
+            {
+                path: '/donation',
+                module: DonationModule
+            }
+        ]
+    },
+    {
+        path: '/partner',
+        module: PartnerModule,
+        children: [
+            {
+                path: '/transaction',
+                module: TransactionModule
+            },
+            {
+                path: '/terminal',
+                module: TerminalModule
+            }
+        ]
+    },
+    {
+        path: '/dashboard',
+        module: DashboardModule,
+        children: [
+            {
+                path: '/stats',
+                module: StatsModule
+            },
 
             //         {
             //             path: '/user',
@@ -148,6 +145,10 @@ const routes: Routes = [
         {
             provide: APP_FILTER,
             useClass: TadeusExceptionFilter
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: TadeusTransformInterceptor
         },
         ConfigurationScheduler,
     ],

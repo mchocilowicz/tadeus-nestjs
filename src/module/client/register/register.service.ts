@@ -1,16 +1,16 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
-import { TadeusJwtService } from "../../common/TadeusJwtModule/TadeusJwtService";
-import { CodeService } from "../../../common/service/code.service";
-import { User } from "../../../database/entity/user.entity";
-import { UserInformationRequest } from "../../../models/request/user-Information.request";
-import { handleException } from "../../../common/util/functions";
-import { CodeVerificationRequest } from "../../../models/request/code-verification.request";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { getConnection } from "typeorm";
-import { UserDetails } from "../../../database/entity/user-details.entity";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
-import { CryptoService } from "../../../common/service/crypto.service";
-import { Account } from "../../../database/entity/account.entity";
+import {BadRequestException, Injectable, Logger, NotFoundException} from "@nestjs/common";
+import {TadeusJwtService} from "../../common/TadeusJwtModule/TadeusJwtService";
+import {CodeService} from "../../../common/service/code.service";
+import {User} from "../../../database/entity/user.entity";
+import {UserInformationRequest} from "../../../models/request/user-Information.request";
+import {handleException} from "../../../common/util/functions";
+import {CodeVerificationRequest} from "../../../models/request/code-verification.request";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {getConnection} from "typeorm";
+import {UserDetails} from "../../../database/entity/user-details.entity";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {CryptoService} from "../../../common/service/crypto.service";
+import {Account} from "../../../database/entity/account.entity";
 
 
 @Injectable()
@@ -23,16 +23,7 @@ export class RegisterService {
     }
 
     async fillUserInformation(dto: UserInformationRequest): Promise<string> {
-        let user: User | undefined = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.accounts', 'accounts')
-            .leftJoinAndSelect('accounts.role', 'role')
-            .leftJoinAndSelect('user.details', 'details')
-            .leftJoin('user.phone', 'phone')
-            .leftJoin('phone.prefix', 'prefix')
-            .where('role.value = :name', {name: RoleEnum.CLIENT})
-            .andWhere('phone.value = :phone', {phone: dto.phone})
-            .andWhere('prefix.value = :prefix', {prefix: dto.phonePrefix})
-            .getOne();
+        let user: User | undefined = await User.findUserByPhoneAndPrefix(dto.phone, dto.phonePrefix);
 
         if (!user) {
             throw new NotFoundException('user_not_exists')
@@ -77,16 +68,7 @@ export class RegisterService {
     }
 
     async checkCode(dto: CodeVerificationRequest) {
-        let user: User | undefined = await User.createQueryBuilder('user')
-            .leftJoin('user.phone', 'phone')
-            .leftJoin('phone.prefix', 'prefix')
-            .leftJoinAndSelect('user.accounts', 'accounts')
-            .leftJoinAndSelect('accounts.role', 'role')
-            .where('role.value = :name', {name: RoleEnum.CLIENT})
-            .andWhere('phone.value = :phone', {phone: dto.phone})
-            .andWhere('prefix.value = :prefix', {prefix: dto.phonePrefix})
-            .andWhere('accounts.code = :code', {code: dto.code})
-            .getOne();
+        let user: User | undefined = await User.findUserForVerification(dto.phone, dto.phonePrefix, dto.code);
 
         if (!user) {
             throw new NotFoundException('invalid_code')

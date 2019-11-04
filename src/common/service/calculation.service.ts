@@ -1,14 +1,13 @@
-import { Injectable } from "@nestjs/common";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { Cart } from "../../database/entity/cart.entity";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
+import {Injectable} from "@nestjs/common";
+import {Transaction} from "../../database/entity/transaction.entity";
+import {TradingPoint} from "../../database/entity/trading-point.entity";
 
 const _ = require('lodash');
 
 @Injectable()
 export class CalculationService {
 
-    calculate(transactions: any[], tradingPoint: TradingPoint, lastUserXp: number): number {
+    calculate(transactions: Transaction[], tradingPoint: TradingPoint, lastUserXp: number): number {
         let transactionsInSameShop = transactions.filter((t: Transaction) => t.tradingPoint.id === tradingPoint.id);
         let transactionsInOtherShops = _.uniqBy(transactions.filter((t: Transaction) => t.tradingPoint.id !== tradingPoint.id), 'tradingPoint.id');
 
@@ -34,11 +33,10 @@ export class CalculationService {
         return transactions.length === 1 ? 10 : nexXp - lastUserXp;
     }
 
-    calculateTradingPointXp(cart: Cart): number {
+    calculateTradingPointXp(transactions: Transaction[]): number {
         const defaultXp = 20;
-        const transactions: Transaction[] | undefined = cart.transactions;
 
-        if (!transactions) {
+        if (transactions.length === 1) {
             return 50;
         }
 
@@ -54,18 +52,11 @@ export class CalculationService {
 
     }
 
-    calculateX(price: number, donationPercentage: number, defaultVat: number): number {
+    calculateCost(price: number, donationPercentage: number, defaultVat: number): number {
         const vat = defaultVat / 100;
         const netto = (price * vat) / (1 + (vat));
         const cost = netto * (donationPercentage / 100);
         return this.roundToTwo(cost);
-    }
-
-    calculateY(price: number, manipulationFee: number, defaultVat: number): number {
-        const vat = defaultVat / 100;
-        const netto = (price * vat) / (1 + (vat));
-        const fee = netto * (manipulationFee / 100);
-        return this.roundToTwo(fee)
     }
 
     roundToTwo(num: number): number {

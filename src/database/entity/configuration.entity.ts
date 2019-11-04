@@ -1,5 +1,5 @@
-import { Column, Entity } from "typeorm";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity} from "typeorm";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: 'tds'})
 export class Configuration extends TadeusEntity {
@@ -14,41 +14,16 @@ export class Configuration extends TadeusEntity {
     userExpirationAfterDays: number = 365;
 
     @Column()
-    oldClientPaymentAt?: Date;
-
-    @Column()
-    previousClientPaymentAt?: Date;
-
-    @Column()
-    currentClientPaymentAt?: Date;
-
-    @Column()
-    clientInterval: number = 1;
-
-    @Column()
-    oldPartnerPaymentAt?: Date;
-
-    @Column()
-    previousPartnerPaymentAt?: Date;
-
-    @Column()
-    currentPartnerPaymentAt?: Date;
-
-    @Column()
-    partnerInterval: number = 1;
-
-    @Column()
-    oldNgoPaymentAt?: Date;
-
-    @Column()
-    previousNgoPaymentAt?: Date;
-
-    @Column()
-    currentNgoPaymentAt?: Date;
-
-    @Column()
-    ngoInterval: number = 1;
-
-    @Column()
     type: string = 'MAIN';
+
+    constructor(
+        ngoTransfer: number,
+        minPersonalPool: number,
+        userExpiration: number
+    ) {
+        super();
+        this.minNgoTransfer = ngoTransfer;
+        this.minPersonalPool = minPersonalPool;
+        this.userExpirationAfterDays = userExpiration;
+    }
 }

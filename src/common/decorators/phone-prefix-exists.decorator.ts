@@ -5,11 +5,11 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface
 } from "class-validator";
-import { PhonePrefix } from "../../database/entity/phone-prefix.entity";
+import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
 
 @ValidatorConstraint({async: true})
 export class PhonePrefixExistsConstraint implements ValidatorConstraintInterface {
-    async validate(phonePrefix: any, args: ValidationArguments) {
+    async validate(phonePrefix: number, args: ValidationArguments) {
         const prefix = await PhonePrefix.findOne({value: phonePrefix});
         return !!prefix;
     }

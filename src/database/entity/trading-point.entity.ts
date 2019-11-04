@@ -1,12 +1,12 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from "typeorm";
-import { TradingPointType } from "./trading-point-type.entity";
-import { City } from "./city.entity";
-import { Transaction } from "./transaction.entity";
-import { Cart } from "./cart.entity";
-import { Payment } from "./payment.entity";
-import { Terminal } from "./terminal.entity";
-import { Phone } from "./phone.entity";
-import { TadeusEntity } from "./base.entity";
+import {BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique} from "typeorm";
+import {TradingPointType} from "./trading-point-type.entity";
+import {City} from "./city.entity";
+import {Transaction} from "./transaction.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+import {Terminal} from "./terminal.entity";
+import {Phone} from "./phone.entity";
+import {TadeusEntity} from "./base.entity";
+import {Correction} from "./correction.entity";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
@@ -60,7 +60,7 @@ export class TradingPoint extends TadeusEntity {
     @Column({nullable: true})
     closedAt?: Date;
 
-    @ManyToOne(type => TradingPointType, {nullable: false})
+    @ManyToOne(type => TradingPointType)
     @JoinColumn()
     type: TradingPointType;
 
@@ -75,11 +75,11 @@ export class TradingPoint extends TadeusEntity {
     @OneToMany(type => Terminal, terminal => terminal.tradingPoint)
     terminals?: Terminal[];
 
-    @OneToMany(type => Cart, cart => cart.tradingPoint)
-    cartList?: Cart[];
+    @OneToMany(type => PartnerPayment, payment => payment.tradingPoint)
+    payments?: PartnerPayment[];
 
-    @OneToMany(type => Payment, payment => payment.tradingPoint)
-    payments?: Payment[];
+    @OneToMany(type => Correction, correction => correction.tradingPoint)
+    corrections?: Correction[];
 
     @OneToMany(type => Transaction, transactions => transactions.tradingPoint)
     transactions?: Transaction[];
@@ -113,5 +113,13 @@ export class TradingPoint extends TadeusEntity {
             type: "Point",
             coordinates: [this.longitude, this.latitude]
         };
+    }
+
+    static findActivePointWithCityById(tradingPointId?: string) {
+        return this.createQueryBuilder('point')
+            .leftJoinAndSelect('point.city', 'city')
+            .where('point.id = :id', {id: tradingPointId})
+            .andWhere('point.active = true')
+            .getOne();
     }
 }

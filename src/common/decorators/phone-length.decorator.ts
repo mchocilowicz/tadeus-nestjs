@@ -1,5 +1,5 @@
-import { registerDecorator, ValidationArguments, ValidationOptions } from "class-validator";
-import { PhonePrefix } from "../../database/entity/phone-prefix.entity";
+import {registerDecorator, ValidationArguments, ValidationOptions} from "class-validator";
+import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
 
 export function PhoneLength(property: string, validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
@@ -14,10 +14,10 @@ export function PhoneLength(property: string, validationOptions?: ValidationOpti
                     const [relatedPropertyName] = args.constraints;
                     const relatedValue = (args.object as any)[relatedPropertyName];
                     const prefix = await PhonePrefix.findOne({value: relatedValue});
-                    return typeof value === "string" &&
-                        typeof relatedValue === "string" &&
+                    return typeof value === "number" &&
+                        typeof relatedValue === "number" &&
                         !!prefix &&
-                        value.length <= prefix.maxLength
+                        value <= prefix.maxLength
                 }
             }
         });

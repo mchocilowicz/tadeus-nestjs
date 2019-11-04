@@ -1,9 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { TradingPoint } from "./trading-point.entity";
-import { User } from "./user.entity";
-import { Cart } from "./cart.entity";
-import { Terminal } from "./terminal.entity";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, ManyToOne} from "typeorm";
+import {TradingPoint} from "./trading-point.entity";
+import {User} from "./user.entity";
+
+import {Terminal} from "./terminal.entity";
+import {TadeusEntity} from "./base.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+
+const moment = require('moment');
 
 @Entity({schema: 'tds'})
 export class Transaction extends TadeusEntity {
@@ -17,7 +20,19 @@ export class Transaction extends TadeusEntity {
     donationPercentage: number = 0;
 
     @Column({type: 'decimal'})
-    donationValue: number = 0;
+    provisionPercentage: number = 0;
+
+    @Column({type: 'decimal'})
+    paymentValue: number = 0;
+
+    @Column({type: 'decimal'})
+    vat: number = 0;
+
+    @Column({type: 'decimal'})
+    provision: number = 0;
+
+    @Column({type: 'decimal'})
+    poolValue: number = 0;
 
     @Column()
     userXp: number = 0;
@@ -28,13 +43,6 @@ export class Transaction extends TadeusEntity {
     @Column()
     isCorrection: boolean = false;
 
-    @Column()
-    verifiedByUser: boolean = false;
-
-    @ManyToOne(type => Cart, cart => cart.transactions)
-    @JoinColumn()
-    cart: Cart;
-
     @ManyToOne(type => TradingPoint, tradingPoint => tradingPoint.transactions)
     tradingPoint: TradingPoint;
 
@@ -44,21 +52,60 @@ export class Transaction extends TadeusEntity {
     @ManyToOne(type => Terminal, terminal => terminal.transactions)
     terminal: Terminal;
 
+    @ManyToOne(type => PartnerPayment, payment => payment.transactions)
+    payment: PartnerPayment;
+
     @Column({default: 'TRANSACTION'})
     class: string = 'TRANSACTION';
 
     constructor(terminal: Terminal,
                 user: User,
                 tradingPoint: TradingPoint,
-                cart: Cart,
                 ID: string,
-                price: number) {
+                price: number,
+                payment: PartnerPayment,
+                vat: number,
+                fee: number,
+                donationPercentage: number) {
         super();
         this.terminal = terminal;
         this.user = user;
         this.tradingPoint = tradingPoint;
-        this.cart = cart;
         this.ID = ID;
-        this.price = price;
+        this.price = Number(price);
+        this.payment = payment;
+        this.donationPercentage = Number(donationPercentage);
+        this.provisionPercentage = Number(fee);
+        this.vat = Number(vat);
+    }
+
+    static findByTradingPointMadeToday(tradingPointId: string) {
+        return this.createQueryBuilder('transaction')
+            .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
+            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .andWhere('transaction.isCorrection = false')
+            .andWhere('tradingPoint.id = :id', {id: tradingPointId})
+            .getMany();
+    }
+
+    static findByUserMadeToday(userId: string) {
+        return this.createQueryBuilder('transaction')
+            .leftJoinAndSelect("transaction.user", 'user')
+            .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
+            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .andWhere('transaction.isCorrection = false')
+            .andWhere('user.id = :user', {user: userId})
+            .getMany();
+    }
+
+    updateXpValues(userXp: number, tradingPointXp: number) {
+        this.userXp = Number(userXp);
+        this.tradingPointXp = Number(tradingPointXp);
+    }
+
+    updatePaymentValues(provision: number, pool: number) {
+        this.paymentValue = Number(provision + pool);
+        this.poolValue = Number(pool);
+        this.provision = Number(provision);
     }
 }

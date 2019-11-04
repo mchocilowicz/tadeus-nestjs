@@ -1,7 +1,7 @@
-import { Column, Entity, JoinTable, ManyToOne, OneToMany } from "typeorm";
-import { Ngo } from "./ngo.entity";
-import { User } from "./user.entity";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, JoinTable, ManyToOne, OneToMany} from "typeorm";
+import {Ngo} from "./ngo.entity";
+import {User} from "./user.entity";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: 'tds'})
 export class UserDetails extends TadeusEntity {
@@ -41,5 +41,16 @@ export class UserDetails extends TadeusEntity {
         this.name = name;
         this.email = email;
         this.xp = xp;
+    }
+
+    static findTopDetailsSortedByCollectedMoney(top: number) {
+        return this.createQueryBuilder('details')
+            .orderBy('details.collectedMoney', 'DESC')
+            .take(Math.ceil(top))
+            .getMany();
+    }
+
+    updateCollectedMoney(value: number) {
+        this.collectedMoney += Number(value)
     }
 }

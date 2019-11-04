@@ -1,5 +1,5 @@
-import { Const } from "../util/const";
-import { Injectable } from "@nestjs/common";
+import {Const} from "../util/const";
+import {Injectable} from "@nestjs/common";
 
 const uuidv4 = require('uuid/v4');
 const moment = require('moment');
@@ -19,6 +19,11 @@ export class CodeService {
 
     generateDonationID(): string {
         const result = ['D000', Const.CONTROL_NUMBER, moment().format('YYYYMMDDhhmmss'), this.generateNumber()];
+        return result.join('-');
+    }
+
+    generatePartnerPaymentID(): string {
+        const result = ['PP000', Const.CONTROL_NUMBER, moment().format('YYYYMMDDhhmmss'), this.generateNumber()];
         return result.join('-');
     }
 

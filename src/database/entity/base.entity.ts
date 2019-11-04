@@ -1,4 +1,5 @@
-import { BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} from "typeorm";
+
 
 export class TadeusEntity extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")

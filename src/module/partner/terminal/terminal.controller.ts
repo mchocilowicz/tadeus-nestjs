@@ -1,16 +1,16 @@
-import { Body, Controller, Delete, Get, Param, Post, Req, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { createQueryBuilder, getConnection } from "typeorm";
-import { PhoneRequest } from "../../../models/request/phone.request";
-import { User } from "../../../database/entity/user.entity";
-import { Transaction } from "../../../database/entity/transaction.entity";
-import { CodeService } from "../../../common/service/code.service";
-import { Terminal } from "../../../database/entity/terminal.entity";
+import {Body, Controller, Delete, Get, Param, Post, Req, UseGuards} from "@nestjs/common";
+import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {createQueryBuilder, getConnection} from "typeorm";
+import {PhoneRequest} from "../../../models/request/phone.request";
+import {User} from "../../../database/entity/user.entity";
+import {Transaction} from "../../../database/entity/transaction.entity";
+import {CodeService} from "../../../common/service/code.service";
+import {Terminal} from "../../../database/entity/terminal.entity";
 
 @Controller()
 @ApiUseTags('terminal')
@@ -36,10 +36,7 @@ export class TerminalController {
     async getPartnerTerminals(@Req() req: any) {
         let user = req.user;
 
-        let terminals = await createQueryBuilder('Terminal', 'terminal')
-            .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
-            .andWhere('terminal.id != :id', {id: user.terminal.id})
-            .getMany();
+        let terminals = await Terminal.findAllWithoutCurrentTerminal(user.terminal.id);
 
         return {
             phone: user.phone,

@@ -1,5 +1,5 @@
-import { Column, Entity, Generated } from "typeorm";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, Generated} from "typeorm";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: 'tds'})
 export class VirtualCard extends TadeusEntity {
@@ -19,5 +19,11 @@ export class VirtualCard extends TadeusEntity {
     constructor(ID: string) {
         super();
         this.ID = ID;
+    }
+
+    updatePool(totalPool: number) {
+        const pool = Number(totalPool / 2);
+        this.personalPool += pool;
+        this.donationPool += pool;
     }
 }

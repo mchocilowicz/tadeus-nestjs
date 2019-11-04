@@ -11,35 +11,41 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { User } from "../../database/entity/user.entity";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { getConnection } from "typeorm";
-import { Const } from "../../common/util/const";
-import { MainResponse } from "../../models/response/main.response";
-import { ClientHistoryResponse } from "../../models/response/client-history.response";
-import { VirtualCardResponse } from "../../models/response/virtual-card.response";
-import { CodeService } from "../../common/service/code.service";
-import { CodeVerificationRequest } from "../../models/request/code-verification.request";
-import { LoginService } from "../common/login.service";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { NewPhoneRequest } from "../../models/request/new-phone.request";
-import { SignInResponse } from "../../models/response/signIn.response";
-import { Notification } from "../../database/entity/notification.entity";
-import { Opinion } from "../../database/entity/opinion.entity";
-import { UserDetailsResponse } from "./models/response/user-details.response";
-import { UserDetailsRequest } from "./models/user-details.request";
-import { NotificationRequest } from "./models/notification.request";
-import { UserDetails } from "../../database/entity/user-details.entity";
-import { VirtualCard } from "../../database/entity/virtual-card.entity";
-import { Phone } from "../../database/entity/phone.entity";
-import { TadeusEntity } from "../../database/entity/base.entity";
-import { groupDatesByComponent } from "../../common/util/functions";
+import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
+import {Roles} from "../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {User} from "../../database/entity/user.entity";
+import {JwtAuthGuard} from "../../common/guards/jwt.guard";
+import {RolesGuard} from "../../common/guards/roles.guard";
+import {getConnection} from "typeorm";
+import {Const} from "../../common/util/const";
+import {MainResponse} from "../../models/response/main.response";
+import {ClientHistoryResponse} from "../../models/response/client-history.response";
+import {VirtualCardResponse} from "../../models/response/virtual-card.response";
+import {CodeService} from "../../common/service/code.service";
+import {CodeVerificationRequest} from "../../models/request/code-verification.request";
+import {LoginService} from "../common/login.service";
+import {Transaction} from "../../database/entity/transaction.entity";
+import {NewPhoneRequest} from "../../models/request/new-phone.request";
+import {SignInResponse} from "../../models/response/signIn.response";
+import {Notification} from "../../database/entity/notification.entity";
+import {Opinion} from "../../database/entity/opinion.entity";
+import {UserDetailsResponse} from "./models/response/user-details.response";
+import {UserDetailsRequest} from "./models/user-details.request";
+import {NotificationRequest} from "./models/notification.request";
+import {UserDetails} from "../../database/entity/user-details.entity";
+import {VirtualCard} from "../../database/entity/virtual-card.entity";
+import {Phone} from "../../database/entity/phone.entity";
+import {TadeusEntity} from "../../database/entity/base.entity";
+import {groupDatesByComponent} from "../../common/util/functions";
+import {CalculationService} from "../../common/service/calculation.service";
+import {Correction} from "../../database/entity/correction.entity";
+import {Configuration} from "../../database/entity/configuration.entity";
+import {PartnerPayment} from "../../database/entity/partner-payment.entity";
+import {TradingPoint} from "../../database/entity/trading-point.entity";
 
 const _ = require('lodash');
+const moment = require('moment');
 
 @Controller()
 export class ClientController {
@@ -47,7 +53,8 @@ export class ClientController {
     private readonly logger = new Logger(ClientController.name);
 
     constructor(private readonly codeService: CodeService,
-                private readonly service: LoginService) {
+                private readonly service: LoginService,
+                private readonly calService: CalculationService) {
     }
 
     @Post('signIn')
@@ -117,10 +124,7 @@ export class ClientController {
 
         const count = await UserDetails.count();
         const s = count / 10;
-        const detail: UserDetails[] = await UserDetails.createQueryBuilder('details')
-            .orderBy('details.collectedMoney', 'DESC')
-            .take(Math.ceil(s))
-            .getMany();
+        const detail: UserDetails[] = await UserDetails.findTopDetailsSortedByCollectedMoney(s);
         const maxMoney = detail.reduce((previousValue, currentValue) => previousValue + currentValue.collectedMoney, 0);
         const n = maxMoney / s;
         const result = (100 * details.collectedMoney) / n;
@@ -145,16 +149,12 @@ export class ClientController {
     })
     async history(@Req() req: any) {
         const user: User = req.user;
+        if (!user.id) {
+            this.logger.error(`User ${user.id} does not exists`);
+            throw new BadRequestException('internal_server_error')
+        }
 
-        let tempUser: User | undefined = await User.createQueryBuilder("user")
-            .leftJoinAndSelect("user.transactions", "transactions")
-            .leftJoinAndSelect('transactions.tradingPoint', 'tradingPoint')
-            .leftJoinAndSelect('tradingPoint.city', 'city')
-            .leftJoinAndSelect('user.payouts', 'payouts')
-            .leftJoinAndSelect("user.donations", "donations")
-            .leftJoinAndSelect("donations.ngo", 'ngo')
-            .where("user.id = :id", {id: user.id})
-            .getOne();
+        let tempUser: User | undefined = await User.findOneWithistoryData(user.id);
 
         if (!tempUser) {
             this.logger.error(`User ${user.id} does not exists`);
@@ -201,49 +201,6 @@ export class ClientController {
         }
 
         return new VirtualCardResponse(virtualCard);
-    }
-
-
-    @Get('correction')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: []})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    async getCorrections(@Req() req: any) {
-        return await Transaction.find({user: req.user, isCorrection: true})
-    }
-
-    @Put('correction/:id')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: []})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    async approveCorrection(@Param('id') id: string) {
-        let t = await Transaction.findOne({id: id});
-        if (t) {
-            t.verifiedByUser = true;
-            await t.save()
-        }
     }
 
     @Put('user')
@@ -378,6 +335,146 @@ export class ClientController {
     async createOpinion(@Req() req: any, @Body() dto: NotificationRequest) {
         let opinion = new Opinion(dto.email, dto.value, req.user);
         await opinion.save();
+    }
+
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @Post('correction/:id')
+    async verifyCorrection(@Param('id') id: string, @Req() req: any) {
+        const correction: Correction | undefined = await Correction.findOne({id: id});
+        if (correction) {
+            const user: User = req.user;
+            if (correction.user.id === user.id) {
+                await getConnection().transaction(async entityManager => {
+                    if (user.details && user.card) {
+                        const transaction: Transaction = correction.transaction;
+                        const terminal = correction.terminal;
+                        correction.isVerified = true;
+                        correction.status = 'VERIFIED';
+                        transaction.isCorrection = true;
+
+                        const details = user.details;
+                        const card = user.card;
+                        details.xp -= transaction.userXp;
+                        details.collectedMoney -= transaction.poolValue;
+                        card.donationPool -= transaction.poolValue / 2;
+                        card.personalPool -= transaction.poolValue / 2;
+
+
+                        await entityManager.save(transaction);
+                        await entityManager.save(correction);
+
+                        // new treansaction
+
+
+                        const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
+
+                        if (!config) {
+                            throw new BadRequestException('internal_server_error');
+                        }
+
+                        if (!correction.terminal) {
+                            throw new BadRequestException('internal_server_error');
+                        }
+
+                        let payment: PartnerPayment | undefined = await PartnerPayment.findOne({
+                            periodFrom: config.previousPartnerPaymentAt,
+                            periodTo: config.currentPartnerPaymentAt
+                        });
+
+                        let tradingPoint: TradingPoint = terminal.tradingPoint;
+
+                        if (!payment) {
+                            payment = new PartnerPayment(this.codeService.generatePartnerPaymentID(), tradingPoint, config.previousPartnerPaymentAt, config.currentPartnerPaymentAt);
+                            payment = await entityManager.save(payment)
+                        }
+
+                        let newTransaction: Transaction = new Transaction(
+                            terminal,
+                            user,
+                            tradingPoint,
+                            this.codeService.generateTransactionID(),
+                            correction.price,
+                            payment
+                        );
+
+                        if (!user || !user.details || !user.id || !user.card || !tradingPoint.id) {
+                            throw new BadRequestException('user_does_not_exists')
+                        }
+
+
+                        const userXp = await this.calculateXpForUser(user.id, user.details, newTransaction, transaction);
+                        const tradingPointXp = await this.calculateXpForPartner(tradingPoint.id, newTransaction, transaction);
+
+                        newTransaction.updateXpValues(userXp, tradingPointXp);
+                        tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
+
+
+                        details.xp += userXp;
+
+                        let pool = this.calService.calculateCost(correction.price, tradingPoint.donationPercentage, tradingPoint.vat);
+                        let provision = this.calService.calculateCost(correction.price, tradingPoint.fee, tradingPoint.vat);
+
+                        transaction.updatePaymentValues(provision, pool);
+
+                        card.updatePool(pool);
+                        details.updateCollectedMoney(pool);
+
+                        await entityManager.save(transaction);
+
+                        if (details.ngo) {
+                            let card = details.ngo.card;
+                            if (!card) {
+                                throw new BadRequestException('internal_server_error');
+                            }
+                            card.collectedMoney += pool;
+                            await entityManager.save(card)
+                        } else {
+                            details.ngoTempMoney += pool;
+                        }
+
+                        await entityManager.save(card);
+                        await entityManager.save(tradingPoint);
+                        await entityManager.save(details);
+                    }
+                })
+            }
+        }
+
+    }
+
+    private async calculateXpForUser(userId: string, details: UserDetails, currenctTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
+        let transactions: Transaction[] = await Transaction.findByUserMadeToday(userId);
+
+        transactions.push(currenctTransaction);
+        if (ignoreTransaction) {
+            transactions = transactions.filter((t: Transaction) => t.id !== ignoreTransaction.id)
+        }
+
+        return this.calService.calculate(transactions, currenctTransaction.tradingPoint, details.xp)
+    }
+
+    private async calculateXpForPartner(partnerId: string, currenctTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
+        let transactions: Transaction[] = await Transaction.findByTradingPointMadeToday(partnerId);
+
+        transactions.push(currenctTransaction);
+
+        if (ignoreTransaction) {
+            transactions = transactions.filter((t: Transaction) => t.id !== ignoreTransaction.id)
+        }
+        return this.calService.calculateTradingPointXp(transactions)
     }
 
 }

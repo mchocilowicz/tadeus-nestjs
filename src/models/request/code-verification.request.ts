@@ -1,6 +1,6 @@
-import { ApiModelProperty } from "@nestjs/swagger";
-import { IsNumber, Max, Min } from "class-validator";
-import { PhoneRequest } from "./phone.request";
+import {ApiModelProperty} from "@nestjs/swagger";
+import {IsNumber, Max, Min} from "class-validator";
+import {PhoneRequest} from "./phone.request";
 
 export class CodeVerificationRequest extends PhoneRequest {
     @ApiModelProperty({required: true})
@@ -9,7 +9,7 @@ export class CodeVerificationRequest extends PhoneRequest {
     @Min(1000, {message: 'code_max_value'})
     readonly code: number;
 
-    constructor(phone: string, code: number, prefix: string) {
+    constructor(phone: number, code: number, prefix: number) {
         super(phone, prefix);
         this.code = code;
     }
