@@ -5,6 +5,7 @@ import {
     Delete,
     Get,
     Logger,
+    NotFoundException,
     Param,
     Post,
     Put,
@@ -13,28 +14,28 @@ import {
     UploadedFile,
     UseInterceptors
 } from "@nestjs/common";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { createQueryBuilder, EntityManager, getConnection, QueryFailedError } from "typeorm";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { City } from "../../../database/entity/city.entity";
-import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
-import { ApiConsumes, ApiImplicitFile, ApiUseTags } from "@nestjs/swagger";
-import { validate } from "class-validator";
-import { extractErrors } from "../../../common/util/functions";
-import { ExcelException } from "../../../common/exceptions/excel.exception";
-import { CodeService } from "../../../common/service/code.service";
-import { Terminal } from "../../../database/entity/terminal.entity";
-import { diskStorage } from "multer";
-import { TradingPointExcelRow } from "../../../models/excel/trading-point-row.excel";
-import { Phone } from "../../../database/entity/phone.entity";
-import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
-import { Account } from "../../../database/entity/account.entity";
-import { Role } from "../../../database/entity/role.entity";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { User } from "../../../database/entity/user.entity";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {createQueryBuilder, EntityManager, getConnection, QueryFailedError} from "typeorm";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {City} from "../../../database/entity/city.entity";
+import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
+import {ApiConsumes, ApiImplicitFile, ApiUseTags} from "@nestjs/swagger";
+import {validate} from "class-validator";
+import {extractErrors} from "../../../common/util/functions";
+import {ExcelException} from "../../../common/exceptions/excel.exception";
+import {CodeService} from "../../../common/service/code.service";
+import {Terminal} from "../../../database/entity/terminal.entity";
+import {diskStorage} from "multer";
+import {TradingPointExcelRow} from "../../../models/excel/trading-point-row.excel";
+import {Phone} from "../../../database/entity/phone.entity";
+import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import {Account} from "../../../database/entity/account.entity";
+import {Role} from "../../../database/entity/role.entity";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {User} from "../../../database/entity/user.entity";
+import {Address} from "../../../database/entity/address.entity";
 
 const moment = require("moment");
-
 
 @Controller()
 @ApiUseTags('trading-point')
@@ -133,9 +134,14 @@ export class TradingPointController {
         }),
     }))
     async updateTradingPoint(@UploadedFile() image: any, @Body() dto: any, @Param('id') id: string) {
-        // let point = await TradingPoint.findOne({ID: id}, {relations: ['city', 'type']});
-        // this.mapToBaseEntity(dto, point);
-        // await point.save()
+        let point = await TradingPoint.findOne({ID: id}, {relations: ['city', 'type']});
+
+        if (!point) {
+            throw new NotFoundException('trading_point_not_exists')
+        }
+
+        this.mapToBaseEntity(dto, point);
+        await point.save()
     }
 
     @Get(':ID/terminal')
@@ -193,23 +199,24 @@ export class TradingPointController {
     }
 
     private mapToBaseEntity(dto: any, entity: TradingPoint): void {
-        entity.city = dto.city;
-        entity.type = dto.type;
-        entity.name = dto.name;
-        entity.address = dto.address;
-        entity.donationPercentage = dto.donationPercentage;
-        entity.vat = dto.vat;
-        entity.longitude = dto.longitude;
-        entity.latitude = dto.latitude;
-        entity.fee = dto.fee;
-        entity.postCode = dto.postCode;
-        entity.xp = dto.xp;
+        // entity.city = dto.city;
+        // entity.type = dto.type;
+        // entity.name = dto.name;
+        // entity.address = dto.address;
+        // entity.donationPercentage = dto.donationPercentage;
+        // entity.vat = dto.vat;
+        // entity.longitude = dto.longitude;
+        // entity.latitude = dto.latitude;
+        // entity.fee = dto.fee;
+        // entity.postCode = dto.postCode;
+        // entity.xp = dto.xp;
     }
 
-    private async createNewTerminal(entityManager: EntityManager, phone: Phone, point: TradingPoint, dto: any, isMain: boolean = false) {
+    private async createNewTerminal(entityManager: EntityManager, phone: Phone, point: TradingPoint, isMain: boolean = false) {
         const role = await Role.findOne({value: RoleEnum.TERMINAL});
+
         if (!role) {
-            this.logger.error('Rola Terminal nie istnieje.');
+            this.logger.error('TERMINAL Role does not exists');
             throw new BadRequestException('internal_server_error');
         }
 
@@ -269,11 +276,7 @@ export class TradingPointController {
                 type = await entityManager.save(type);
             }
 
-            let phone = await Phone.createQueryBuilder('phone')
-                .leftJoin('phone.prefix', 'prefix')
-                .where('prefix.value = :prefix', {prefix: row.phonePrefix})
-                .andWhere('phone.value = :phone', {phone: row.phone})
-                .getOne();
+            let phone = await Phone.findNumber(row.phonePrefix, row.phone);
 
             if (!phone) {
                 const prefix = await PhonePrefix.findOne({value: row.phonePrefix});
@@ -283,25 +286,26 @@ export class TradingPointController {
                 phone = await entityManager.save(new Phone(row.phone, prefix));
             }
 
-            let tradePoint: TradingPoint = new TradingPoint(
-                this.codeService.generateTradingPointNumber(type.code),
-                row.name,
-                row.donationPercentage,
-                row.latitude,
-                row.longitude,
-                phone,
-                type,
-                city,
-                row.address,
-                row.postCode
-            );
-            tradePoint.fee = row.manipulationFee ? row.manipulationFee : 0.66;
-            tradePoint.xp = row.xp;
-
             try {
                 if (phone) {
+                    let address = new Address(row.street, row.number, row.postCode, city, row.longitude, row.latitude);
+
+                    let tradePoint: TradingPoint = new TradingPoint(
+                        this.codeService.generateTradingPointNumber(type.code),
+                        row.name,
+                        row.donationPercentage,
+                        row.latitude,
+                        row.longitude,
+                        phone,
+                        type,
+                        await entityManager.save(address)
+                    );
+
+                    tradePoint.fee = row.manipulationFee ? row.manipulationFee : 0.66;
+                    tradePoint.xp = row.xp;
                     tradePoint = await entityManager.save(tradePoint);
-                    await this.createNewTerminal(entityManager, phone, tradePoint, row, true);
+
+                    await this.createNewTerminal(entityManager, phone, tradePoint, true);
                 }
             } catch (e) {
                 console.log(e);
@@ -318,22 +322,6 @@ export class TradingPointController {
         });
     }
 
-    private async getTypeCode(): Promise<number> {
-        let code = null;
-        while (!code) {
-            const a = this.createCode(100, 1000);
-            const b = await TradingPointType.findOne({code: a});
-            if (!b) {
-                code = a;
-            }
-        }
-        return code
-    }
-
-    private createCode(min: number, max: number) {
-        return Math.floor(Math.random() * (max - min) + min);
-    }
-
     private mapRowColumns(row: any) {
         const columnMapping: any = {
             'Name': 'name',
@@ -343,19 +331,23 @@ export class TradingPointController {
             'Manipulation fee': 'manipulationFee',
             'Latitude': 'latitude',
             'Longitude': 'longitude',
-            'Address': 'address',
+            'Street': 'street',
+            'Number': 'number',
             'Post code': 'postCode',
             'Phone Prefix': 'phonePrefix',
             'Phone': 'phone',
             'Xp': 'xp',
             'City': 'city',
         };
+
         const newRow: any = {};
+
         for (let props in columnMapping) {
             if (row.hasOwnProperty(props)) {
                 newRow[columnMapping[props]] = row[props];
             }
         }
+
         return new TradingPointExcelRow(newRow);
     }
 

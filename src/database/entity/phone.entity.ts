@@ -32,4 +32,11 @@ export class Phone extends TadeusEntity {
         this.value = phoneNumber;
         this.prefix = phonePrefix
     }
+
+    static findNumber(prefix: number, number: number) {
+        return this.createQueryBuilder('phone')
+            .leftJoin('phone.prefix', 'prefix')
+            .where('phone.value = :number AND prefix.value = :prefix', {number: number, prefix: prefix})
+            .getOne();
+    }
 }

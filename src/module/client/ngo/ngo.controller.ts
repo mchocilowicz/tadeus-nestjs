@@ -38,6 +38,7 @@ import {DonationEnum} from "../../../common/enum/donation.enum";
 import {Donation} from "../../../database/entity/donation.entity";
 import {User} from "../../../database/entity/user.entity";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {Period} from "../../../database/entity/period.entity";
 
 
 @Controller()
@@ -69,12 +70,13 @@ export class NgoController {
         let ngo: Ngo | undefined = await Ngo.findOne({id: dto.id, verified: true, isTadeus: false});
         let details: UserDetails | undefined = user.details;
         let virtualCard: VirtualCard | undefined = user.card;
+        const period: Period | undefined = await Period.findCurrentNgoPeriod();
 
         if (!ngo) {
             throw new BadRequestException("ngo_does_not_exists")
         }
 
-        if (!details || !virtualCard) {
+        if (!details || !virtualCard || !period) {
             this.logger.error(`User Details or Virtual Card for user ${user.id} does not exists.`);
             throw new BadRequestException("internal_server_error")
         }
@@ -95,7 +97,8 @@ export class NgoController {
                     "DONATION",
                     price,
                     details.ngo,
-                    user);
+                    user,
+                    period);
 
                 virtualCard.donationPool = 0;
                 if (details.ngo.id !== ngo.id) {
@@ -158,20 +161,21 @@ export class NgoController {
     @ApiUseTags('ngo')
     async getAll(@Query() query: NgoQuery) {
         let sqlQuery = createQueryBuilder('Ngo')
-            .leftJoinAndSelect('Ngo.city', 'city')
+            .leftJoinAndSelect('Ngo.address', 'address')
+            .leftJoinAndSelect('address.city', 'city')
             .leftJoinAndSelect('Ngo.type', 'ngoType');
 
         if (query['longitude'] && query['latitude']) {
             const lo = Number(query['longitude']);
             const la = Number(query['latitude']);
 
-            const a = `ST_Distance(ST_Transform(Ngo.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
+            const a = `ST_Distance(ST_Transform(Ngo.address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
             const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
-            sqlQuery = sqlQuery.addSelect(a, 'Ngo_distance');
+            sqlQuery = sqlQuery.addSelect(a, 'Ngo.address_distance');
             sqlQuery = sqlQuery.andWhere(`${a} > 0`)
                 .orderBy(c)
                 .limit(10);

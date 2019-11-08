@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import { Logger, LoggerOptions, transports } from 'winston';
+import {Logger, LoggerOptions, transports} from 'winston';
 import * as chalk from 'chalk';
 import * as PrettyError from 'pretty-error'; // it's really handy to make your life easier
 

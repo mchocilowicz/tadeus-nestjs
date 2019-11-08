@@ -1,5 +1,5 @@
-import { ApiModelProperty } from "@nestjs/swagger";
-import { IsAlpha, IsNotEmpty } from "class-validator";
+import {ApiModelProperty} from "@nestjs/swagger";
+import {IsAlpha, IsNotEmpty} from "class-validator";
 
 export class NgoTypeRequest {
     @ApiModelProperty({required: true})
@@ -10,4 +10,8 @@ export class NgoTypeRequest {
         message: "name_format"
     })
     name: string;
+
+    constructor(name: string) {
+        this.name = name;
+    }
 }

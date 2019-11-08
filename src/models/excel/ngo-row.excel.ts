@@ -1,5 +1,5 @@
-import { IsAlpha, IsEmail, IsNotEmpty, IsNumberString } from "class-validator";
-import { BasicRowExcel } from "./basic-row.excel";
+import {IsAlpha, IsEmail, IsNotEmpty, IsNumberString} from "class-validator";
+import {BasicRowExcel} from "./basic-row.excel";
 
 export class NgoRowExcel extends BasicRowExcel {
 
@@ -36,7 +36,7 @@ export class NgoRowExcel extends BasicRowExcel {
     email: string;
 
     constructor(row: any) {
-        super(row.phone, row.phonePrefix, row.name, row.type, row.city, row.address, row.postCode, row.longitude, row.latitude);
+        super(row.phone, row.phonePrefix, row.name, row.type, row.city, row.street, row.postCode, row.longitude, row.latitude, row.number);
         this.longName = row.longName;
         this.description = row.description;
         this.accountNumber = row.accountNumber;

@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post, Put } from "@nestjs/common";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { ApiUseTags } from "@nestjs/swagger";
-import { ConfigurationRequest } from "../models/request/configuration.request";
-import { ConfigurationResponse } from "../models/response/configuration.response";
+import {Body, Controller, Get, NotFoundException, Post, Put} from "@nestjs/common";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {ApiUseTags} from "@nestjs/swagger";
+import {ConfigurationRequest, PeriodRequest} from "../models/request/configuration.request";
+import {Period} from "../../../database/entity/period.entity";
+import {getConnection} from "typeorm";
 
 const moment = require('moment');
 
@@ -12,57 +13,103 @@ export class ConfigurationController {
 
     @Post()
     async save(@Body() dto: ConfigurationRequest) {
-        let config = await Configuration.findOne({type: 'MAIN'});
-        if (!config) {
-            config = new Configuration();
-        }
-        this.mapDtoToEntity(dto, config);
-        const c = moment().subtract(5, 'months').toDate();
-        config.oldClientPaymentAt = c;
-        config.oldNgoPaymentAt = c;
-        config.oldPartnerPaymentAt = c;
+        return await getConnection().transaction(async entityManager => {
+            let config = await Configuration.getMain();
+            if (!config) {
+                config = new Configuration();
+            }
 
-        const o = moment().subtract(1, 'months').toDate();
-        config.previousClientPaymentAt = o;
-        config.previousPartnerPaymentAt = o;
-        config.previousNgoPaymentAt = o;
-        let savedConfig = await config.save();
-        return this.mapToResponse(savedConfig)
+            config.minNgoTransfer = dto.minNgoTransfer;
+            config.minPersonalPool = dto.minPersonalPool;
+            config.userExpirationAfterDays = dto.userExpiration;
+
+            let ngoPeriod = await Period.findCurrentNgoPeriod();
+            ngoPeriod = this.updatePeriod(dto.ngoPeriod, 'NGO', ngoPeriod);
+
+            let partnerPeriod = await Period.findCurrentPartnerPeriod();
+            partnerPeriod = this.updatePeriod(dto.partnerPeriod, 'PARTNER', partnerPeriod);
+
+            let clientPeriod = await Period.findCurrentClientPeriod();
+            clientPeriod = this.updatePeriod(dto.clientPeriod, 'CLIENT', clientPeriod);
+
+
+            let savedConfig = await entityManager.save(config);
+            clientPeriod = await entityManager.save(clientPeriod);
+            partnerPeriod.relation = clientPeriod;
+            partnerPeriod = await entityManager.save(partnerPeriod);
+            ngoPeriod.relation = partnerPeriod;
+            ngoPeriod = await entityManager.save(ngoPeriod);
+
+            return this.mapToResponse(savedConfig, ngoPeriod, partnerPeriod, clientPeriod)
+        })
     }
 
     @Get()
     async getConfiguration() {
-        let config = await Configuration.findOne({type: 'MAIN'});
-        if (config) {
-            return this.mapToResponse(config)
+        let config = await Configuration.getMain();
+        let ngoPeriod = await Period.findCurrentNgoPeriod();
+        let partnerPeriod = await Period.findCurrentPartnerPeriod();
+        let clientPeriod = await Period.findCurrentClientPeriod();
+
+        if (config && ngoPeriod && partnerPeriod && clientPeriod) {
+            return this.mapToResponse(config, ngoPeriod, partnerPeriod, clientPeriod)
         }
         return null;
     }
 
-    @Put(':id')
-    async updateConfiguration(@Param('id') id: string, dto: ConfigurationRequest) {
-        let config = await Configuration.findOne({id: id});
-        this.mapDtoToEntity(dto, config);
-        await config.save();
-        return this.mapToResponse(config)
+    @Put()
+    async updateConfiguration(dto: ConfigurationRequest) {
+        return await getConnection().transaction(async entityManager => {
+            let config = await Configuration.getMain();
+            let ngoPeriod = await Period.findCurrentNgoPeriod();
+            let partnerPeriod = await Period.findCurrentPartnerPeriod();
+            let clientPeriod = await Period.findCurrentClientPeriod();
+
+            if (!config || !ngoPeriod || !partnerPeriod || !clientPeriod) {
+                throw new NotFoundException('internal_server_error')
+            }
+
+            config.minNgoTransfer = dto.minNgoTransfer;
+            config.minPersonalPool = dto.minPersonalPool;
+            config.userExpirationAfterDays = dto.userExpiration;
+
+            ngoPeriod = this.updatePeriod(dto.ngoPeriod, 'NGO', ngoPeriod);
+            partnerPeriod = this.updatePeriod(dto.partnerPeriod, 'PARTNER', partnerPeriod);
+            clientPeriod = this.updatePeriod(dto.clientPeriod, 'CLIENT', clientPeriod);
+
+
+            let savedConfig = await entityManager.save(config);
+            clientPeriod = await entityManager.save(clientPeriod);
+            partnerPeriod.relation = clientPeriod;
+            partnerPeriod = await entityManager.save(partnerPeriod);
+            ngoPeriod.relation = partnerPeriod;
+            ngoPeriod = await entityManager.save(ngoPeriod);
+
+            return this.mapToResponse(savedConfig, ngoPeriod, partnerPeriod, clientPeriod)
+        })
     }
 
-    private mapToResponse(config: Configuration): ConfigurationResponse {
-        const response = new ConfigurationResponse();
-        Object.keys(response).forEach(key => {
-            response[key] = config[key]
-        });
-        return response
+    private updatePeriod(request: PeriodRequest, type: string, period?: Period) {
+        if (period) {
+            period.to = request.to;
+            period.interval = request.interval;
+            return period;
+        } else {
+            return new Period(moment().subtract(5, 'months'), request.to, request.interval, type)
+        }
     }
 
-    private mapDtoToEntity(dto: ConfigurationRequest, config: Configuration) {
-        config.minNgoTransfer = Number(dto.minNgoTransfer);
-        config.minPersonalPool = Number(dto.minPersonalPool);
-        config.currentClientPaymentAt = dto.currentClientPaymentAt;
-        config.clientInterval = Number(dto.clientInterval);
-        config.currentPartnerPaymentAt = dto.currentPartnerPaymentAt;
-        config.partnerInterval = Number(dto.partnerInterval);
-        config.currentNgoPaymentAt = dto.currentNgoPaymentAt;
-        config.ngoInterval = Number(dto.ngoInterval);
+    private mapToResponse(config: Configuration, ngo: Period, partner: Period, client: Period) {
+        let ngoRequest = new PeriodRequest(ngo.to, ngo.interval);
+        let partnerRequest = new PeriodRequest(partner.to, partner.interval);
+        let clientRequest = new PeriodRequest(client.to, client.interval);
+        return new ConfigurationRequest(
+            config.minNgoTransfer,
+            config.minPersonalPool,
+            config.userExpirationAfterDays,
+            ngoRequest,
+            clientRequest,
+            partnerRequest);
     }
+
 }

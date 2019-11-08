@@ -1,5 +1,5 @@
-import { Column, Entity, Generated } from "typeorm";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, Generated} from "typeorm";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: 'tds'})
 export class PhysicalCard extends TadeusEntity {

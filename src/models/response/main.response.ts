@@ -1,7 +1,7 @@
-import { ApiModelProperty } from "@nestjs/swagger";
-import { Ngo } from "../../database/entity/ngo.entity";
-import { UserDetails } from "../../database/entity/user-details.entity";
-import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import {ApiModelProperty} from "@nestjs/swagger";
+import {Ngo} from "../../database/entity/ngo.entity";
+import {UserDetails} from "../../database/entity/user-details.entity";
+import {VirtualCard} from "../../database/entity/virtual-card.entity";
 
 export class MainResponse {
     @ApiModelProperty()

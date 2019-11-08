@@ -1,11 +1,11 @@
-import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, Unique } from "typeorm";
-import { NgoType } from "./ngo-type.entity";
-import { City } from "./city.entity";
-import { Donation } from "./donation.entity";
-import { UserDetails } from "./user-details.entity";
-import { PhysicalCard } from "./physical-card.entity";
-import { Phone } from "./phone.entity";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, Unique} from "typeorm";
+import {NgoType} from "./ngo-type.entity";
+import {Donation} from "./donation.entity";
+import {UserDetails} from "./user-details.entity";
+import {PhysicalCard} from "./physical-card.entity";
+import {Phone} from "./phone.entity";
+import {TadeusEntity} from "./base.entity";
+import {Address} from "./address.entity";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
@@ -26,22 +26,6 @@ export class Ngo extends TadeusEntity {
     @Column({nullable: true})
     verifiedAt?: Date;
 
-    @Column({type: "decimal"})
-    longitude: number;
-
-    @Column({type: "decimal"})
-    latitude: number;
-
-    @Column({nullable: true})
-    distance?: number;
-
-    @Column("geometry", {
-        nullable: true,
-        spatialFeatureType: "Point",
-        srid: 4326
-    })
-    coordinate?: object;
-
     @Column()
     name: string;
 
@@ -60,12 +44,6 @@ export class Ngo extends TadeusEntity {
     @Column()
     isTadeus: boolean = false;
 
-    @Column()
-    address: string;
-
-    @Column()
-    postCode: string;
-
     @Column({nullable: true})
     totalDonation?: number;
 
@@ -74,15 +52,15 @@ export class Ngo extends TadeusEntity {
 
     @ManyToOne(type => Phone)
     @JoinColumn()
-    phone?: Phone;
+    phone: Phone;
 
     @OneToOne(type => PhysicalCard)
     @JoinColumn()
-    card?: PhysicalCard;
+    card: PhysicalCard;
 
-    @ManyToOne(type => City)
+    @ManyToOne(type => Address)
     @JoinColumn()
-    city: City;
+    address: Address;
 
     @ManyToOne(type => NgoType)
     @JoinColumn()
@@ -100,12 +78,10 @@ export class Ngo extends TadeusEntity {
                 name: string,
                 longName: string,
                 description: string,
-                longitude: number,
-                latitude: number,
-                address: string,
-                postCode: string,
-                city: City,
-                type: NgoType) {
+                address: Address,
+                type: NgoType,
+                phone: Phone,
+                card: PhysicalCard) {
         super();
         this.ID = ID;
         this.email = email;
@@ -113,20 +89,10 @@ export class Ngo extends TadeusEntity {
         this.name = name;
         this.longName = longName;
         this.description = description;
-        this.longitude = Number(longitude);
-        this.latitude = Number(latitude);
-        this.address = address;
-        this.postCode = postCode;
-        this.city = city;
         this.type = type;
-    }
-
-    @BeforeInsert()
-    assignPointData() {
-        this.coordinate = {
-            type: "Point",
-            coordinates: [this.longitude, this.latitude]
-        };
+        this.phone = phone;
+        this.card = card;
+        this.address = address;
     }
 
 }

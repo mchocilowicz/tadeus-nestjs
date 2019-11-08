@@ -16,14 +16,7 @@ export class Configuration extends TadeusEntity {
     @Column()
     type: string = 'MAIN';
 
-    constructor(
-        ngoTransfer: number,
-        minPersonalPool: number,
-        userExpiration: number
-    ) {
-        super();
-        this.minNgoTransfer = ngoTransfer;
-        this.minPersonalPool = minPersonalPool;
-        this.userExpirationAfterDays = userExpiration;
+    static getMain(): Promise<Configuration | undefined> {
+        return this.findOne({type: 'MAIN'});
     }
 }

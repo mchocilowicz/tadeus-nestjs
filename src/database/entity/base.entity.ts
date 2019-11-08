@@ -3,11 +3,11 @@ import {BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} 
 
 export class TadeusEntity extends BaseEntity {
     @PrimaryGeneratedColumn("uuid")
-    id: string | undefined;
+    id: string = '';
 
     @CreateDateColumn()
-    createdAt: Date | undefined;
+    createdAt: Date = new Date();
 
     @UpdateDateColumn()
-    updatedAt: Date | undefined;
+    updatedAt: Date = new Date();
 }

@@ -1,17 +1,17 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Put } from "@nestjs/common";
-import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { PhoneRequest } from "../../models/request/phone.request";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { CodeVerificationRequest } from "../../models/request/code-verification.request";
-import { LoginService } from "../common/login.service";
-import { City } from "../../database/entity/city.entity";
-import { TradingPointType } from "../../database/entity/trading-point-type.entity";
-
+import {Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put} from "@nestjs/common";
+import {ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
+import {Const} from "../../common/util/const";
+import {PhoneRequest} from "../../models/request/phone.request";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {CodeVerificationRequest} from "../../models/request/code-verification.request";
+import {LoginService} from "../common/login.service";
+import {City} from "../../database/entity/city.entity";
+import {TradingPointType} from "../../database/entity/trading-point-type.entity";
 
 @Controller()
 @ApiUseTags('auth')
 export class DashboardController {
+
     constructor(private readonly service: LoginService) {
     }
 
@@ -59,10 +59,12 @@ export class DashboardController {
     @Put('city/:id')
     async updateCity(@Param('id') id: string, @Body() dto: any) {
         let city = await City.findOne({id: id});
-        if (city) {
-            city.name = dto.name;
-            await city.save()
+        if (!city) {
+            throw new NotFoundException('city_not_exists')
         }
+
+        city.name = dto.name;
+        await city.save();
     }
 
     @Get('trading-point-type')

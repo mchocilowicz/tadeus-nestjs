@@ -1,8 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { Role } from "./role.entity";
-import { User } from "./user.entity";
-import { Status } from "../../common/enum/status.enum";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
+import {Role} from "./role.entity";
+import {User} from "./user.entity";
+import {Status} from "../../common/enum/status.enum";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: 'tds'})
 export class Account extends TadeusEntity {

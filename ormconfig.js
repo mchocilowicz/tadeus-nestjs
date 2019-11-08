@@ -1,5 +1,5 @@
 module.exports = {
-    url: process.env.DATABASE_URL || "postgres://postgres:postgres@localhost:6543/tadeus",
+    url: process.env.DATABASE_URL,
     type: "postgres",
     extra: {
         // ssl: true

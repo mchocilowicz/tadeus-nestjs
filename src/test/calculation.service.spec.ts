@@ -1,6 +1,6 @@
-import { CalculationService } from "../common/service/calculation.service";
-import { Transaction } from "../database/entity/transaction.entity";
-import { TradingPoint } from "../database/entity/trading-point.entity";
+import {CalculationService} from "../common/service/calculation.service";
+import {Transaction} from "../database/entity/transaction.entity";
+import {TradingPoint} from "../database/entity/trading-point.entity";
 
 describe('CalculationService', () => {
     let calculationService: CalculationService;
@@ -35,7 +35,7 @@ describe('CalculationService', () => {
             let tp = new TradingPoint();
             tp.id = '1';
             t.tradingPoint = tp;
-            let xp = calculationService.calculate([t], tp, 0);
+            let xp = calculationService.calculateUserXp([t], tp, 0);
             expect(xp).toBe(10)
         });
 
@@ -44,7 +44,7 @@ describe('CalculationService', () => {
             let tp = new TradingPoint();
             tp.id = '1';
             t.tradingPoint = tp;
-            let xp = calculationService.calculate([t, t], tp, 10);
+            let xp = calculationService.calculateUserXp([t, t], tp, 10);
             expect(xp).toBe(10)
         });
 
@@ -53,31 +53,31 @@ describe('CalculationService', () => {
             let tp = new TradingPoint();
             tp.id = '1';
             t.tradingPoint = tp;
-            let xp = calculationService.calculate([t, t, t], tp, 20);
+            let xp = calculationService.calculateUserXp([t, t, t], tp, 20);
             expect(xp).toBe(10)
         });
 
         it('second transaction in other store', () => {
             let t = createTransactions(2);
-            let xp = calculationService.calculate(t, t[0].tradingPoint, 10);
+            let xp = calculationService.calculateUserXp(t, t[0].tradingPoint, 10);
             expect(xp).toBe(20)
         });
 
         it('transaction two different stores', () => {
             let t = createTransactions(3);
-            let xp = calculationService.calculate(t, t[0].tradingPoint, 30);
+            let xp = calculationService.calculateUserXp(t, t[0].tradingPoint, 30);
             expect(xp).toBe(40)
         });
 
         it('transaction three different stores', () => {
             let t = createTransactions(4);
-            let xp = calculationService.calculate(t, t[0].tradingPoint, 70);
+            let xp = calculationService.calculateUserXp(t, t[0].tradingPoint, 70);
             expect(xp).toBe(80)
         });
 
         it('transaction four different stores', () => {
             let t = createTransactions(5);
-            let xp = calculationService.calculate(t, t[0].tradingPoint, 80);
+            let xp = calculationService.calculateUserXp(t, t[0].tradingPoint, 80);
             expect(xp).toBe(160)
         });
 

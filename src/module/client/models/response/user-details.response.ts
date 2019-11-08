@@ -1,6 +1,6 @@
-import { ApiModelProperty } from "@nestjs/swagger";
-import { UserDetails } from "../../../../database/entity/user-details.entity";
-import { Phone } from "../../../../database/entity/phone.entity";
+import {ApiModelProperty} from "@nestjs/swagger";
+import {UserDetails} from "../../../../database/entity/user-details.entity";
+import {Phone} from "../../../../database/entity/phone.entity";
 
 export class UserDetailsResponse {
     @ApiModelProperty()
@@ -10,9 +10,9 @@ export class UserDetailsResponse {
     @ApiModelProperty()
     bankAccount?: number;
     @ApiModelProperty()
-    phonePrefix: string;
+    phonePrefix: number;
     @ApiModelProperty()
-    phone: string;
+    phone: number;
     @ApiModelProperty()
     email: string;
 

@@ -1,13 +1,36 @@
 import {Injectable} from "@nestjs/common";
 import {Transaction} from "../../database/entity/transaction.entity";
 import {TradingPoint} from "../../database/entity/trading-point.entity";
+import {UserDetails} from "../../database/entity/user-details.entity";
 
 const _ = require('lodash');
 
 @Injectable()
 export class CalculationService {
 
-    calculate(transactions: Transaction[], tradingPoint: TradingPoint, lastUserXp: number): number {
+    async calculateXpForUser(userId: string, details: UserDetails, currentTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
+        let transactions: Transaction[] = await Transaction.findByUserMadeToday(userId);
+
+        transactions.push(currentTransaction);
+        if (ignoreTransaction) {
+            transactions = transactions.filter((t: Transaction) => t.id !== ignoreTransaction.id)
+        }
+
+        return this.calculateUserXp(transactions, currentTransaction.tradingPoint, details.xp)
+    }
+
+    async calculateXpForPartner(partnerId: string, currentTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
+        let transactions: Transaction[] = await Transaction.findByTradingPointMadeToday(partnerId);
+
+        transactions.push(currentTransaction);
+
+        if (ignoreTransaction) {
+            transactions = transactions.filter((t: Transaction) => t.id !== ignoreTransaction.id)
+        }
+        return this.calculateTradingPointXp(transactions)
+    }
+
+    calculateUserXp(transactions: Transaction[], tradingPoint: TradingPoint, lastUserXp: number): number {
         let transactionsInSameShop = transactions.filter((t: Transaction) => t.tradingPoint.id === tradingPoint.id);
         let transactionsInOtherShops = _.uniqBy(transactions.filter((t: Transaction) => t.tradingPoint.id !== tradingPoint.id), 'tradingPoint.id');
 

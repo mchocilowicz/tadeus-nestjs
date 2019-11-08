@@ -43,6 +43,7 @@ import {Correction} from "../../database/entity/correction.entity";
 import {Configuration} from "../../database/entity/configuration.entity";
 import {PartnerPayment} from "../../database/entity/partner-payment.entity";
 import {TradingPoint} from "../../database/entity/trading-point.entity";
+import {Period} from "../../database/entity/period.entity";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -361,6 +362,22 @@ export class ClientController {
                     if (user.details && user.card) {
                         const transaction: Transaction = correction.transaction;
                         const terminal = correction.terminal;
+                        let tradingPoint: TradingPoint = terminal.tradingPoint;
+
+                        const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
+                        const period: Period | undefined = await Period.findCurrentPartnerPeriod();
+
+                        if (!config || !period || !correction.terminal) {
+                            throw new BadRequestException('internal_server_error');
+                        }
+
+                        let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period});
+
+                        if (!payment) {
+                            payment = new PartnerPayment(this.codeService.generatePartnerPaymentID(), tradingPoint, period);
+                            payment = await entityManager.save(payment)
+                        }
+
                         correction.isVerified = true;
                         correction.status = 'VERIFIED';
                         transaction.isCorrection = true;
@@ -369,37 +386,14 @@ export class ClientController {
                         const card = user.card;
                         details.xp -= transaction.userXp;
                         details.collectedMoney -= transaction.poolValue;
+
                         card.donationPool -= transaction.poolValue / 2;
                         card.personalPool -= transaction.poolValue / 2;
 
+                        payment.price -= transaction.paymentValue;
 
                         await entityManager.save(transaction);
                         await entityManager.save(correction);
-
-                        // new treansaction
-
-
-                        const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
-
-                        if (!config) {
-                            throw new BadRequestException('internal_server_error');
-                        }
-
-                        if (!correction.terminal) {
-                            throw new BadRequestException('internal_server_error');
-                        }
-
-                        let payment: PartnerPayment | undefined = await PartnerPayment.findOne({
-                            periodFrom: config.previousPartnerPaymentAt,
-                            periodTo: config.currentPartnerPaymentAt
-                        });
-
-                        let tradingPoint: TradingPoint = terminal.tradingPoint;
-
-                        if (!payment) {
-                            payment = new PartnerPayment(this.codeService.generatePartnerPaymentID(), tradingPoint, config.previousPartnerPaymentAt, config.currentPartnerPaymentAt);
-                            payment = await entityManager.save(payment)
-                        }
 
                         let newTransaction: Transaction = new Transaction(
                             terminal,
@@ -407,7 +401,10 @@ export class ClientController {
                             tradingPoint,
                             this.codeService.generateTransactionID(),
                             correction.price,
-                            payment
+                            payment,
+                            tradingPoint.vat,
+                            tradingPoint.fee,
+                            tradingPoint.donationPercentage
                         );
 
                         if (!user || !user.details || !user.id || !user.card || !tradingPoint.id) {
@@ -415,12 +412,11 @@ export class ClientController {
                         }
 
 
-                        const userXp = await this.calculateXpForUser(user.id, user.details, newTransaction, transaction);
-                        const tradingPointXp = await this.calculateXpForPartner(tradingPoint.id, newTransaction, transaction);
+                        const userXp = await this.calService.calculateXpForUser(user.id, user.details, newTransaction, transaction);
+                        const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, newTransaction, transaction);
 
                         newTransaction.updateXpValues(userXp, tradingPointXp);
                         tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
-
 
                         details.xp += userXp;
 
@@ -428,6 +424,8 @@ export class ClientController {
                         let provision = this.calService.calculateCost(correction.price, tradingPoint.fee, tradingPoint.vat);
 
                         transaction.updatePaymentValues(provision, pool);
+
+                        payment.price += transaction.paymentValue;
 
                         card.updatePool(pool);
                         details.updateCollectedMoney(pool);
@@ -445,6 +443,7 @@ export class ClientController {
                             details.ngoTempMoney += pool;
                         }
 
+                        await entityManager.save(payment);
                         await entityManager.save(card);
                         await entityManager.save(tradingPoint);
                         await entityManager.save(details);
@@ -452,29 +451,6 @@ export class ClientController {
                 })
             }
         }
-
-    }
-
-    private async calculateXpForUser(userId: string, details: UserDetails, currenctTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
-        let transactions: Transaction[] = await Transaction.findByUserMadeToday(userId);
-
-        transactions.push(currenctTransaction);
-        if (ignoreTransaction) {
-            transactions = transactions.filter((t: Transaction) => t.id !== ignoreTransaction.id)
-        }
-
-        return this.calService.calculate(transactions, currenctTransaction.tradingPoint, details.xp)
-    }
-
-    private async calculateXpForPartner(partnerId: string, currenctTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
-        let transactions: Transaction[] = await Transaction.findByTradingPointMadeToday(partnerId);
-
-        transactions.push(currenctTransaction);
-
-        if (ignoreTransaction) {
-            transactions = transactions.filter((t: Transaction) => t.id !== ignoreTransaction.id)
-        }
-        return this.calService.calculateTradingPointXp(transactions)
     }
 
 }

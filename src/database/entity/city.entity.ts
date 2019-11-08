@@ -1,7 +1,6 @@
 import {Column, Entity, OneToMany, Unique} from "typeorm";
-import {Ngo} from "./ngo.entity";
-import {TradingPoint} from "./trading-point.entity";
 import {TadeusEntity} from "./base.entity";
+import {Address} from "./address.entity";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
@@ -9,11 +8,8 @@ export class City extends TadeusEntity {
     @Column()
     name: string;
 
-    @OneToMany(ngo => Ngo, ngo => ngo.city)
-    ngoList?: Ngo[];
-
-    @OneToMany(place => TradingPoint, place => place.city)
-    places?: TradingPoint[];
+    @OneToMany(address => Address, address => address.city)
+    addresses?: Address[];
 
     constructor(name: string) {
         super();
@@ -22,13 +18,15 @@ export class City extends TadeusEntity {
 
     static async findWhereNgoExists() {
         return this.createQueryBuilder('city')
-            .innerJoin('city.ngoList', 'ngo')
+            .innerJoin('city.addresses', 'address')
+            .leftJoin('address.ngoList', 'ngo')
             .getMany()
     }
 
     static async findWhereTradingPointExists() {
         return this.createQueryBuilder('city')
-            .innerJoin('city.places', 'place')
+            .innerJoin('city.addresses', 'address')
+            .innerJoin('address.tradingPointList', 'tradingPoint')
             .getMany()
     }
 }

@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common";
-import { DashboardNgoController } from "./dashboard-ngo.controller";
-import { CodeService } from "../../../common/service/code.service";
-import { MulterModule } from "@nestjs/platform-express";
-import { join } from "path";
-import { diskStorage } from "multer";
+import {Module} from "@nestjs/common";
+import {DashboardNgoController} from "./dashboard-ngo.controller";
+import {CodeService} from "../../../common/service/code.service";
+import {MulterModule} from "@nestjs/platform-express";
+import {join} from "path";
+import {diskStorage} from "multer";
 
 const moment = require("moment");
 

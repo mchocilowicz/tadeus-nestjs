@@ -1,7 +1,7 @@
-import { Column, Entity, Generated, OneToMany, Unique } from "typeorm";
-import { ApiModelProperty } from "@nestjs/swagger";
-import { TradingPoint } from "./trading-point.entity";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, Generated, OneToMany, Unique} from "typeorm";
+import {ApiModelProperty} from "@nestjs/swagger";
+import {TradingPoint} from "./trading-point.entity";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])

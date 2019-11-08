@@ -1,5 +1,4 @@
 import {Controller, Get, Logger, Param, Query, Res, UseGuards} from "@nestjs/common";
-import {createQueryBuilder} from "typeorm";
 import {ApiBearerAuth, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags} from "@nestjs/swagger";
 import {TradingPoint} from "../../../database/entity/trading-point.entity";
 import {Const} from "../../../common/util/const";
@@ -32,21 +31,22 @@ export class PlaceController {
         description: Const.HEADER_ACCEPT_LANGUAGE_DESC
     })
     async getAll(@Query() query: PlaceQuery) {
-        let sqlQuery = createQueryBuilder('TradingPoint')
-            .leftJoinAndSelect('TradingPoint.city', 'city')
-            .leftJoinAndSelect('TradingPoint.type', 'placeType');
+        let sqlQuery = TradingPoint.createQueryBuilder('tradingPoint')
+            .leftJoinAndSelect('tradingPoint.address', 'address')
+            .leftJoinAndSelect('address.city', 'city')
+            .leftJoinAndSelect('tradingPoint.type', 'placeType');
 
         if (query['longitude'] && query['latitude']) {
             const lo = Number(query['longitude']);
             const la = Number(query['latitude']);
 
-            const a = `ST_Distance(ST_Transform(TradingPoint.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
+            const a = `ST_Distance(ST_Transform(tradingPoint.address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
             const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
-            sqlQuery = sqlQuery.addSelect(a, 'TradingPoint_distance');
+            sqlQuery = sqlQuery.addSelect(a, 'tradingPoint.address_distance');
             sqlQuery = sqlQuery.andWhere(`${a} > 0`)
                 .orderBy(c).limit(10);
         }
@@ -58,7 +58,7 @@ export class PlaceController {
             }
         });
         return await sqlQuery
-            .andWhere('TradingPoint.active = true')
+            .andWhere('tradingPoint.active = true')
             .getMany();
     }
 

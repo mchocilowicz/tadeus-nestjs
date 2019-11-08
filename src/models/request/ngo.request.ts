@@ -1,6 +1,6 @@
-import { ApiModelProperty } from "@nestjs/swagger";
-import { City } from "../../database/entity/city.entity";
-import { NgoType } from "../../database/entity/ngo-type.entity";
+import {ApiModelProperty} from "@nestjs/swagger";
+import {City} from "../../database/entity/city.entity";
+import {NgoType} from "../../database/entity/ngo-type.entity";
 
 export class NgoRequest {
     @ApiModelProperty({required: true})
@@ -18,7 +18,9 @@ export class NgoRequest {
     @ApiModelProperty({required: true})
     description: string;
     @ApiModelProperty({required: true})
-    address: string;
+    street: string;
+    @ApiModelProperty({required: true})
+    number: number;
     @ApiModelProperty({required: true})
     postCode: string;
     @ApiModelProperty({required: true})
@@ -26,9 +28,9 @@ export class NgoRequest {
     @ApiModelProperty({required: true})
     email: string;
     @ApiModelProperty({required: true})
-    phone: string;
+    phone: number;
     @ApiModelProperty({required: true})
-    phonePrefix: string;
+    phonePrefix: number;
 
     constructor(city: City,
                 type: NgoType,
@@ -37,11 +39,12 @@ export class NgoRequest {
                 name: string,
                 longName: string,
                 description: string,
-                address: string,
+                street: string,
+                number: number,
                 bankNumber: string,
                 email: string,
-                phone: string,
-                phonePrefix: string,
+                phone: number,
+                phonePrefix: number,
                 postCode: string) {
         this.city = city;
         this.type = type;
@@ -50,7 +53,8 @@ export class NgoRequest {
         this.name = name;
         this.longName = longName;
         this.description = description;
-        this.address = address;
+        this.street = street;
+        this.number = number;
         this.bankNumber = bankNumber;
         this.email = email;
         this.phone = phone;

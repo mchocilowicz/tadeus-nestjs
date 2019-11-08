@@ -1,6 +1,6 @@
-import { Cron, NestSchedule } from "nest-schedule";
-import { Injectable } from "@nestjs/common";
-import { Configuration } from "../database/entity/configuration.entity";
+import {Cron, NestSchedule} from "nest-schedule";
+import {Injectable} from "@nestjs/common";
+import {Period} from "../database/entity/period.entity";
 
 const moment = require('moment');
 
@@ -8,34 +8,48 @@ const moment = require('moment');
 export class ConfigurationScheduler extends NestSchedule {
     @Cron('0 0 4 ? * * *')
     async cronJob() {
-        console.log('executing Configuration Job');
-        let config = await Configuration.findOne({type: 'MAIN'});
-        if (config) {
-            let currentDate = moment().format('YYYY-MM-DD');
-            let client = moment(config.currentClientPaymentAt).format('YYYY-MM-DD');
-            let partner = moment(config.currentPartnerPaymentAt).format('YYYY-MM-DD');
-            let ngo = moment(config.currentNgoPaymentAt).format('YYYY-MM-DD');
+        let ngoPeriod: Period | undefined = await Period.findCurrentNgoPeriod();
+        let userPeriod: Period | undefined = await Period.findCurrentClientPeriod();
+        let partnerPeriod: Period | undefined = await Period.findCurrentPartnerPeriod();
 
-            if (currentDate === client) {
-                let current = config.currentClientPaymentAt;
-                config.oldClientPaymentAt = config.previousClientPaymentAt;
-                config.previousClientPaymentAt = current;
-                config.currentClientPaymentAt = moment(current).add(config.clientInterval, 'days');
-                await config.save()
+        let currentDate = moment().format('YYYY-MM-DD');
+
+        if (userPeriod) {
+            if (moment(userPeriod.to).format('YYYY-MM-DD') === currentDate) {
+                const period = new Period(
+                    moment(),
+                    moment().add(userPeriod.interval, 'days'),
+                    userPeriod.interval,
+                    'CLIENT');
+                await period.save()
             }
-            if (currentDate === partner) {
-                let current = config.currentPartnerPaymentAt;
-                config.oldPartnerPaymentAt = config.previousPartnerPaymentAt;
-                config.previousPartnerPaymentAt = current;
-                config.currentPartnerPaymentAt = moment(config.currentClientPaymentAt).add(config.partnerInterval, 'days');
-                await config.save()
+        }
+
+        if (partnerPeriod) {
+            if (moment(partnerPeriod.to).format('YYYY-MM-DD') === currentDate) {
+                if (userPeriod) {
+                    const period = new Period(
+                        moment(),
+                        moment(userPeriod.to).add(partnerPeriod.interval, 'days'),
+                        partnerPeriod.interval,
+                        'PARTNER');
+                    period.relation = userPeriod;
+                    await period.save()
+                }
             }
-            if (currentDate === ngo) {
-                let current = config.currentNgoPaymentAt;
-                config.oldNgoPaymentAt = config.previousNgoPaymentAt;
-                config.previousNgoPaymentAt = current;
-                config.currentNgoPaymentAt = moment(config.currentPartnerPaymentAt).add(config.ngoInterval, 'days');
-                await config.save()
+        }
+
+        if (ngoPeriod) {
+            if (moment(ngoPeriod.to).format('YYYY-MM-DD') === currentDate) {
+                if (partnerPeriod) {
+                    const period = new Period(
+                        moment(),
+                        moment(partnerPeriod.to).add(ngoPeriod.interval, 'days'),
+                        ngoPeriod.interval,
+                        'NGO');
+                    period.relation = partnerPeriod;
+                    await period.save()
+                }
             }
         }
     }

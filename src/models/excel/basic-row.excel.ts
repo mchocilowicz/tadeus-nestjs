@@ -1,22 +1,18 @@
-import { IsAlpha, IsNotEmpty, IsNumberString, NotContains } from "class-validator";
-import { PhonePrefixExists } from "../../common/decorators/phone-prefix-exists.decorator";
-import { PhoneLength } from "../../common/decorators/phone-length.decorator";
+import {IsAlpha, IsNotEmpty, IsNumber} from "class-validator";
+import {PhonePrefixExists} from "../../common/decorators/phone-prefix-exists.decorator";
+import {PhoneLength} from "../../common/decorators/phone-length.decorator";
 
 export class BasicRowExcel {
 
     @IsNotEmpty({message: 'excel_data_required'})
+    @IsNumber({allowNaN: false}, {message: 'excel_phone_format'})
     @PhonePrefixExists({message: 'excel_phone_prefix_not_exists'})
-    phonePrefix: string;
+    phonePrefix: number;
 
-    @IsNotEmpty({
-        message: "excel_data_required"
-    })
-    @IsNumberString({message: 'excel_phone_format'})
-    @NotContains("-", {message: 'excel_phone_format'})
-    @NotContains(" ", {message: 'excel_phone_format'})
-    @NotContains("+", {message: 'excel_phone_format'})
+    @IsNumber({allowNaN: false}, {message: 'excel_phone_format'})
+    @IsNotEmpty({message: 'excel_data_required'})
     @PhoneLength('phonePrefix', {message: 'excel_phone_format'})
-    phone: string;
+    phone: number;
 
     @IsNotEmpty({
         message: "excel_data_required"
@@ -41,7 +37,12 @@ export class BasicRowExcel {
     @IsNotEmpty({
         message: "excel_data_required"
     })
-    address: string;
+    street: string;
+
+    @IsNotEmpty({
+        message: "excel_data_required"
+    })
+    number: number;
 
     @IsNotEmpty({
         message: "excel_data_required"
@@ -56,15 +57,16 @@ export class BasicRowExcel {
     })
     city: string;
 
-    constructor(phone: number, prefix: string, name: string, type: string, city: string, address: string, postCode: string, longitude: number, latitude: number) {
-        this.phone = String(phone);
+    constructor(phone: number, prefix: number, name: string, type: string, city: string, street: string, postCode: string, longitude: number, latitude: number, number: number) {
+        this.phone = phone;
         this.phonePrefix = prefix;
         this.name = name;
         this.type = type;
         this.city = city;
-        this.address = address;
+        this.street = street;
         this.postCode = postCode;
         this.longitude = longitude;
         this.latitude = latitude;
+        this.number = number;
     }
 }

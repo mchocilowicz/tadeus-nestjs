@@ -62,7 +62,7 @@ export class Period extends TadeusEntity {
     }
 
 
-    static async findPreviousPeriodFor(type: string) {
+    private static async findPreviousPeriodFor(type: string) {
         return this.createQueryBuilder('period')
             .where('period.type = :type', {type: type})
             .orderBy('period.createdAt', 'DESC')
@@ -71,7 +71,7 @@ export class Period extends TadeusEntity {
             .getOne()
     }
 
-    static async findCurrentPeriodFor(type: string) {
+    private static async findCurrentPeriodFor(type: string) {
         return this.createQueryBuilder('period')
             .where('period.type = :type', {type: type})
             .orderBy('period.createdAt', 'DESC')

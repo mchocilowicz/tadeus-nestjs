@@ -1,10 +1,10 @@
 import {
-    BadRequestException,
     Body,
     Controller,
     Delete,
     Get,
     Logger,
+    NotFoundException,
     Param,
     Post,
     Put,
@@ -12,23 +12,24 @@ import {
     UploadedFile,
     UseInterceptors
 } from "@nestjs/common";
-import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { NgoRequest } from "../../../models/request/ngo.request";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { EntityManager, getConnection, QueryFailedError } from "typeorm";
-import { extractErrors, handleException } from "../../../common/util/functions";
-import { NgoType } from "../../../database/entity/ngo-type.entity";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { NgoRowExcel } from "../../../models/excel/ngo-row.excel";
-import { validate } from "class-validator";
-import { ExcelException } from "../../../common/exceptions/excel.exception";
-import { City } from "../../../database/entity/city.entity";
-import { CodeService } from "../../../common/service/code.service";
-import { PhysicalCard } from "../../../database/entity/physical-card.entity";
-import { diskStorage } from "multer";
-import { Phone } from "../../../database/entity/phone.entity";
-import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
+import {ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {NgoRequest} from "../../../models/request/ngo.request";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {EntityManager, getConnection, QueryFailedError} from "typeorm";
+import {extractErrors, handleException} from "../../../common/util/functions";
+import {NgoType} from "../../../database/entity/ngo-type.entity";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {NgoRowExcel} from "../../../models/excel/ngo-row.excel";
+import {validate} from "class-validator";
+import {ExcelException} from "../../../common/exceptions/excel.exception";
+import {City} from "../../../database/entity/city.entity";
+import {CodeService} from "../../../common/service/code.service";
+import {PhysicalCard} from "../../../database/entity/physical-card.entity";
+import {diskStorage} from "multer";
+import {Phone} from "../../../database/entity/phone.entity";
+import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import {Address} from "../../../database/entity/address.entity";
 
 const moment = require("moment");
 
@@ -58,45 +59,39 @@ export class DashboardNgoController {
     })
     @ApiImplicitBody({name: '', type: NgoRequest})
     async create(@Body() dto: NgoRequest) {
-
-        const ngoID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
-        const ngo = new Ngo(
-            ngoID,
-            dto.email,
-            dto.bankNumber,
-            dto.name,
-            dto.longName,
-            dto.description,
-            dto.longitude,
-            dto.latitude,
-            dto.address,
-            dto.postCode,
-            dto.city,
-            dto.type,
-        );
-
         await getConnection().transaction(async (entityManager: EntityManager) => {
-            let phone: Phone | undefined = await Phone.findOne({value: dto.phone});
-
+            let phone = await Phone.findNumber(dto.phonePrefix, dto.phone);
             if (!phone) {
-                const prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
+                let prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
                 if (!prefix) {
-                    throw new BadRequestException();
+                    throw new NotFoundException('internal_server_error')
                 }
-                phone = await entityManager.save(new Phone(dto.phone, prefix));
+                phone = new Phone(dto.phone, prefix);
+                phone = await entityManager.save(phone);
             }
 
-            let card = new PhysicalCard(ngoID);
-
             try {
-                ngo.card = await entityManager.save(card);
-                ngo.phone = phone;
+                let ngoID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
+                let card = new PhysicalCard(this.codeService.generatePhysicalCardNumber(ngoID));
+                let address = new Address(dto.street, dto.number, dto.postCode, dto.city, dto.longitude, dto.latitude);
+
+                let ngo = new Ngo(
+                    ngoID,
+                    dto.email,
+                    dto.bankNumber,
+                    dto.name,
+                    dto.longName,
+                    dto.description,
+                    await entityManager.save(address),
+                    dto.type,
+                    phone,
+                    await entityManager.save(card)
+                );
                 await entityManager.save(ngo);
             } catch (e) {
                 handleException(e, 'ngo', this.logger)
             }
         });
-
     }
 
     @Post("import")
@@ -179,10 +174,12 @@ export class DashboardNgoController {
     private async saveNgoRow(row: any, index: number, errors: object[]) {
         let data = this.mapRowColumns(row);
         let validationErrors = await validate(row);
+
         if (validationErrors.length > 0) {
             let code = extractErrors(validationErrors);
             throw new ExcelException({row: index, message: code});
         }
+
         await getConnection().transaction(async (entityManager: EntityManager) => {
             let city = await City.findOne({name: data.city});
             if (!city) {
@@ -196,24 +193,33 @@ export class DashboardNgoController {
                 type = await entityManager.save(type);
             }
 
-            let ngo = new Ngo(
-                this.codeService.generateNgoNumber(type.code, this.codeService.generateNumber()),
-                data.email,
-                data.accountNumber,
-                data.name,
-                data.longName,
-                data.description,
-                data.longitude,
-                data.latitude,
-                data.address,
-                data.postCode,
-                city,
-                type
-            );
+            let phone = await Phone.findNumber(data.phonePrefix, data.phone);
+            if (!phone) {
+                let prefix = await PhonePrefix.findOne({value: data.phonePrefix});
+                if (!prefix) {
+                    throw new NotFoundException('internal_server_error')
+                }
+                phone = new Phone(data.phone, prefix);
+                phone = await entityManager.save(phone);
+            }
 
             try {
-                let card = new PhysicalCard(this.codeService.generatePhysicalCardNumber(ngo.ID));
-                ngo.card = await entityManager.save(card);
+                let ngoID = this.codeService.generateNgoNumber(type.code, this.codeService.generateNumber());
+                let card = new PhysicalCard(this.codeService.generatePhysicalCardNumber(ngoID));
+                let address = new Address(data.street, data.number, data.postCode, city, data.longitude, data.latitude);
+
+                let ngo = new Ngo(
+                    ngoID,
+                    data.email,
+                    data.accountNumber,
+                    data.name,
+                    data.longName,
+                    data.description,
+                    await entityManager.save(address),
+                    type,
+                    phone,
+                    await entityManager.save(card)
+                );
                 await entityManager.save(ngo);
             } catch (e) {
                 if (e instanceof QueryFailedError) {
@@ -241,32 +247,19 @@ export class DashboardNgoController {
             'Latitude': 'latitude',
             'Longitude': 'longitude',
             'City': 'city',
-            'Address': 'address',
+            'Street': 'street',
+            'Number': 'number',
             'Post Code': 'postCode'
         };
+
         const newRow: any = {};
+
         for (let props in columnMapping) {
             if (row.hasOwnProperty(props)) {
                 newRow[columnMapping[props]] = row[props];
             }
         }
+
         return new NgoRowExcel(newRow);
-    }
-
-    private async getNgoCode() {
-        let code = null;
-
-        while (!code) {
-            const a = this.createCode(100, 1000);
-            const b = await NgoType.findOne({code: a});
-            if (!b) {
-                code = a;
-            }
-        }
-        return code;
-    }
-
-    private createCode(min: number, max: number) {
-        return Math.floor(Math.random() * (max - min) + min);
     }
 }

@@ -1,12 +1,12 @@
-import {BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique} from "typeorm";
 import {TradingPointType} from "./trading-point-type.entity";
-import {City} from "./city.entity";
 import {Transaction} from "./transaction.entity";
 import {PartnerPayment} from "./partner-payment.entity";
 import {Terminal} from "./terminal.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Correction} from "./correction.entity";
+import {Address} from "./address.entity";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
@@ -29,30 +29,11 @@ export class TradingPoint extends TadeusEntity {
     @Column({nullable: true})
     image: string = 'icon.jpg';
 
-    @Column({type: "decimal"})
-    longitude: number;
-
-    @Column({type: "decimal"})
-    latitude: number;
-
-    @Column()
-    address: string;
-
-    @Column()
-    postCode: string;
-
     @Column()
     xp: number = 0;
 
     @Column({nullable: true})
     distance?: number;
-
-    @Column("geometry", {
-        nullable: true,
-        spatialFeatureType: "Point",
-        srid: 4326
-    })
-    coordinate?: object;
 
     @Column({default: false})
     active: boolean = false;
@@ -68,9 +49,9 @@ export class TradingPoint extends TadeusEntity {
     @JoinColumn()
     phone: Phone;
 
-    @ManyToOne(type => City)
+    @ManyToOne(type => Address)
     @JoinColumn()
-    city: City;
+    address: Address;
 
     @OneToMany(type => Terminal, terminal => terminal.tradingPoint)
     terminals?: Terminal[];
@@ -91,33 +72,20 @@ export class TradingPoint extends TadeusEntity {
                 latitude: number,
                 phone: Phone,
                 type: TradingPointType,
-                city: City,
-                address: string,
-                postCode: string) {
+                address: Address) {
         super();
         this.ID = ID;
         this.name = name;
         this.donationPercentage = donationPercentage;
-        this.longitude = longitude;
-        this.latitude = latitude;
         this.phone = phone;
         this.type = type;
-        this.city = city;
         this.address = address;
-        this.postCode = postCode;
-    }
-
-    @BeforeInsert()
-    assignPointData() {
-        this.coordinate = {
-            type: "Point",
-            coordinates: [this.longitude, this.latitude]
-        };
     }
 
     static findActivePointWithCityById(tradingPointId?: string) {
         return this.createQueryBuilder('point')
-            .leftJoinAndSelect('point.city', 'city')
+            .leftJoinAndSelect('point.address', 'address')
+            .leftJoinAndSelect('address.city', 'city')
             .where('point.id = :id', {id: tradingPointId})
             .andWhere('point.active = true')
             .getOne();

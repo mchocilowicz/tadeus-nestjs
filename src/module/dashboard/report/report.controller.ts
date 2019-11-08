@@ -1,7 +1,7 @@
-import { Controller, Get } from "@nestjs/common";
-import { createQueryBuilder } from "typeorm";
-import { DonationEnum } from "../../../common/enum/donation.enum";
-import { Donation } from "../../../database/entity/donation.entity";
+import {Controller, Get} from "@nestjs/common";
+import {createQueryBuilder} from "typeorm";
+import {DonationEnum} from "../../../common/enum/donation.enum";
+import {Donation} from "../../../database/entity/donation.entity";
 
 const _ = require('lodash');
 const moment = require('moment');

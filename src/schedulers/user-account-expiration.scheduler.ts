@@ -1,11 +1,11 @@
-import { Cron, NestSchedule } from "nest-schedule";
-import { Injectable } from "@nestjs/common";
-import { Configuration } from "../database/entity/configuration.entity";
-import { User } from "../database/entity/user.entity";
-import { Status } from "../common/enum/status.enum";
-import { RoleEnum } from "../common/enum/role.enum";
-import { Account } from "../database/entity/account.entity";
-import { UserDetails } from "../database/entity/user-details.entity";
+import {Cron, NestSchedule} from "nest-schedule";
+import {Injectable} from "@nestjs/common";
+import {Configuration} from "../database/entity/configuration.entity";
+import {User} from "../database/entity/user.entity";
+import {Status} from "../common/enum/status.enum";
+import {RoleEnum} from "../common/enum/role.enum";
+import {Account} from "../database/entity/account.entity";
+import {UserDetails} from "../database/entity/user-details.entity";
 
 const moment = require('moment');
 
