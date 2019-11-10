@@ -23,6 +23,8 @@ import {Correction} from "../../../database/entity/correction.entity";
 import {Configuration} from "../../../database/entity/configuration.entity";
 import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
 import {Period} from "../../../database/entity/period.entity";
+import {Donation} from "../../../database/entity/donation.entity";
+import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
 
 const moment = require('moment');
 
@@ -120,9 +122,22 @@ export class TransactionController {
 
                 let user: User | undefined = await User.getUserByCardCode(dto.clientCode);
 
-                if (!user || !user.details || !user.id || !user.card || !tradingPoint.id) {
+                if (!user || !user.details || !user.card || !tradingPoint.id) {
                     throw new BadRequestException('user_does_not_exists')
                 }
+
+                let donation: Donation | undefined = await Donation.getCurrentDonationForUser(user, period);
+                if (!donation) {
+                    donation = new Donation(
+                        this.codeService.generateDonationID(),
+                        DonationEnum.NGO,
+                        PoolEnum.DONATION,
+                        user,
+                        period
+                    );
+                    donation = await entityManager.save(donation);
+                }
+
 
                 let transaction: Transaction = new Transaction(
                     terminal,
@@ -133,7 +148,8 @@ export class TransactionController {
                     payment,
                     tradingPoint.vat,
                     tradingPoint.fee,
-                    tradingPoint.donationPercentage
+                    tradingPoint.donationPercentage,
+                    donation
                 );
 
                 const userXp = await this.calService.calculateXpForUser(user.id, user.details, transaction);

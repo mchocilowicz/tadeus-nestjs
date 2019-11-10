@@ -44,6 +44,8 @@ import {Configuration} from "../../database/entity/configuration.entity";
 import {PartnerPayment} from "../../database/entity/partner-payment.entity";
 import {TradingPoint} from "../../database/entity/trading-point.entity";
 import {Period} from "../../database/entity/period.entity";
+import {Donation} from "../../database/entity/donation.entity";
+import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -395,6 +397,19 @@ export class ClientController {
                         await entityManager.save(transaction);
                         await entityManager.save(correction);
 
+
+                        let donation: Donation | undefined = await Donation.getCurrentDonationForUser(user, period);
+                        if (!donation) {
+                            donation = new Donation(
+                                this.codeService.generateDonationID(),
+                                DonationEnum.NGO,
+                                PoolEnum.DONATION,
+                                user,
+                                period
+                            );
+                            donation = await entityManager.save(donation);
+                        }
+
                         let newTransaction: Transaction = new Transaction(
                             terminal,
                             user,
@@ -404,7 +419,8 @@ export class ClientController {
                             payment,
                             tradingPoint.vat,
                             tradingPoint.fee,
-                            tradingPoint.donationPercentage
+                            tradingPoint.donationPercentage,
+                            donation
                         );
 
                         if (!user || !user.details || !user.id || !user.card || !tradingPoint.id) {

@@ -3,7 +3,7 @@ import {ApiBearerAuth, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs
 import {Const} from "../../../common/util/const";
 import {User} from "../../../database/entity/user.entity";
 import {Donation} from "../../../database/entity/donation.entity";
-import {DonationEnum} from "../../../common/enum/donation.enum";
+import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
 import {CodeService} from "../../../common/service/code.service";
 import {Ngo} from "../../../database/entity/ngo.entity";
 import {getConnection} from "typeorm";
@@ -82,7 +82,7 @@ export class DonationController {
         const user: User = req.user;
         const ngo: Ngo | undefined = await Ngo.findOne({isTadeus: true});
         const card: VirtualCard | undefined = user.card;
-        const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
+        const config: Configuration | undefined = await Configuration.getMain();
         const period: Period | undefined = await Period.findCurrentNgoPeriod();
 
         if (!ngo) {
@@ -112,11 +112,11 @@ export class DonationController {
                 const donation: Donation = new Donation(
                     ID,
                     DonationEnum.TADEUS,
-                    'PERSONAL',
-                    request.donationValue,
-                    ngo,
+                    PoolEnum.PERSONAL,
                     user,
                     period);
+                donation.price = request.donationValue;
+                donation.ngo = ngo;
                 card.personalPool -= request.donationValue;
                 await entityManager.save(donation);
                 await entityManager.save(card);
@@ -173,14 +173,18 @@ export class DonationController {
         await getConnection().transaction(async entityManager => {
             if (request.ngoDonationValue > 0) {
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, DonationEnum.NGO, 'PERSONAL', request.ngoDonationValue, ngo, user, period);
+                const donation: Donation = new Donation(ID, DonationEnum.NGO, PoolEnum.PERSONAL, user, period);
+                donation.ngo = ngo;
+                donation.price = request.ngoDonationValue;
                 virtualCard.personalPool -= request.ngoDonationValue;
                 await entityManager.save(donation);
             }
 
             if (request.tadeusDonationValue > 0) {
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, DonationEnum.TADEUS, 'PERSONAL', request.ngoDonationValue, ngo, user, period);
+                const donation: Donation = new Donation(ID, DonationEnum.TADEUS, PoolEnum.PERSONAL, user, period);
+                donation.price = request.tadeusDonationValue;
+                donation.ngo = await Ngo.findOne({isTadeus: true});
                 virtualCard.personalPool -= request.ngoDonationValue;
                 await entityManager.save(donation);
             }

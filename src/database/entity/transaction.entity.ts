@@ -6,6 +6,7 @@ import {Terminal} from "./terminal.entity";
 import {TadeusEntity} from "./base.entity";
 import {PartnerPayment} from "./partner-payment.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {Donation} from "./donation.entity";
 
 const moment = require('moment');
 
@@ -56,6 +57,10 @@ export class Transaction extends TadeusEntity {
     @ManyToOne(type => PartnerPayment, payment => payment.transactions)
     payment: PartnerPayment;
 
+    @ManyToOne(type => Donation, donation => donation.transactions)
+    donation: Donation;
+
+
     @Column({default: 'TRANSACTION'})
     class: string = 'TRANSACTION';
 
@@ -67,17 +72,19 @@ export class Transaction extends TadeusEntity {
                 payment: PartnerPayment,
                 vat: number,
                 fee: number,
-                donationPercentage: number) {
+                donationPercentage: number,
+                donation: Donation) {
         super();
         this.terminal = terminal;
         this.user = user;
         this.tradingPoint = tradingPoint;
         this.ID = ID;
-        this.price = Number(price);
+        this.price = price;
         this.payment = payment;
-        this.donationPercentage = Number(donationPercentage);
-        this.provisionPercentage = Number(fee);
-        this.vat = Number(vat);
+        this.donationPercentage = donationPercentage;
+        this.provisionPercentage = fee;
+        this.vat = vat;
+        this.donation = donation;
     }
 
     static findByTradingPointMadeToday(tradingPointId: string) {
