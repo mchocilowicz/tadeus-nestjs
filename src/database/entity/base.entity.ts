@@ -2,12 +2,16 @@ import {BaseEntity, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn} 
 
 
 export class TadeusEntity extends BaseEntity {
+
     @PrimaryGeneratedColumn("uuid")
-    id: string = '';
+        // @ts-ignore
+    id: string;
 
     @CreateDateColumn()
-    createdAt: Date = new Date();
+        // @ts-ignore
+    createdAt: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date = new Date();
+        // @ts-ignore
+    updatedAt: Date;
 }

@@ -17,7 +17,7 @@ export function PhoneLength(property: string, validationOptions?: ValidationOpti
                     return typeof value === "number" &&
                         typeof relatedValue === "number" &&
                         !!prefix &&
-                        value <= prefix.maxLength
+                        value.toString().length <= prefix.maxLength
                 }
             }
         });
