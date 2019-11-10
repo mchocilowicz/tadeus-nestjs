@@ -228,6 +228,10 @@ export class LoginService {
             throw new NotFoundException('invalid_code')
         }
 
+        if (role === RoleEnum.CLIENT && !user.registered) {
+            throw new NotFoundException('user_not_registered');
+        }
+
         return this.getTokenForUser(user, role)
     }
 

@@ -123,12 +123,12 @@ export class ClientController {
             throw new BadRequestException('internal_server_error')
         }
 
-        const count = await UserDetails.count();
-        const s = count / 10;
+        const count: number = await UserDetails.count();
+        const s: number = count / 10;
         const detail: UserDetails[] = await UserDetails.findTopDetailsSortedByCollectedMoney(s);
-        const maxMoney = detail.reduce((previousValue, currentValue) => previousValue + currentValue.collectedMoney, 0);
-        const n = maxMoney / s;
-        const result = (100 * details.collectedMoney) / n;
+        const maxMoney: number = detail.reduce((previousValue: number, currentValue: UserDetails) => previousValue + currentValue.collectedMoney, 0);
+        const n: number = maxMoney / s;
+        const result: number = n > 0 ? (100 * details.collectedMoney) / n : 0;
 
         return new MainResponse(details, card, result);
     }

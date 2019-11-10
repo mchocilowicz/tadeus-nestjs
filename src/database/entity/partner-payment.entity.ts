@@ -3,6 +3,7 @@ import {TradingPoint} from "./trading-point.entity";
 import {TadeusEntity} from "./base.entity";
 import {Transaction} from "./transaction.entity";
 import {Period} from "./period.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class PartnerPayment extends TadeusEntity {
@@ -15,7 +16,7 @@ export class PartnerPayment extends TadeusEntity {
     @Column({default: false})
     isPaid: boolean = false;
 
-    @Column({nullable: true, type: 'decimal'})
+    @Column({nullable: true, type: 'decimal', transformer: new ColumnNumericTransformer()})
     price: number = 0;
 
     @Column({nullable: true})

@@ -5,6 +5,7 @@ import {User} from "./user.entity";
 import {Terminal} from "./terminal.entity";
 import {TadeusEntity} from "./base.entity";
 import {PartnerPayment} from "./partner-payment.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 const moment = require('moment');
 
@@ -13,31 +14,31 @@ export class Transaction extends TadeusEntity {
     @Column()
     ID: string;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     price: number;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     donationPercentage: number = 0;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     provisionPercentage: number = 0;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     paymentValue: number = 0;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     vat: number = 0;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     provision: number = 0;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     poolValue: number = 0;
 
-    @Column()
+    @Column({transformer: new ColumnNumericTransformer()})
     userXp: number = 0;
 
-    @Column()
+    @Column({transformer: new ColumnNumericTransformer()})
     tradingPointXp: number = 0;
 
     @Column()

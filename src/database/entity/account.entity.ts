@@ -3,6 +3,7 @@ import {Role} from "./role.entity";
 import {User} from "./user.entity";
 import {Status} from "../../common/enum/status.enum";
 import {TadeusEntity} from "./base.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Account extends TadeusEntity {
@@ -10,7 +11,7 @@ export class Account extends TadeusEntity {
     @Column()
     ID: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
     code?: number;
 
     @Column({nullable: true})

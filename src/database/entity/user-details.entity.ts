@@ -2,10 +2,11 @@ import {Column, Entity, JoinTable, ManyToOne, OneToMany} from "typeorm";
 import {Ngo} from "./ngo.entity";
 import {User} from "./user.entity";
 import {TadeusEntity} from "./base.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class UserDetails extends TadeusEntity {
-    @Column({default: 0})
+    @Column({default: 0, transformer: new ColumnNumericTransformer()})
     xp: number = 0;
 
     @Column({nullable: true})
@@ -17,16 +18,16 @@ export class UserDetails extends TadeusEntity {
     @Column({nullable: true})
     lastName?: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
     bankAccount?: number;
 
-    @Column({type: 'decimal', default: 0})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     collectedMoney: number = 0;
 
-    @Column({type: 'decimal', default: 0})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     ngoTempMoney: number = 0;
 
-    @Column({default: 0})
+    @Column({default: 0, transformer: new ColumnNumericTransformer()})
     ngoSelectionCount: number = 0;
 
     @OneToMany(type => User, user => user.details)

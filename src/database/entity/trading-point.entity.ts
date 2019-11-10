@@ -7,6 +7,7 @@ import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Correction} from "./correction.entity";
 import {Address} from "./address.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
@@ -17,19 +18,19 @@ export class TradingPoint extends TadeusEntity {
     @Column()
     name: string;
 
-    @Column({type: "decimal"})
+    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
     donationPercentage: number = 2;
 
-    @Column({type: "decimal"})
+    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
     vat: number = 23;
 
-    @Column({type: "decimal"})
+    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
     fee: number = 0.66;
 
     @Column({nullable: true})
     image: string = 'icon.jpg';
 
-    @Column()
+    @Column({transformer: new ColumnNumericTransformer()})
     xp: number = 0;
 
     @Column({default: false})

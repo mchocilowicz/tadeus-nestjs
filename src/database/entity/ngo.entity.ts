@@ -6,6 +6,7 @@ import {PhysicalCard} from "./physical-card.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Address} from "./address.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 @Unique(["name"])
@@ -44,10 +45,10 @@ export class Ngo extends TadeusEntity {
     @Column()
     isTadeus: boolean = false;
 
-    @Column({nullable: true})
+    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
     totalDonation?: number;
 
-    @Column({nullable: true})
+    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
     lastDonation?: number;
 
     @ManyToOne(type => Phone)

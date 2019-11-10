@@ -5,11 +5,12 @@ import {User} from "./user.entity";
 import {Terminal} from "./terminal.entity";
 import {Ngo} from "./ngo.entity";
 import {TadeusEntity} from "./base.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 @Unique(['value'])
 export class Phone extends TadeusEntity {
-    @Column({unique: true})
+    @Column({unique: true, transformer: new ColumnNumericTransformer()})
     value: number;
 
     @ManyToOne(type => PhonePrefix, prefix => prefix.phone)

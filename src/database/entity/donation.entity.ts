@@ -4,6 +4,7 @@ import {User} from "./user.entity";
 import {DonationEnum} from "../../common/enum/donation.enum";
 import {TadeusEntity} from "./base.entity";
 import {Period} from "./period.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Donation extends TadeusEntity {
@@ -20,7 +21,7 @@ export class Donation extends TadeusEntity {
     @Column({type: 'text'})
     pool: string;
 
-    @Column({type: 'decimal'})
+    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
     price: number;
 
     @Column({default: false})

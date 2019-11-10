@@ -3,25 +3,26 @@ import {BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany} from "ty
 import {City} from "./city.entity";
 import {Ngo} from "./ngo.entity";
 import {TradingPoint} from "./trading-point.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Address extends TadeusEntity {
     @Column()
     street: string;
 
-    @Column()
+    @Column({transformer: new ColumnNumericTransformer()})
     number: number;
 
     @Column()
     postCode: string;
 
-    @Column({type: "decimal"})
+    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
     longitude: number;
 
-    @Column({type: "decimal"})
+    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
     latitude: number;
 
-    @Column({type: "decimal"})
+    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
     distance: number = 0;
 
     @Column("geometry", {

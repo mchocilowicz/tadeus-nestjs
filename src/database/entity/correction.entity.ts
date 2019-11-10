@@ -4,6 +4,7 @@ import {Terminal} from "./terminal.entity";
 import {Transaction} from "./transaction.entity";
 import {User} from "./user.entity";
 import {TradingPoint} from "./trading-point.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Correction extends TadeusEntity {
@@ -11,13 +12,13 @@ export class Correction extends TadeusEntity {
     @Column()
     price: number;
 
-    @Column()
+    @Column({transformer: new ColumnNumericTransformer()})
     transactionPrice: number;
 
-    @Column()
+    @Column({transformer: new ColumnNumericTransformer()})
     transactionPool: number;
 
-    @Column()
+    @Column({transformer: new ColumnNumericTransformer()})
     pool: number;
 
     @Column()
