@@ -9,7 +9,7 @@ import {JwtStrategy} from "../../../common/strategy/jwt.strategy";
     imports: [
         PassportModule.register({defaultStrategy: 'jwt'}),
         JwtModule.register({
-            secretOrPrivateKey: process.env.TADEUS_JWT_EVEREST,
+            secretOrPrivateKey: process.env.TDS_JWT_EVEREST,
         }),
     ],
     providers: [TadeusJwtService, CryptoService, JwtStrategy],

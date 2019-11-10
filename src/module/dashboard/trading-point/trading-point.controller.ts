@@ -293,7 +293,6 @@ export class TradingPointController {
                     let tradePoint: TradingPoint = new TradingPoint(
                         this.codeService.generateTradingPointNumber(type.code),
                         row.name,
-                        row.donationPercentage,
                         row.latitude,
                         row.longitude,
                         phone,
@@ -301,8 +300,6 @@ export class TradingPointController {
                         await entityManager.save(address)
                     );
 
-                    tradePoint.fee = row.manipulationFee ? row.manipulationFee : 0.66;
-                    tradePoint.xp = row.xp;
                     tradePoint = await entityManager.save(tradePoint);
 
                     await this.createNewTerminal(entityManager, phone, tradePoint, true);
@@ -326,9 +323,6 @@ export class TradingPointController {
         const columnMapping: any = {
             'Name': 'name',
             'Type': 'type',
-            'Donation Percentage': 'donationPercentage',
-            'Vat': 'vat',
-            'Manipulation fee': 'manipulationFee',
             'Latitude': 'latitude',
             'Longitude': 'longitude',
             'Street': 'street',
@@ -336,7 +330,6 @@ export class TradingPointController {
             'Post code': 'postCode',
             'Phone Prefix': 'phonePrefix',
             'Phone': 'phone',
-            'Xp': 'xp',
             'City': 'city',
         };
 

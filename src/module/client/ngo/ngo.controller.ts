@@ -12,7 +12,7 @@ import {
     Res,
     UseGuards
 } from "@nestjs/common";
-import {createQueryBuilder, getConnection} from "typeorm";
+import {getConnection} from "typeorm";
 import {
     ApiBearerAuth,
     ApiImplicitBody,
@@ -160,22 +160,22 @@ export class NgoController {
     })
     @ApiUseTags('ngo')
     async getAll(@Query() query: NgoQuery) {
-        let sqlQuery = createQueryBuilder('Ngo')
-            .leftJoinAndSelect('Ngo.address', 'address')
+        let sqlQuery = Ngo.createQueryBuilder('ngo')
+            .leftJoinAndSelect('ngo.address', 'address')
             .leftJoinAndSelect('address.city', 'city')
-            .leftJoinAndSelect('Ngo.type', 'ngoType');
+            .leftJoinAndSelect('ngo.type', 'ngoType');
 
         if (query['longitude'] && query['latitude']) {
             const lo = Number(query['longitude']);
             const la = Number(query['latitude']);
 
-            const a = `ST_Distance(ST_Transform(Ngo.address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
+            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
             const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
-            sqlQuery = sqlQuery.addSelect(a, 'Ngo.address_distance');
+            sqlQuery = sqlQuery.addSelect(a, 'address_distance');
             sqlQuery = sqlQuery.andWhere(`${a} > 0`)
                 .orderBy(c)
                 .limit(10);
@@ -190,8 +190,8 @@ export class NgoController {
         });
 
         return await sqlQuery
-            .andWhere('Ngo.verified = true')
-            .andWhere('Ngo.isTadeus = false')
+            .andWhere('ngo.verified = true')
+            .andWhere('ngo.isTadeus = false')
             .getMany()
     }
 

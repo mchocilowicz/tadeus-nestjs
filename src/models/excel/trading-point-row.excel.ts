@@ -1,4 +1,4 @@
-import {IsNotEmpty, IsNumber} from "class-validator";
+import {IsNotEmpty} from "class-validator";
 import {BasicRowExcel} from "./basic-row.excel";
 
 export class TradingPointExcelRow extends BasicRowExcel {
@@ -7,32 +7,9 @@ export class TradingPointExcelRow extends BasicRowExcel {
     })
     name: string;
 
-    @IsNotEmpty({
-        message: "excel_data_required"
-    })
-    @IsNumber({}, {
-        message: "excel_donation_format"
-    })
-    donationPercentage: number;
-
-    @IsNumber({}, {
-        message: "excel_manipulation_fee_format"
-    })
-    manipulationFee: number;
-
-    @IsNotEmpty({
-        message: "excel_data_required"
-    })
-    @IsNumber({}, {
-        message: "excel_xp_format"
-    })
-    xp: number;
 
     constructor(row: any) {
         super(row.phone, row.phonePrefix, row.name, row.type, row.city, row.street, row.postCode, row.longitude, row.latitude, row.number);
         this.name = row.name;
-        this.donationPercentage = row.donationPercentage;
-        this.manipulationFee = row.manipulationFee;
-        this.xp = row.xp;
     }
 }

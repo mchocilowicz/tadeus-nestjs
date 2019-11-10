@@ -10,7 +10,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(private readonly cryptoService: CryptoService) {
         super({
             jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: process.env.TADEUS_JWT_EVEREST,
+            secretOrKey: process.env.TDS_JWT_EVEREST,
         });
     }
 

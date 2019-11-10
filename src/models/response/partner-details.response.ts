@@ -9,7 +9,9 @@ export class PartnerDetailsResponse {
     @ApiModelProperty()
     city: string;
     @ApiModelProperty()
-    address: string;
+    street: string;
+    @ApiModelProperty()
+    number: number;
     @ApiModelProperty()
     postCode: string;
     @ApiModelProperty()
@@ -18,9 +20,10 @@ export class PartnerDetailsResponse {
     constructor(userID: string, tradingPoint: TradingPoint) {
         this.id = userID;
         this.name = tradingPoint.name;
-        this.city = tradingPoint.city.name;
-        this.address = tradingPoint.address;
-        this.postCode = tradingPoint.postCode;
+        this.city = tradingPoint.address.city.name;
+        this.street = tradingPoint.address.street;
+        this.number = tradingPoint.address.number;
+        this.postCode = tradingPoint.address.postCode;
         this.xp = Number(tradingPoint.xp)
     }
 }

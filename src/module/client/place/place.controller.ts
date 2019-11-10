@@ -40,13 +40,13 @@ export class PlaceController {
             const lo = Number(query['longitude']);
             const la = Number(query['latitude']);
 
-            const a = `ST_Distance(ST_Transform(tradingPoint.address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
+            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
             const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
-            sqlQuery = sqlQuery.addSelect(a, 'tradingPoint.address_distance');
+            sqlQuery = sqlQuery.addSelect(a, 'address_distance');
             sqlQuery = sqlQuery.andWhere(`${a} > 0`)
                 .orderBy(c).limit(10);
         }

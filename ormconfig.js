@@ -1,8 +1,8 @@
 module.exports = {
-    url: process.env.DATABASE_URL,
+    url: process.env.TDS_DATABASE_URL,
     type: "postgres",
     extra: {
-        // ssl: true
+        ssl: true
     },
     schema: 'tds',
     entities: [

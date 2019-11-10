@@ -1,6 +1,6 @@
-import {CalculationService} from "../common/service/calculation.service";
-import {Transaction} from "../database/entity/transaction.entity";
-import {TradingPoint} from "../database/entity/trading-point.entity";
+import {CalculationService} from "../src/common/service/calculation.service";
+import {Transaction} from "../src/database/entity/transaction.entity";
+import {TradingPoint} from "../src/database/entity/trading-point.entity";
 
 describe('CalculationService', () => {
     let calculationService: CalculationService;

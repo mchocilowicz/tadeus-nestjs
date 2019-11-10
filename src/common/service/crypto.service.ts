@@ -10,16 +10,16 @@ export class CryptoService {
 
 
     constructor() {
-        if (!process.env.TADEUS_VI) throw new BadRequestException();
-        if (!process.env.TADEUS_PWD) throw new BadRequestException();
-        this.vi = process.env.TADEUS_VI;
-        this.pwd = process.env.TADEUS_PWD;
+        if (!process.env.TDS_VI) throw new BadRequestException();
+        if (!process.env.TDS_PWD) throw new BadRequestException();
+        this.vi = process.env.TDS_VI;
+        this.pwd = process.env.TDS_PWD;
     }
 
 
     encrypt(text: string): string {
         const vi = new Buffer(this.vi);
-        let cipher = crypto.createCipheriv(process.env.TADEUS_ALG, Buffer.from(this.pwd), vi, {
+        let cipher = crypto.createCipheriv(process.env.TDS_ALG, Buffer.from(this.pwd), vi, {
             authTagLength: 16
         });
         let encrypted = cipher.update(text);
@@ -38,7 +38,7 @@ export class CryptoService {
 
         let iv = Buffer.from(part, 'hex');
         let encryptedText = Buffer.from(textParts.join(':'), 'hex');
-        let decipher = crypto.createDecipheriv(process.env.TADEUS_ALG, Buffer.from(this.pwd), iv, {
+        let decipher = crypto.createDecipheriv(process.env.TDS_ALG, Buffer.from(this.pwd), iv, {
             authTagLength: 16
         });
 
@@ -49,12 +49,12 @@ export class CryptoService {
     }
 
     md5Tokne(text: string): string {
-        return crypto.createHash(process.env.TADEUS_TOKEN).update(text).digest("hex");
+        return crypto.createHash(process.env.TDS_TOKEN).update(text).digest("hex");
     }
 
     sweet(text: string): string {
-        return crypto.pbkdf2Sync(text, process.env.TADEUS_SALT,
-            1000, 64, process.env.TADEUS_CRYPTO).toString(`hex`);
+        return crypto.pbkdf2Sync(text, process.env.TDS_SALT,
+            1000, 64, process.env.TDS_CRYPTO).toString(`hex`);
     }
 
     generateToken(id: string, code: number): string {

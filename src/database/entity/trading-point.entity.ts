@@ -18,7 +18,7 @@ export class TradingPoint extends TadeusEntity {
     name: string;
 
     @Column({type: "decimal"})
-    donationPercentage: number;
+    donationPercentage: number = 2;
 
     @Column({type: "decimal"})
     vat: number = 23;
@@ -31,9 +31,6 @@ export class TradingPoint extends TadeusEntity {
 
     @Column()
     xp: number = 0;
-
-    @Column({nullable: true})
-    distance?: number;
 
     @Column({default: false})
     active: boolean = false;
@@ -67,7 +64,6 @@ export class TradingPoint extends TadeusEntity {
 
     constructor(ID: string,
                 name: string,
-                donationPercentage: number,
                 longitude: number,
                 latitude: number,
                 phone: Phone,
@@ -76,7 +72,6 @@ export class TradingPoint extends TadeusEntity {
         super();
         this.ID = ID;
         this.name = name;
-        this.donationPercentage = donationPercentage;
         this.phone = phone;
         this.type = type;
         this.address = address;
