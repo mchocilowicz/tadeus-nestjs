@@ -1,14 +1,13 @@
 import {Injectable} from "@nestjs/common";
 import {Transaction} from "../../database/entity/transaction.entity";
 import {TradingPoint} from "../../database/entity/trading-point.entity";
-import {UserDetails} from "../../database/entity/user-details.entity";
 
 const _ = require('lodash');
 
 @Injectable()
 export class CalculationService {
 
-    async calculateXpForUser(userId: string, details: UserDetails, currentTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
+    async calculateXpForUser(userId: string, xp: number, currentTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {
         let transactions: Transaction[] = await Transaction.findByUserMadeToday(userId);
 
         transactions.push(currentTransaction);
@@ -16,7 +15,7 @@ export class CalculationService {
             transactions = transactions.filter((t: Transaction) => t.id !== ignoreTransaction.id)
         }
 
-        return this.calculateUserXp(transactions, currentTransaction.tradingPoint, details.xp)
+        return this.calculateUserXp(transactions, currentTransaction.tradingPoint, xp)
     }
 
     async calculateXpForPartner(partnerId: string, currentTransaction: Transaction, ignoreTransaction?: Transaction): Promise<number> {

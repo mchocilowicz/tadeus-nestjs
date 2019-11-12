@@ -1,15 +1,14 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, Unique} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
 import {NgoType} from "./ngo-type.entity";
 import {Donation} from "./donation.entity";
-import {UserDetails} from "./user-details.entity";
 import {PhysicalCard} from "./physical-card.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Address} from "./address.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {User} from "./user.entity";
 
 @Entity({schema: 'tds'})
-@Unique(["name"])
 export class Ngo extends TadeusEntity {
 
     @Column()
@@ -67,8 +66,8 @@ export class Ngo extends TadeusEntity {
     @JoinColumn()
     type: NgoType;
 
-    @OneToMany(type => UserDetails, user => user.ngo)
-    userDetails?: UserDetails[];
+    @OneToMany(type => User, user => user.ngo)
+    user?: User[];
 
     @OneToMany(type => Donation, donation => donation.ngo)
     donations?: Donation[];

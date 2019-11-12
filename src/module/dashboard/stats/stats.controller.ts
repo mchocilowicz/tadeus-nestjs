@@ -23,17 +23,14 @@ export class StatsController {
     @Get('user')
     async getUsersStats() {
         let users: User[] = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.details', 'details')
-            .leftJoinAndSelect('user.accounts', 'account')
+            .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('account.role', 'role')
             .where('role.value = :name', {name: RoleEnum.CLIENT})
             .getMany();
 
-        let details = users.map((u: User) => u.details) as TadeusEntity[];
-
         return {
             activePoints: users.filter((points: User) => points.registered).length,
-            ...this.service.getTimeStats(details)
+            ...this.service.getTimeStats(users as TadeusEntity[])
         }
     }
 

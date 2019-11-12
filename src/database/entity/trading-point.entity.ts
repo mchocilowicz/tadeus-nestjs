@@ -1,4 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
 import {TradingPointType} from "./trading-point-type.entity";
 import {Transaction} from "./transaction.entity";
 import {PartnerPayment} from "./partner-payment.entity";
@@ -10,7 +10,6 @@ import {Address} from "./address.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
-@Unique(["name"])
 export class TradingPoint extends TadeusEntity {
     @Column()
     ID: string;

@@ -10,7 +10,6 @@ import {getConnection} from "typeorm";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {Configuration} from "../../../database/entity/configuration.entity";
 import {NgoDonationRequest, TadeusDonationRequest} from "../models/response/donation.request";
-import {UserDetails} from "../../../database/entity/user-details.entity";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
@@ -43,23 +42,21 @@ export class DonationController {
     @ApiResponse({status: 200, type: "boolean", description: "Check if user can make donation for selected NGO"})
     async getNgoSelectionCount(@Req() req: any) {
         let user: User = req.user;
-        const details: UserDetails | undefined = user.details;
 
-        if (!details) {
-            this.logger.error('Details Object is not available for User: ' + user.id);
+        if (!user) {
             throw new BadRequestException('internal_server_error')
         }
 
-        if (details.ngo) {
+        if (user.ngo) {
             return {
-                canDonateSameNgo: details.ngoSelectionCount > 1,
-                ngoName: details.ngo.name,
-                ngoId: details.ngo.id
+                canDonateSameNgo: user.ngoSelectionCount > 1,
+                ngoName: user.ngo.name,
+                ngoId: user.ngo.id
             }
         }
 
         return {
-            canDonateSameNgo: details.ngoSelectionCount > 1
+            canDonateSameNgo: user.ngoSelectionCount > 1
         }
     }
 

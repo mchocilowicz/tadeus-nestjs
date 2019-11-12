@@ -11,7 +11,6 @@ import {Transaction} from "../../../database/entity/transaction.entity";
 import {TransactionResponse} from "../../../models/response/transaction.response";
 import {getConnection} from "typeorm";
 import {CorrectionRequest, TransactionRequest} from "../models/transaction.request";
-import {UserDetails} from "../../../database/entity/user-details.entity";
 import {TransactionSuccessResponse} from "../../../models/response/transaction-success.response";
 import {handleException} from "../../../common/util/functions";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
@@ -122,7 +121,7 @@ export class TransactionController {
 
                 let user: User | undefined = await User.getUserByCardCode(dto.clientCode);
 
-                if (!user || !user.details || !user.card) {
+                if (!user || !user.card) {
                     throw new BadRequestException('user_does_not_exists')
                 }
 
@@ -152,16 +151,16 @@ export class TransactionController {
                     donation
                 );
 
-                const userXp = await this.calService.calculateXpForUser(user.id, user.details, transaction);
+                const userXp = await this.calService.calculateXpForUser(user.id, user.xp, transaction);
                 const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, transaction);
 
                 transaction.updateXpValues(userXp, tradingPointXp);
                 tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
 
-                const userDetails: UserDetails = user.details;
+
                 const virtualCard: VirtualCard = user.card;
 
-                userDetails.xp += userXp;
+                user.xp += userXp;
 
                 let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
                 let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
@@ -170,26 +169,26 @@ export class TransactionController {
                 payment.price += Number(provision + pool);
 
                 virtualCard.updatePool(pool);
-                userDetails.updateCollectedMoney(pool);
+                user.updateCollectedMoney(pool);
 
                 await entityManager.save(transaction);
 
-                if (userDetails.ngo) {
-                    let card = userDetails.ngo.card;
+                if (user.ngo) {
+                    let card = user.ngo.card;
                     if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${userDetails.ngo.id}`);
+                        this.logger.error(`Physical Card is not assigned to Ngo ${user.ngo.id}`);
                         throw new BadRequestException('internal_server_error');
                     }
                     card.collectedMoney += pool;
                     await entityManager.save(card)
                 } else {
-                    userDetails.ngoTempMoney += pool;
+                    user.ngoTempMoney += pool;
                 }
 
                 await entityManager.save(virtualCard);
                 await entityManager.save(payment);
                 await entityManager.save(tradingPoint);
-                await entityManager.save(userDetails);
+                await entityManager.save(user);
 
                 return new TransactionSuccessResponse(
                     moment().format('YYYY-MM-DD'),

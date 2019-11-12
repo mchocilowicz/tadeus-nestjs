@@ -33,7 +33,6 @@ import {CityResponse} from "../../../models/response/city.response";
 import {City} from "../../../database/entity/city.entity";
 import {SelectedNgoRequest} from "../models/selected-ngo.request";
 import {NgoQuery} from "../models/ngo.query";
-import {UserDetails} from "../../../database/entity/user-details.entity";
 import {Donation} from "../../../database/entity/donation.entity";
 import {User} from "../../../database/entity/user.entity";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
@@ -67,7 +66,6 @@ export class NgoController {
     async selectedNgo(@Req() req: any, @Body() dto: SelectedNgoRequest) {
         let user: User = req.user;
         let ngo: Ngo | undefined = await Ngo.findOne({id: dto.id, verified: true, isTadeus: false});
-        let details: UserDetails | undefined = user.details;
         let virtualCard: VirtualCard | undefined = user.card;
         const period: Period | undefined = await Period.findCurrentNgoPeriod();
 
@@ -75,20 +73,20 @@ export class NgoController {
             throw new BadRequestException("ngo_does_not_exists")
         }
 
-        if (!details || !virtualCard || !period) {
-            this.logger.error(`User Details or Virtual Card or Current Period for user ${user.id} does not exists.`);
+        if (!user || !virtualCard || !period) {
+            this.logger.error(`User or Virtual Card or Current Period for user ${user.id} does not exists.`);
             throw new BadRequestException("internal_server_error")
         }
 
-        if (details.ngoSelectionCount === 2) {
+        if (user.ngoSelectionCount === 2) {
             throw new BadRequestException("user_ngo_max_reached")
-        } else if (details.ngoSelectionCount === 1) {
-            let selectedNgo = details.ngo;
+        } else if (user.ngoSelectionCount === 1) {
+            let selectedNgo = user.ngo;
             if (selectedNgo) {
                 try {
                     await getConnection().transaction(async entityManager => {
-                        if (!details || !virtualCard || !period) {
-                            this.logger.error(`User Details or Virtual Card or Current Period for user ${user.id} does not exists.`);
+                        if (!user || !virtualCard || !period) {
+                            this.logger.error(`User or Virtual Card or Current Period for user ${user.id} does not exists.`);
                             throw new BadRequestException("internal_server_error")
                         }
                         if (!ngo) {
@@ -97,41 +95,41 @@ export class NgoController {
 
                         virtualCard.donationPool = 0;
                         if (selectedNgo && selectedNgo.id !== ngo.id) {
-                            details.ngoSelectionCount++;
+                            user.ngoSelectionCount++;
                             let donation = await Donation.getCurrentDonationForUser(user, period);
                             if (donation) {
                                 donation.ngo = selectedNgo;
                             }
                         }
 
-                        details.ngo = ngo;
+                        user.ngo = ngo;
                         await entityManager.save(virtualCard);
-                        await entityManager.save(details);
+                        await entityManager.save(user);
                     });
                 } catch (e) {
                     throw new BadRequestException("ngo_not_assigned")
                 }
             } else {
-                details.ngoSelectionCount++;
-                details.ngo = ngo;
+                user.ngoSelectionCount++;
+                user.ngo = ngo;
                 try {
                     await getConnection().transaction(async entityManager => {
                         await entityManager.save(virtualCard);
-                        await entityManager.save(details);
+                        await entityManager.save(user);
                     });
                 } catch (e) {
                     throw new BadRequestException("ngo_not_assigned")
                 }
             }
         } else {
-            details.ngo = ngo;
-            virtualCard.donationPool += details.ngoTempMoney;
-            details.ngoTempMoney = 0;
-            details.ngoSelectionCount++;
+            user.ngo = ngo;
+            virtualCard.donationPool += user.ngoTempMoney;
+            user.ngoTempMoney = 0;
+            user.ngoSelectionCount++;
 
             try {
                 await getConnection().transaction(async entityManager => {
-                    await entityManager.save(details);
+                    await entityManager.save(user);
                     await entityManager.save(virtualCard);
                 });
             } catch (e) {

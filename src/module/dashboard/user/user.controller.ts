@@ -11,22 +11,21 @@ export class UserController {
     @Get()
     async getAllUsers() {
         const users: User[] = await User.createQueryBuilder('user')
-            .leftJoinAndSelect(`user.accounts`, 'accounts')
-            .leftJoinAndSelect('accounts.role', 'role')
-            .leftJoinAndSelect('user.details', 'details')
+            .leftJoinAndSelect(`user.account`, 'account')
+            .leftJoinAndSelect('account.role', 'role')
             .where(`role.value = :role`, {role: RoleEnum.CLIENT})
-            .andWhere('accounts.status = :status', {status: Status.ACTIVE})
+            .andWhere('account.status = :status', {status: Status.ACTIVE})
             .getMany();
         return users.map((user: User) => {
-            if (user.details && user.accounts) {
+            if (user && user.account) {
                 return {
                     id: user.id,
                     phone: user.phone,
-                    name: user.details.name,
-                    email: user.details.email,
-                    xp: user.details.xp,
-                    account: user.accounts.find(a => a.role.value === RoleEnum.CLIENT),
-                    updatedDate: user.details.updatedAt
+                    name: user.name,
+                    email: user.email,
+                    xp: user.xp,
+                    account: user.account.role.value,
+                    updatedDate: user.updatedAt
                 }
             }
 

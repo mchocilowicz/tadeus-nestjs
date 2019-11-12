@@ -5,7 +5,6 @@ import {User} from "../database/entity/user.entity";
 import {Status} from "../common/enum/status.enum";
 import {RoleEnum} from "../common/enum/role.enum";
 import {Account} from "../database/entity/account.entity";
-import {UserDetails} from "../database/entity/user-details.entity";
 
 const moment = require('moment');
 
@@ -26,13 +25,11 @@ export class UserAccountExpirationScheduler extends NestSchedule {
         const config = await Configuration.findOne({type: 'MAIN'});
 
         for (const user of users) {
-            let accounts: Account[] | undefined = user.accounts;
-            let details: UserDetails | undefined = user.details;
+            let account: Account = user.account;
 
-            if (accounts && details && config) {
-                const account = accounts.find(a => a.role.value === RoleEnum.CLIENT);
-                if (account) {
-                    const numberOfDays = moment().diff(moment(details.updatedAt), 'days', true);
+            if (account && user && config) {
+                if (account.role.value === RoleEnum.CLIENT) {
+                    const numberOfDays = moment().diff(moment(user.updatedAt), 'days', true);
                     if (Math.ceil(numberOfDays) > config.userExpirationAfterDays) {
                         account.status = Status.NOT_ACTIVE;
                         await account.save();

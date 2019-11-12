@@ -7,7 +7,6 @@ import {handleException} from "../../../common/util/functions";
 import {CodeVerificationRequest} from "../../../models/request/code-verification.request";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {getConnection} from "typeorm";
-import {UserDetails} from "../../../database/entity/user-details.entity";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {CryptoService} from "../../../common/service/crypto.service";
 import {Account} from "../../../database/entity/account.entity";
@@ -33,7 +32,6 @@ export class RegisterService {
         }
 
         const card: VirtualCard = new VirtualCard(this.codeService.generateVirtualCardNumber());
-        const details: UserDetails = new UserDetails(dto.name, dto.email, 50);
 
         const account: Account = user.account;
 
@@ -41,7 +39,7 @@ export class RegisterService {
             await getConnection().transaction(async entityManager => {
                 if (user) {
                     user.card = await entityManager.save(card);
-                    user.details = await entityManager.save(details);
+                    user.setBasicInformation(dto.name, dto.email);
                     user.registered = true;
                     await entityManager.save(user);
                 }

@@ -1,9 +1,8 @@
-import {Column, Entity, OneToMany, Unique} from "typeorm";
+import {Column, Entity, OneToMany} from "typeorm";
 import {TadeusEntity} from "./base.entity";
 import {Address} from "./address.entity";
 
 @Entity({schema: 'tds'})
-@Unique(["name"])
 export class City extends TadeusEntity {
     @Column()
     name: string;

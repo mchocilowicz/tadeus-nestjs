@@ -33,7 +33,6 @@ import {Opinion} from "../../database/entity/opinion.entity";
 import {UserDetailsResponse} from "./models/response/user-details.response";
 import {UserDetailsRequest} from "./models/user-details.request";
 import {NotificationRequest} from "./models/notification.request";
-import {UserDetails} from "../../database/entity/user-details.entity";
 import {VirtualCard} from "../../database/entity/virtual-card.entity";
 import {Phone} from "../../database/entity/phone.entity";
 import {TadeusEntity} from "../../database/entity/base.entity";
@@ -117,22 +116,21 @@ export class ClientController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     async mainScreen(@Req() req: any) {
         const user: User = req.user;
-        const details: UserDetails | undefined = user.details;
         const card: VirtualCard | undefined = user.card;
 
-        if (!card || !details) {
-            this.logger.error(`User ${user.id} does not have assigned Details or VirtualCard`);
+        if (!card) {
+            this.logger.error(`User ${user.id} does not have assigned  VirtualCard`);
             throw new BadRequestException('internal_server_error')
         }
 
-        const count: number = await UserDetails.count();
+        const count: number = await User.count();
         const s: number = count / 10;
-        const detail: UserDetails[] = await UserDetails.findTopDetailsSortedByCollectedMoney(s);
-        const maxMoney: number = detail.reduce((previousValue: number, currentValue: UserDetails) => previousValue + currentValue.collectedMoney, 0);
+        const detail: User[] = await User.findTopDetailsSortedByCollectedMoney(s);
+        const maxMoney: number = detail.reduce((previousValue: number, currentValue: User) => previousValue + currentValue.collectedMoney, 0);
         const n: number = maxMoney / s;
-        const result: number = n > 0 ? (100 * details.collectedMoney) / n : 0;
+        const result: number = n > 0 ? (100 * user.collectedMoney) / n : 0;
 
-        return new MainResponse(details, card, result);
+        return new MainResponse(user, card, result);
     }
 
     @Get('history')
@@ -225,24 +223,21 @@ export class ClientController {
     @ApiImplicitBody({name: '', type: UserDetailsRequest})
     async updateUserData(@Req() req: any, @Body() dto: UserDetailsRequest) {
         const user: User = req.user;
-        const details: UserDetails | undefined = user.details;
         const phone: Phone | undefined = user.phone;
 
-        if (!details || !phone) {
-            this.logger.error(`User ${user.id} does not have assigned Details or Phone`);
+        if (!phone) {
+            this.logger.error(`User ${user.id} does not have assigned Phone`);
             throw new BadRequestException('internal_server_error')
         }
 
-        details.email = dto.email;
         phone.value = dto.phone;
 
         await getConnection().transaction(async entityManager => {
-            details.bankAccount = dto.bankAccount;
-            details.name = dto.firstName;
-            details.lastName = dto.lastName;
 
-            await entityManager.save(details);
+            user.updateInformation(dto.firstName, dto.lastName, dto.email, dto.bankAccount);
+            await entityManager.save(user);
             await entityManager.save(phone);
+
         });
     }
 
@@ -264,15 +259,14 @@ export class ClientController {
     @ApiUseTags('user')
     getUserData(@Req() req: any): UserDetailsResponse {
         let user: User = req.user;
-        let details: UserDetails | undefined = user.details;
         let phone: Phone | undefined = user.phone;
 
-        if (!details || !phone) {
-            this.logger.error(`User ${user.id} does not have assigned Details or Phone`);
+        if (!phone) {
+            this.logger.error(`User ${user.id} does not have assigned Phone`);
             throw new BadRequestException('internal_server_error')
         }
 
-        return new UserDetailsResponse(details, phone);
+        return new UserDetailsResponse(user, phone);
     }
 
     @Get('notification')
@@ -361,7 +355,7 @@ export class ClientController {
             const user: User = req.user;
             if (correction.user.id === user.id) {
                 await getConnection().transaction(async entityManager => {
-                    if (user.details && user.card) {
+                    if (user.card) {
                         const transaction: Transaction = correction.transaction;
                         const terminal = correction.terminal;
                         let tradingPoint: TradingPoint = terminal.tradingPoint;
@@ -385,10 +379,9 @@ export class ClientController {
                         correction.status = 'VERIFIED';
                         transaction.isCorrection = true;
 
-                        const details = user.details;
                         const card = user.card;
-                        details.xp -= transaction.userXp;
-                        details.collectedMoney -= transaction.poolValue;
+                        user.xp -= transaction.userXp;
+                        user.collectedMoney -= transaction.poolValue;
 
                         card.donationPool -= transaction.poolValue / 2;
                         card.personalPool -= transaction.poolValue / 2;
@@ -424,18 +417,18 @@ export class ClientController {
                             donation
                         );
 
-                        if (!user || !user.details || !user.card) {
+                        if (!user || !user || !user.card) {
                             throw new BadRequestException('user_does_not_exists')
                         }
 
 
-                        const userXp = await this.calService.calculateXpForUser(user.id, user.details, newTransaction, transaction);
+                        const userXp = await this.calService.calculateXpForUser(user.id, user.xp, newTransaction, transaction);
                         const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, newTransaction, transaction);
 
                         newTransaction.updateXpValues(userXp, tradingPointXp);
                         tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
 
-                        details.xp += userXp;
+                        user.xp += userXp;
 
                         let pool = this.calService.calculateCost(correction.price, tradingPoint.donationPercentage, tradingPoint.vat);
                         let provision = this.calService.calculateCost(correction.price, tradingPoint.fee, tradingPoint.vat);
@@ -445,26 +438,26 @@ export class ClientController {
                         payment.price += transaction.paymentValue;
 
                         card.updatePool(pool);
-                        details.updateCollectedMoney(pool);
+                        user.updateCollectedMoney(pool);
 
                         await entityManager.save(transaction);
 
-                        if (details.ngo) {
-                            let card = details.ngo.card;
+                        if (user.ngo) {
+                            let card = user.ngo.card;
                             if (!card) {
-                                this.logger.error(`Physical Card is not assigned to ngo ${details.ngo.id}`);
+                                this.logger.error(`Physical Card is not assigned to ngo ${user.ngo.id}`);
                                 throw new BadRequestException('internal_server_error');
                             }
                             card.collectedMoney += pool;
                             await entityManager.save(card)
                         } else {
-                            details.ngoTempMoney += pool;
+                            user.ngoTempMoney += pool;
                         }
 
                         await entityManager.save(payment);
                         await entityManager.save(card);
                         await entityManager.save(tradingPoint);
-                        await entityManager.save(details);
+                        await entityManager.save(user);
                     }
                 })
             }
