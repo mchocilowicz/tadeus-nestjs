@@ -1,11 +1,11 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {Step} from "../../common/enum/status.enum";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
+import {Status, Step} from "../../common/enum/status.enum";
 import {TradingPoint} from "./trading-point.entity";
 import {Transaction} from "./transaction.entity";
-import {User} from "./user.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Correction} from "./correction.entity";
+import {Account} from "./account.entity";
 
 @Entity({schema: 'tds'})
 export class Terminal extends TadeusEntity {
@@ -18,9 +18,12 @@ export class Terminal extends TadeusEntity {
     @Column({default: false})
     isMain: boolean = false;
 
+    @Column({nullable: true})
+    name?: string;
+
     @ManyToOne(type => Phone)
     @JoinColumn()
-    phone: Phone;
+    phone?: Phone;
 
     @ManyToOne(type => TradingPoint)
     @JoinColumn()
@@ -32,19 +35,24 @@ export class Terminal extends TadeusEntity {
     @OneToMany(type => Correction, correction => correction.terminal)
     corrections?: Correction[];
 
-    @OneToMany(type => User, user => user.terminal)
-    user?: User[];
+    @OneToOne(type => Account)
+    @JoinColumn()
+    account: Account;
 
-    constructor(ID: string, phone: Phone, point: TradingPoint) {
+    constructor(ID: string, phone: Phone, point: TradingPoint, account: Account, name?: string) {
         super();
         this.ID = ID;
         this.phone = phone;
         this.tradingPoint = point;
+        this.account = account;
+        this.name = name;
     }
 
     static findAllWithoutCurrentTerminal(terminalId: string) {
         return this.createQueryBuilder('terminal')
             .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
+            .leftJoin('terminal.accounts', 'account')
+            .where('account.status = :status', {status: Status.ACTIVE})
             .andWhere('terminal.id != :id', {id: terminalId})
             .getMany();
     }

@@ -93,20 +93,20 @@ export class TransactionController {
     })
     @ApiImplicitBody({name: '', type: TransactionRequest})
     async saveTransaction(@Req() req: any, @Body() dto: TransactionRequest) {
-        let partner: User = req.user;
-
         try {
             return await getConnection().transaction(async entityManager => {
-                let terminal: Terminal | undefined = partner.terminal;
+                let terminal: Terminal = req.user;
 
                 const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
                 const period: Period | undefined = await Period.findCurrentPartnerPeriod();
 
                 if (!config || !period) {
+                    this.logger.error('Configuration or Current Period is not available');
                     throw new BadRequestException('internal_server_error');
                 }
 
                 if (!terminal) {
+                    this.logger.error(`Terminal does not exists`);
                     throw new BadRequestException('internal_server_error');
                 }
 
@@ -122,7 +122,7 @@ export class TransactionController {
 
                 let user: User | undefined = await User.getUserByCardCode(dto.clientCode);
 
-                if (!user || !user.details || !user.card || !tradingPoint.id) {
+                if (!user || !user.details || !user.card) {
                     throw new BadRequestException('user_does_not_exists')
                 }
 
@@ -177,6 +177,7 @@ export class TransactionController {
                 if (userDetails.ngo) {
                     let card = userDetails.ngo.card;
                     if (!card) {
+                        this.logger.error(`Physical Card is not assigned to Ngo ${userDetails.ngo.id}`);
                         throw new BadRequestException('internal_server_error');
                     }
                     card.collectedMoney += pool;

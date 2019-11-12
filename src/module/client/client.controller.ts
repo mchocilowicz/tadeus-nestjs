@@ -366,10 +366,11 @@ export class ClientController {
                         const terminal = correction.terminal;
                         let tradingPoint: TradingPoint = terminal.tradingPoint;
 
-                        const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
+                        const config: Configuration | undefined = await Configuration.getMain();
                         const period: Period | undefined = await Period.findCurrentPartnerPeriod();
 
                         if (!config || !period || !correction.terminal) {
+                            this.logger.error('Configuration or Current Period or Terminal for Correction does not exists');
                             throw new BadRequestException('internal_server_error');
                         }
 
@@ -423,7 +424,7 @@ export class ClientController {
                             donation
                         );
 
-                        if (!user || !user.details || !user.id || !user.card || !tradingPoint.id) {
+                        if (!user || !user.details || !user.card) {
                             throw new BadRequestException('user_does_not_exists')
                         }
 
@@ -451,6 +452,7 @@ export class ClientController {
                         if (details.ngo) {
                             let card = details.ngo.card;
                             if (!card) {
+                                this.logger.error(`Physical Card is not assigned to ngo ${details.ngo.id}`);
                                 throw new BadRequestException('internal_server_error');
                             }
                             card.collectedMoney += pool;

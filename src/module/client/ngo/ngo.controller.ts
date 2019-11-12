@@ -34,7 +34,6 @@ import {City} from "../../../database/entity/city.entity";
 import {SelectedNgoRequest} from "../models/selected-ngo.request";
 import {NgoQuery} from "../models/ngo.query";
 import {UserDetails} from "../../../database/entity/user-details.entity";
-import {DonationEnum} from "../../../common/enum/donation.enum";
 import {Donation} from "../../../database/entity/donation.entity";
 import {User} from "../../../database/entity/user.entity";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
@@ -77,38 +76,35 @@ export class NgoController {
         }
 
         if (!details || !virtualCard || !period) {
-            this.logger.error(`User Details or Virtual Card for user ${user.id} does not exists.`);
+            this.logger.error(`User Details or Virtual Card or Current Period for user ${user.id} does not exists.`);
             throw new BadRequestException("internal_server_error")
         }
 
         if (details.ngoSelectionCount === 2) {
             throw new BadRequestException("user_ngo_max_reached")
         } else if (details.ngoSelectionCount === 1) {
-            if (details.ngo && (virtualCard.donationPool > 0 || details.ngoTempMoney > 0)) {
-                let price = virtualCard.donationPool;
-                if (details.ngoTempMoney > 0) {
-                    price += details.ngoTempMoney;
-                    details.ngoTempMoney = 0;
-                }
-
-                const donation = new Donation(
-                    this.codeService.generateDonationID(),
-                    DonationEnum.NGO,
-                    "DONATION",
-                    price,
-                    details.ngo,
-                    user,
-                    period);
-
-                virtualCard.donationPool = 0;
-                if (details.ngo.id !== ngo.id) {
-                    details.ngoSelectionCount++;
-                }
-
-                details.ngo = ngo;
+            let selectedNgo = details.ngo;
+            if (selectedNgo) {
                 try {
                     await getConnection().transaction(async entityManager => {
-                        await entityManager.save(donation);
+                        if (!details || !virtualCard || !period) {
+                            this.logger.error(`User Details or Virtual Card or Current Period for user ${user.id} does not exists.`);
+                            throw new BadRequestException("internal_server_error")
+                        }
+                        if (!ngo) {
+                            throw new BadRequestException("ngo_does_not_exists")
+                        }
+
+                        virtualCard.donationPool = 0;
+                        if (selectedNgo && selectedNgo.id !== ngo.id) {
+                            details.ngoSelectionCount++;
+                            let donation = await Donation.getCurrentDonationForUser(user, period);
+                            if (donation) {
+                                donation.ngo = selectedNgo;
+                            }
+                        }
+
+                        details.ngo = ngo;
                         await entityManager.save(virtualCard);
                         await entityManager.save(details);
                     });

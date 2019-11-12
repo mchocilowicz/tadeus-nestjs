@@ -6,6 +6,7 @@ import {Terminal} from "./terminal.entity";
 import {Ngo} from "./ngo.entity";
 import {TadeusEntity} from "./base.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {Admin} from "./admin.entity";
 
 @Entity({schema: 'tds'})
 @Unique(['value'])
@@ -24,6 +25,9 @@ export class Phone extends TadeusEntity {
 
     @OneToMany(type => Terminal, terminal => terminal.phone)
     terminal?: Terminal[];
+
+    @OneToMany(type => Admin, admin => admin.phone)
+    admin?: Admin[];
 
     @OneToMany(type => Ngo, ngo => ngo.phone)
     ngo?: Ngo[];

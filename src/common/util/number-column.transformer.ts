@@ -5,13 +5,13 @@ export class ColumnNumericTransformer implements ValueTransformer {
         if (data) {
             return Number(data)
         }
-        return null;
+        return 0;
     }
 
     from(data?: string | null): number | null {
         if (data) {
             return Number(data);
         }
-        return null
+        return 0
     }
 }

@@ -1,4 +1,15 @@
-import {BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards} from "@nestjs/common";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    Logger,
+    NotFoundException,
+    Post,
+    Query,
+    Req,
+    UseGuards
+} from "@nestjs/common";
 import {
     ApiBearerAuth,
     ApiImplicitBody,
@@ -43,7 +54,7 @@ export class PartnerController {
     @ApiUseTags('auth')
     @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
-        return this.service.checkTerminalCode(dto);
+        return this.service.checkCodeForTerminal(dto);
     }
 
     @Post('signIn')
@@ -56,7 +67,7 @@ export class PartnerController {
     @ApiUseTags('auth')
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async partnerSignIn(@Body() phone: PhoneRequest) {
-        await this.service.signIn(phone, RoleEnum.TERMINAL);
+        await this.service.signInTerminal(phone);
     }
 
     @Get()
@@ -76,26 +87,21 @@ export class PartnerController {
     @ApiUseTags('partner')
     @ApiResponse({status: 200, type: PartnerDetailsResponse})
     async getPartnerData(@Req() req: any) {
-        const user: User = req.user;
-        const terminal: Terminal | undefined = user.terminal;
-        const accounts: Account[] | undefined = user.accounts;
+        const terminal: Terminal = req.user;
+        const account: Account = terminal.account;
 
-        if (!terminal || !accounts) {
-            this.logger.error(`Terminal or Accounts does not exists for User(Terminal) ${user.id}`);
+        if (!terminal || !account) {
+            this.logger.error(`Terminal or Accounts does not exists for ${terminal.id}`);
             throw new BadRequestException('internal_server_error')
         }
 
         const partner: TradingPoint | undefined = await TradingPoint.findActivePointWithCityById(terminal.tradingPoint.id);
 
-        const terminalAccount: Account | undefined = accounts.find(a => a.role.value === RoleEnum.TERMINAL);
-
-        if (!terminalAccount || !partner) {
-            this.logger.error(`Partner or Terminal Role does not exists for User(Terminal) ${user.id}`);
-            throw new BadRequestException('internal_server_error')
+        if (!partner) {
+            throw new NotFoundException('trading_point_does_not_exists')
         }
 
-
-        return new PartnerDetailsResponse(terminalAccount.ID, partner)
+        return new PartnerDetailsResponse(account.ID, partner)
     }
 
     @Get('history')

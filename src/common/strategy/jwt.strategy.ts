@@ -4,6 +4,9 @@ import {Injectable, UnauthorizedException} from "@nestjs/common";
 import {User} from "../../database/entity/user.entity";
 import {CryptoService} from "../service/crypto.service";
 import {RoleEnum} from "../enum/role.enum";
+import {Account} from "../../database/entity/account.entity";
+import {Terminal} from "../../database/entity/terminal.entity";
+import {Admin} from "../../database/entity/admin.entity";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -17,30 +20,52 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     async validate(payload: { id: string }) {
         let {id, role} = this.cryptoService.decryptId(payload.id);
 
-        let user: User | undefined;
-        switch (role) {
-            case RoleEnum.CLIENT:
-                user = await User.getUserWithClientData(id);
-                break;
-            case RoleEnum.TERMINAL:
-                user = await User.getUserWithTerminalData(id);
-                break;
-            case RoleEnum.DASHBOARD:
-                user = await User.getUserWithDashboardData(id);
-                break;
-        }
+        if (role === RoleEnum.TERMINAL) {
+            return await this.handleTerminalToken(id)
+        } else if (role === RoleEnum.CLIENT) {
+            const user = await User.getUserWithClientData(id);
 
-        if (!user) {
+            return this.verifiEntity(id, user);
+        } else if (role === RoleEnum.DASHBOARD) {
+            let admin = await Admin.createQueryBuilder('admin')
+                .leftJoinAndSelect('admin.account', 'account')
+                .leftJoinAndSelect('account.role', 'role')
+                .where(`account.id = :id`, {id: id})
+                .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
+                .getOne();
+
+            return this.verifiEntity(id, admin)
+        }
+    }
+
+    private async handleTerminalToken(id: string): Promise<Terminal> {
+        let terminal = await Terminal.createQueryBuilder('terminal')
+            .leftJoinAndSelect('terminal.account', 'account')
+            .leftJoinAndSelect('account.role', 'role')
+            .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
+            .where(`account.id = :id`, {id: id})
+            .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
+            .getOne();
+
+        return this.verifiEntity(id, terminal)
+    }
+
+    private verifiEntity(id: string, entity: any) {
+        if (!entity) {
             throw new UnauthorizedException('user_does_not_exists')
         }
 
-        let accounts = user.accounts;
+        let account = entity.account;
 
-        if (!accounts) {
+        if (!account) {
             throw new UnauthorizedException('user_does_not_exists')
         }
 
-        let account = accounts.find(a => a.role.value == role);
+        this.checkAccount(id, account);
+        return entity;
+    }
+
+    private checkAccount(id: string, account?: Account) {
         if (account && account.code) {
             let token = this.cryptoService.generateToken(id, account.code);
             if (account.token !== token) {
@@ -49,8 +74,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         } else {
             throw new UnauthorizedException('token_Expired');
         }
-
-        return user;
     }
 }
 

@@ -35,14 +35,7 @@ export class RegisterService {
         const card: VirtualCard = new VirtualCard(this.codeService.generateVirtualCardNumber());
         const details: UserDetails = new UserDetails(dto.name, dto.email, 50);
 
-        const accounts: Account[] | undefined = user.accounts;
-
-        if (!accounts) {
-            this.logger.error(`User ${user.id} does not have any created accounts`);
-            throw new BadRequestException('internal_server_error')
-        }
-
-        let account: Account | undefined = accounts.find(a => a.role.value === RoleEnum.CLIENT);
+        const account: Account = user.account;
 
         try {
             await getConnection().transaction(async entityManager => {
@@ -57,7 +50,7 @@ export class RegisterService {
             handleException(e, 'user', this.logger)
         }
 
-        if (!account || !account.id) {
+        if (!account) {
             this.logger.error(`User ${user.id} does not have CLIENT account`);
             throw new BadRequestException('internal_server_error')
         }
@@ -73,15 +66,10 @@ export class RegisterService {
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
+        let account = user.account;
 
-        if (!user.accounts) {
-            this.logger.error(`User ${user.id} does not have any created accounts`);
-            throw new BadRequestException('internal_server_error')
-        }
 
-        let account: Account | undefined = user.accounts.find(a => a.role.value === RoleEnum.CLIENT);
-
-        if (!account || !account.id || !account.code) {
+        if (!account || !account.id || !account.code || account.role.value !== RoleEnum.CLIENT) {
             this.logger.error(`User ${user.id} does not have CLIENT account`);
             throw new BadRequestException('internal_server_error');
         }

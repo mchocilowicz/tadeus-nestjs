@@ -32,7 +32,6 @@ import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
 import {Account} from "../../../database/entity/account.entity";
 import {Role} from "../../../database/entity/role.entity";
 import {RoleEnum} from "../../../common/enum/role.enum";
-import {User} from "../../../database/entity/user.entity";
 import {Address} from "../../../database/entity/address.entity";
 
 const moment = require("moment");
@@ -220,39 +219,24 @@ export class TradingPointController {
             throw new BadRequestException('internal_server_error');
         }
 
-        let user: User | undefined = await User.findOne({phone: phone});
+        let terminal: Terminal | undefined = await Terminal.findOne({phone: phone});
 
-        if (!user) {
-            user = new User(phone);
-
+        if (!terminal) {
             let counts = await Terminal.count({tradingPoint: point});
             const accountID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+            const account = new Account(accountID, role);
 
-            let terminal = new Terminal(accountID, phone, point);
+            terminal = new Terminal(accountID, phone, point, await entityManager.save(account));
             terminal.isMain = true;
-            user.terminal = await entityManager.save(terminal);
+            await entityManager.save(terminal);
 
-            let savedUser = await entityManager.save(user);
-            if (!savedUser) {
-                this.logger.error('Uzytkownik nie zostal poprawnie zapisany');
+            if (!terminal) {
+                this.logger.error('Terminal was not saved');
                 throw new BadRequestException('internal_server_error')
             }
-
-            await entityManager.save(new Account(accountID, role, savedUser));
         } else {
-
-            let counts = await Terminal.count({tradingPoint: point});
-            const accountID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
-
-            let terminal = new Terminal(accountID, phone, point);
-            if (isMain) {
-                terminal.isMain = true;
-            }
-            let account = new Account(accountID, role, user);
-
-            user.terminal = await entityManager.save(terminal);
-            account.user = await entityManager.save(user);
-            await entityManager.save(account);
+            this.logger.error('Terminal is already assigned to Trading Point');
+            throw new BadRequestException('excel_terminal_already_assigned')
         }
     }
 
