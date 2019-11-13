@@ -3,7 +3,7 @@ import {ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
 import {handleException} from "../../../common/util/functions";
 import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
-import {TradingPointTypeRequest} from "../../../models/request/trading-point-type.request";
+import {TradingPointTypeRequest} from "../../../models/common/request/trading-point-type.request";
 
 @Controller()
 @ApiUseTags('trading-point-type')

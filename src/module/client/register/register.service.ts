@@ -2,9 +2,9 @@ import {BadRequestException, Injectable, Logger, NotFoundException} from "@nestj
 import {TadeusJwtService} from "../../common/TadeusJwtModule/TadeusJwtService";
 import {CodeService} from "../../../common/service/code.service";
 import {User} from "../../../database/entity/user.entity";
-import {UserInformationRequest} from "../../../models/request/user-Information.request";
+import {UserInformationRequest} from "../../../models/common/request/user-Information.request";
 import {handleException} from "../../../common/util/functions";
-import {CodeVerificationRequest} from "../../../models/request/code-verification.request";
+import {CodeVerificationRequest} from "../../../models/common/request/code-verification.request";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {getConnection} from "typeorm";
 import {CryptoService} from "../../../common/service/crypto.service";

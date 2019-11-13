@@ -1,7 +1,7 @@
 import {Body, Controller, Get, Logger, NotFoundException, Param, Post, Put} from "@nestjs/common";
 import {ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
-import {NgoTypeRequest} from "../../../models/request/ngo-type.request";
+import {NgoTypeRequest} from "../../../models/common/request/ngo-type.request";
 import {NgoType} from "../../../database/entity/ngo-type.entity";
 import {handleException} from "../../../common/util/functions";
 

@@ -9,7 +9,7 @@ import {Ngo} from "../../../database/entity/ngo.entity";
 import {getConnection} from "typeorm";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {Configuration} from "../../../database/entity/configuration.entity";
-import {NgoDonationRequest, TadeusDonationRequest} from "../models/response/donation.request";
+import {NgoDonationRequest, TadeusDonationRequest} from "../../../models/client/request/donation.request";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";

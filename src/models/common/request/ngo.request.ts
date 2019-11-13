@@ -1,6 +1,6 @@
 import {ApiModelProperty} from "@nestjs/swagger";
-import {City} from "../../database/entity/city.entity";
-import {NgoType} from "../../database/entity/ngo-type.entity";
+import {City} from "../../../database/entity/city.entity";
+import {NgoType} from "../../../database/entity/ngo-type.entity";
 
 export class NgoRequest {
     @ApiModelProperty({required: true})

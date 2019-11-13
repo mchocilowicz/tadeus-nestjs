@@ -1,5 +1,5 @@
 import {ApiModelProperty} from "@nestjs/swagger";
-import {TradingPoint} from "../../database/entity/trading-point.entity";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
 
 export class PartnerDetailsResponse {
     @ApiModelProperty()

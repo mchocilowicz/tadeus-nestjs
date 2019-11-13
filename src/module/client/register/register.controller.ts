@@ -2,9 +2,9 @@ import {ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nest
 import {RegisterService} from "./register.service";
 import {Body, Controller, HttpCode, Post, Put} from "@nestjs/common";
 import {Const} from "../../../common/util/const";
-import {NewPhoneRequest} from "../../../models/request/new-phone.request";
-import {CodeVerificationRequest} from "../../../models/request/code-verification.request";
-import {UserInformationRequest} from "../../../models/request/user-Information.request";
+import {NewPhoneRequest} from "../../../models/common/request/new-phone.request";
+import {CodeVerificationRequest} from "../../../models/common/request/code-verification.request";
+import {UserInformationRequest} from "../../../models/common/request/user-Information.request";
 import {LoginService} from "../../common/login.service";
 
 @Controller()

@@ -19,8 +19,8 @@ import {
     ApiUseTags
 } from "@nestjs/swagger";
 import {Const} from "../../common/util/const";
-import {CodeVerificationRequest} from "../../models/request/code-verification.request";
-import {PhoneRequest} from "../../models/request/phone.request";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {PhoneRequest} from "../../models/common/request/phone.request";
 import {RoleEnum} from "../../common/enum/role.enum";
 import {LoginService} from "../common/login.service";
 import {User} from "../../database/entity/user.entity";
@@ -28,7 +28,7 @@ import {createQueryBuilder} from "typeorm";
 import {Roles} from "../../common/decorators/roles.decorator";
 import {JwtAuthGuard} from "../../common/guards/jwt.guard";
 import {RolesGuard} from "../../common/guards/roles.guard";
-import {PartnerDetailsResponse} from "../../models/response/partner-details.response";
+import {PartnerDetailsResponse} from "../../models/common/response/partner-details.response";
 import {TradingPoint} from "../../database/entity/trading-point.entity";
 import {Transaction} from "../../database/entity/transaction.entity";
 import {CodeService} from "../../common/service/code.service";

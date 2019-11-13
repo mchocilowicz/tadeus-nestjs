@@ -3,8 +3,8 @@ import {ApiBearerAuth, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseT
 import {TradingPoint} from "../../../database/entity/trading-point.entity";
 import {Const} from "../../../common/util/const";
 import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
-import {CityResponse} from "../../../models/response/city.response";
-import {PlaceQuery} from "../models/place.query";
+import {CityResponse} from "../../../models/common/response/city.response";
+import {PlaceQuery} from "../../../models/client/place.query";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";

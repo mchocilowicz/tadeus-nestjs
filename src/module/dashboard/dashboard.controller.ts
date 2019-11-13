@@ -1,8 +1,8 @@
 import {Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put} from "@nestjs/common";
 import {ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
 import {Const} from "../../common/util/const";
-import {PhoneRequest} from "../../models/request/phone.request";
-import {CodeVerificationRequest} from "../../models/request/code-verification.request";
+import {PhoneRequest} from "../../models/common/request/phone.request";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
 import {LoginService} from "../common/login.service";
 import {City} from "../../database/entity/city.entity";
 import {TradingPointType} from "../../database/entity/trading-point-type.entity";

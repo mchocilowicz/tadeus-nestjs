@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 import {ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
-import {NgoRequest} from "../../../models/request/ngo.request";
+import {NgoRequest} from "../../../models/common/request/ngo.request";
 import {Ngo} from "../../../database/entity/ngo.entity";
 import {EntityManager, getConnection, QueryFailedError} from "typeorm";
 import {extractErrors, handleException} from "../../../common/util/functions";
