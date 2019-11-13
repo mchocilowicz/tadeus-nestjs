@@ -7,7 +7,6 @@ import {handleException} from "../../../common/util/functions";
 import {CodeVerificationRequest} from "../../../models/request/code-verification.request";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {getConnection} from "typeorm";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {CryptoService} from "../../../common/service/crypto.service";
 import {Account} from "../../../database/entity/account.entity";
 
@@ -31,14 +30,11 @@ export class RegisterService {
             throw new BadRequestException("user_active")
         }
 
-        const card: VirtualCard = new VirtualCard(this.codeService.generateVirtualCardNumber());
-
         const account: Account = user.account;
 
         try {
             await getConnection().transaction(async entityManager => {
                 if (user) {
-                    user.card = await entityManager.save(card);
                     user.setBasicInformation(dto.name, dto.email);
                     user.registered = true;
                     await entityManager.save(user);

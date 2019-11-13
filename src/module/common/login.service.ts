@@ -15,6 +15,7 @@ import {NewPhoneRequest} from "../../models/request/new-phone.request";
 import {Phone} from "../../database/entity/phone.entity";
 import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
 import {Terminal} from "../../database/entity/terminal.entity";
+import {Admin} from "../../database/entity/admin.entity";
 
 @Injectable()
 export class LoginService {
@@ -42,8 +43,9 @@ export class LoginService {
                 account.code = 0;
 
                 let savedAccount = await entityManager.save(account);
-                let user = new User(savedAccount);
-                user.card = await entityManager.save(virtualCard);
+                let card = await entityManager.save(virtualCard);
+                let user = new User(card, savedAccount);
+
                 await entityManager.save(user);
 
                 if (!savedAccount.id || !savedAccount.code) {
@@ -62,19 +64,6 @@ export class LoginService {
         }
     }
 
-    async checkTerminalCode(dto: CodeVerificationRequest): Promise<string> {
-        return this.checkCodeForRole(dto, RoleEnum.TERMINAL)
-    }
-
-
-    async checkDashboardCode(dto: CodeVerificationRequest): Promise<string> {
-        return this.checkCodeForRole(dto, RoleEnum.DASHBOARD)
-    }
-
-    async checkClientCode(dto: CodeVerificationRequest): Promise<string> {
-        return this.checkCodeForRole(dto, RoleEnum.CLIENT)
-    }
-
     async signInTerminal(dto: PhoneRequest): Promise<void> {
         let terminal: Terminal | undefined = await Terminal.createQueryBuilder('terminal')
             .leftJoinAndSelect('terminal.account', 'account')
@@ -86,26 +75,25 @@ export class LoginService {
             .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
             .getOne();
 
-        if (!terminal) {
-            throw new NotFoundException('user_no_exists')
-        }
-
-        const account = terminal.account;
-
-        if (!account) {
-            this.logger.error(`Terminal ${terminal.id} does not have assigned Accounts`);
-            throw new BadRequestException('internal_server_error')
-        }
-
-        this.checkUserRights(account, RoleEnum.TERMINAL);
-
-        account.code = this.codeService.generateSmsCode();
-        // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
-        await account.save()
-
+        await this.signInEntity(terminal, RoleEnum.TERMINAL)
     }
 
-    async signIn(dto: PhoneRequest, role: RoleEnum): Promise<void> {
+    async signInDashboard(dto: PhoneRequest): Promise<void> {
+        let admin: Admin | undefined = await Admin.createQueryBuilder('admin')
+            .leftJoinAndSelect('admin.account', 'account')
+            .leftJoinAndSelect('account.role', 'role')
+            .leftJoin('admin.phone', 'phone')
+            .leftJoin('phone.prefix', 'prefix')
+            .where(`phone.value = :phone`, {phone: dto.phone})
+            .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
+            .andWhere(`role.value = :role`, {role: RoleEnum.DASHBOARD})
+            .getOne();
+
+        await this.signInEntity(admin, RoleEnum.DASHBOARD)
+    }
+
+
+    async signInUser(dto: PhoneRequest, role: RoleEnum): Promise<void> {
         let user: User | undefined = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('account.role', 'role')
@@ -116,21 +104,7 @@ export class LoginService {
             .andWhere(`role.value = :role`, {role: role})
             .getOne();
 
-        if (!user) {
-            throw new NotFoundException('user_no_exists')
-        }
-
-        const account = user.account;
-
-        if (!account) {
-            this.logger.error(`User ${user.id} does not have assigned role CLIENT`);
-            throw new BadRequestException('internal_server_error')
-        }
-        this.checkUserRights(account, role);
-
-        account.code = this.codeService.generateSmsCode();
-        // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
-        await account.save()
+        await this.signInEntity(user, RoleEnum.CLIENT)
     }
 
     async clientSignIn(dto: NewPhoneRequest): Promise<boolean> {
@@ -198,9 +172,14 @@ export class LoginService {
                         this.logger.error(`Role CLIENT does not exists`);
                         throw new BadRequestException('internal_server_error')
                     }
+
                     let account = new Account(this.codeService.generateUserNumber(), role);
+                    let card: VirtualCard = new VirtualCard(this.codeService.generateVirtualCardNumber());
+
                     account = await entityManager.save(account);
-                    user = new User(account, phone);
+                    card = await entityManager.save(card);
+                    user = new User(card, account, phone);
+
                     await entityManager.save(user);
                 }
                 return false;
@@ -208,14 +187,23 @@ export class LoginService {
         });
     }
 
-    private checkUserRights(account: Account, role: RoleEnum) {
-        if (!this.checkUserAccount(account, role)) {
-            throw new UnauthorizedException('account_blocked')
-        }
-    }
+    async checkCodeForDashboard(request: CodeVerificationRequest): Promise<string> {
+        let admin: Admin | undefined = await Admin.createQueryBuilder('admin')
+            .leftJoinAndSelect('admin.account', 'account')
+            .leftJoinAndSelect('account.role', 'role')
+            .leftJoinAndSelect('admin.phone', 'phone')
+            .leftJoinAndSelect('phone.prefix', 'prefix')
+            .where(`phone.value = :phone`, {phone: request.phone})
+            .where(`prefix.value = :prefix`, {prefix: request.phonePrefix})
+            .andWhere(`account.code = :code`, {code: request.code})
+            .andWhere(`role.value = :role`, {role: RoleEnum.DASHBOARD})
+            .getOne();
 
-    private checkUserAccount(account: Account, role: RoleEnum): boolean {
-        return account.role.value === role && account.status === Status.ACTIVE
+        if (!admin) {
+            throw new NotFoundException('invalid_code')
+        }
+
+        return this.getTokenForEntity(admin, RoleEnum.DASHBOARD)
     }
 
     async checkCodeForTerminal(request: CodeVerificationRequest): Promise<string> {
@@ -225,59 +213,28 @@ export class LoginService {
             throw new NotFoundException('invalid_code')
         }
 
-        let account = terminal.account;
-
-        if (!account) {
-            this.logger.error(`Terminal ${terminal.id} does not have any Accounts`);
-            throw new BadRequestException('internal_server_error')
-        }
-
-        if (!account.code) {
-            this.logger.error(`Code was not send for Terminal ${terminal.id}`);
-            throw new BadRequestException('internal_server_error')
-        }
-
-        account.token = this.cryptoService.generateToken(account.id, account.code);
-
-        await account.save();
-
-        let id: string = this.cryptoService.encryptId(account.id, RoleEnum.TERMINAL);
-
-        return this.jwtService.signToken({id: id})
+        return this.getTokenForEntity(terminal, RoleEnum.TERMINAL)
     }
 
-    private getTerminal(dto: CodeVerificationRequest, role: string): Promise<Terminal | undefined> {
-        return Terminal.createQueryBuilder('terminal')
-            .leftJoinAndSelect('terminal.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoinAndSelect('terminal.phone', 'phone')
-            .leftJoinAndSelect('terminal.prefix', 'prefix')
-            .where(`phone.value = :phone`, {phone: dto.phone})
-            .where(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
-            .andWhere(`account.code = :code`, {code: dto.code})
-            .andWhere(`role.value = :role`, {role: role})
-            .getOne();
-    }
-
-    private async checkCodeForRole(request: CodeVerificationRequest, role: RoleEnum): Promise<string> {
-        let user: User | undefined = await this.getUser(request, role);
+    async checkCodeForUser(request: CodeVerificationRequest): Promise<string> {
+        let user: User | undefined = await this.getUser(request, RoleEnum.CLIENT);
 
         if (!user) {
             throw new NotFoundException('invalid_code')
         }
 
-        if (role === RoleEnum.CLIENT && !user.registered) {
+        if (!user.registered) {
             throw new NotFoundException('user_does_not_exists');
         }
 
-        return this.getTokenForUser(user, role)
+        return this.getTokenForEntity(user, RoleEnum.CLIENT)
     }
 
-    private async getTokenForUser(user: User, role: RoleEnum): Promise<string> {
-        const account = user.account;
-        
-        if (!account || !account.id || !account.code) {
-            this.logger.error(`Account CLIENT for User ${user.id} does not exists`);
+    private async getTokenForEntity(entity: any, role: RoleEnum): Promise<string> {
+        const account = entity.account;
+
+        if (!account || !account.code) {
+            this.logger.error(`Account ${role} for  ${entity.id} does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -302,4 +259,47 @@ export class LoginService {
             .andWhere(`role.value = :role`, {role: role})
             .getOne();
     }
+
+    private getTerminal(dto: CodeVerificationRequest, role: string): Promise<Terminal | undefined> {
+        return Terminal.createQueryBuilder('terminal')
+            .leftJoinAndSelect('terminal.account', 'account')
+            .leftJoinAndSelect('account.role', 'role')
+            .leftJoinAndSelect('terminal.phone', 'phone')
+            .leftJoinAndSelect('phone.prefix', 'prefix')
+            .where(`phone.value = :phone`, {phone: dto.phone})
+            .where(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
+            .andWhere(`account.code = :code`, {code: dto.code})
+            .andWhere(`role.value = :role`, {role: role})
+            .getOne();
+    }
+
+    private checkUserRights(account: Account, role: RoleEnum) {
+        if (!this.checkUserAccount(account, role)) {
+            throw new UnauthorizedException('account_blocked')
+        }
+    }
+
+    private checkUserAccount(account: Account, role: RoleEnum): boolean {
+        return account.role.value === role && account.status === Status.ACTIVE
+    }
+
+    private async signInEntity(entity: any, role: RoleEnum) {
+        if (!entity) {
+            throw new NotFoundException('user_no_exists')
+        }
+
+        const account = entity.account;
+
+        if (!account) {
+            this.logger.error(`${entity.id} does not have assigned Account ${role}`);
+            throw new BadRequestException('internal_server_error')
+        }
+
+        this.checkUserRights(account, role);
+
+        account.code = this.codeService.generateSmsCode();
+        // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
+        await account.save()
+    }
+
 }

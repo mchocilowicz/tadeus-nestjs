@@ -96,7 +96,7 @@ export class ClientController {
     })
     @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
-        return this.service.checkClientCode(dto);
+        return this.service.checkCodeForUser(dto);
     }
 
     @Get()

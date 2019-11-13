@@ -2,7 +2,6 @@ import {Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put} fr
 import {ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
 import {Const} from "../../common/util/const";
 import {PhoneRequest} from "../../models/request/phone.request";
-import {RoleEnum} from "../../common/enum/role.enum";
 import {CodeVerificationRequest} from "../../models/request/code-verification.request";
 import {LoginService} from "../common/login.service";
 import {City} from "../../database/entity/city.entity";
@@ -25,7 +24,7 @@ export class DashboardController {
     })
     @ApiImplicitBody({name: '', type: PhoneRequest})
     async dashboardSignIn(@Body() phone: PhoneRequest) {
-        await this.service.signIn(phone, RoleEnum.DASHBOARD);
+        await this.service.signInDashboard(phone);
     }
 
     @Post('code')
@@ -37,7 +36,7 @@ export class DashboardController {
     })
     @ApiImplicitBody({name: '', type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
-        return this.service.checkDashboardCode(dto);
+        return this.service.checkCodeForDashboard(dto);
     }
 
     @Get('city')

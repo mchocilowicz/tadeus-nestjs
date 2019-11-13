@@ -51,7 +51,7 @@ export class User extends TadeusEntity {
 
     @OneToOne(type => VirtualCard)
     @JoinColumn()
-    card?: VirtualCard;
+    card: VirtualCard;
 
     @ManyToOne(type => Phone)
     @JoinColumn()
@@ -79,10 +79,11 @@ export class User extends TadeusEntity {
     @OneToMany(type => Correction, correction => correction.user)
     corrections?: Correction[];
 
-    constructor(account: Account, phone?: Phone) {
+    constructor(card: VirtualCard, account: Account, phone?: Phone) {
         super();
         this.account = account;
         this.phone = phone;
+        this.card = card;
     }
 
     static getUserWithClientData(accountId: string) {
