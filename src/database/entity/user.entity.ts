@@ -12,6 +12,7 @@ import {Correction} from "./correction.entity";
 import {RoleEnum} from "../../common/enum/role.enum";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 import {Ngo} from "./ngo.entity";
+import {Status} from "../../common/enum/status.enum";
 
 @Entity({schema: 'tds'})
 export class User extends TadeusEntity {
@@ -95,15 +96,24 @@ export class User extends TadeusEntity {
             .leftJoinAndSelect('ngo.type', 'type')
             .where(`account.id = :id`, {id: accountId})
             .andWhere(`role.value = :role`, {role: RoleEnum.CLIENT})
+            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
             .getOne();
     }
 
-    static getUserByCardCode(code: string) {
+    static getUserForTransaction(code: string, prefix: number, phone: number) {
         return this.createQueryBuilder('user')
+            .leftJoin('user.phone', 'phone')
+            .leftJoin('user.account', 'account')
+            .leftJoin('account.role', 'role')
+            .leftJoin('phone.prefix', 'prefix')
             .leftJoinAndSelect('user.card', 'virtual-card')
             .leftJoinAndSelect('user.ngo', 'ngo')
             .leftJoinAndSelect('ngo.card', 'physical-card')
             .where('virtual-card.code = :code', {code: code})
+            .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
+            .andWhere('account.status = :status', {status: Status.ACTIVE})
+            .orWhere('prefix.value = :prefix', {prefix: prefix})
+            .orWhere('phone.value = :phone', {phone: phone})
             .getOne();
     }
 
@@ -123,6 +133,7 @@ export class User extends TadeusEntity {
             .where('role.value = :name', {name: RoleEnum.CLIENT})
             .andWhere('phone.value = :phone', {phone: phone})
             .andWhere('prefix.value = :prefix', {prefix: prefix})
+            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
             .getOne();
     }
 
@@ -136,6 +147,7 @@ export class User extends TadeusEntity {
             .andWhere('phone.value = :phone', {phone: phone})
             .andWhere('prefix.value = :prefix', {prefix: prefix})
             .andWhere('account.code = :code', {code: code})
+            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
             .getOne();
     }
 

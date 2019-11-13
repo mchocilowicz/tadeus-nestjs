@@ -1,6 +1,6 @@
 import {IsAlpha, IsNotEmpty, IsNumber} from "class-validator";
-import {PhonePrefixExists} from "../../common/decorators/phone-prefix-exists.decorator";
-import {PhoneLength} from "../../common/decorators/phone-length.decorator";
+import {PhonePrefixExists} from "../../../common/decorators/phone-prefix-exists.decorator";
+import {PhoneLength} from "../../../common/decorators/phone-length.decorator";
 
 export class BasicRowExcel {
 

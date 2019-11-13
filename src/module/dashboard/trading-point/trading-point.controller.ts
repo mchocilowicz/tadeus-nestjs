@@ -26,7 +26,7 @@ import {ExcelException} from "../../../common/exceptions/excel.exception";
 import {CodeService} from "../../../common/service/code.service";
 import {Terminal} from "../../../database/entity/terminal.entity";
 import {diskStorage} from "multer";
-import {TradingPointExcelRow} from "../../../models/excel/trading-point-row.excel";
+import {TradingPointExcelRow} from "../../../models/dashboard/excel/trading-point-row.excel";
 import {Phone} from "../../../database/entity/phone.entity";
 import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
 import {Account} from "../../../database/entity/account.entity";

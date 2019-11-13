@@ -20,7 +20,7 @@ import {EntityManager, getConnection, QueryFailedError} from "typeorm";
 import {extractErrors, handleException} from "../../../common/util/functions";
 import {NgoType} from "../../../database/entity/ngo-type.entity";
 import {FileInterceptor} from "@nestjs/platform-express";
-import {NgoRowExcel} from "../../../models/excel/ngo-row.excel";
+import {NgoRowExcel} from "../../../models/dashboard/excel/ngo-row.excel";
 import {validate} from "class-validator";
 import {ExcelException} from "../../../common/exceptions/excel.exception";
 import {City} from "../../../database/entity/city.entity";

@@ -7,6 +7,7 @@ import {RoleEnum} from "../enum/role.enum";
 import {Account} from "../../database/entity/account.entity";
 import {Terminal} from "../../database/entity/terminal.entity";
 import {Admin} from "../../database/entity/admin.entity";
+import {Status} from "../enum/status.enum";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -32,6 +33,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 .leftJoinAndSelect('account.role', 'role')
                 .where(`account.id = :id`, {id: id})
                 .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
+                .andWhere(`account.status = :status`, {status: Status.ACTIVE})
                 .getOne();
 
             return this.verifiEntity(id, admin)
@@ -45,6 +47,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
             .where(`account.id = :id`, {id: id})
             .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
+            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
             .getOne();
 
         return this.verifiEntity(id, terminal)

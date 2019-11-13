@@ -11,7 +11,6 @@ import {Transaction} from "../../../database/entity/transaction.entity";
 import {TransactionResponse} from "../../../models/response/transaction.response";
 import {getConnection} from "typeorm";
 import {CorrectionRequest, TransactionRequest} from "../models/transaction.request";
-import {TransactionSuccessResponse} from "../../../models/response/transaction-success.response";
 import {handleException} from "../../../common/util/functions";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {TradingPoint} from "../../../database/entity/trading-point.entity";
@@ -51,12 +50,13 @@ export class TransactionController {
     })
     @ApiImplicitBody({name: '', type: CorrectionRequest})
     async createCorrection(@Req() req: any, @Body() request: CorrectionRequest) {
+        let terminal: Terminal = req.user;
         let i = request.transactionId;
         let p = request.price;
 
         let t: Transaction | undefined = await Transaction.findOne({id: i}, {relations: ['user']});
         if (t) {
-            let request = new Correction(p, 'CV', req.user.terminal, t, t.user, t.tradingPoint, t.poolValue, t.paymentValue, t.price);
+            let request = new Correction(p, 'CV', terminal, t, t.user, t.tradingPoint, t.poolValue, t.paymentValue, t.price);
             await getConnection().transaction(async entityManager => {
                 await entityManager.save(t);
                 request = await entityManager.save(request);
@@ -66,13 +66,20 @@ export class TransactionController {
                 }
             });
 
-            return {
-                date: new Date(),
-                oldPrice: t.price,
-                price: p,
-                a: t.poolValue,
-                // b: this.calService.calculateCost(p,)
+            if (terminal.isMain) {
+                return {
+                    oldPrice: t.price,
+                    price: p,
+                    a: t.poolValue,
+                    // b: this.calService.calculateCost(p,)
+                }
+            } else {
+                return {
+                    oldPrice: t.price,
+                    price: p,
+                }
             }
+
         }
     }
 
@@ -119,7 +126,7 @@ export class TransactionController {
                 }
 
 
-                let user: User | undefined = await User.getUserByCardCode(dto.clientCode);
+                let user: User | undefined = await User.getUserForTransaction(dto.clientCode, dto.phonePrefix, dto.phone);
 
                 if (!user || !user.card) {
                     throw new BadRequestException('user_does_not_exists')
@@ -190,11 +197,20 @@ export class TransactionController {
                 await entityManager.save(tradingPoint);
                 await entityManager.save(user);
 
-                return new TransactionSuccessResponse(
-                    moment().format('YYYY-MM-DD'),
-                    dto.price,
-                    userXp
-                )
+
+                if (terminal.isMain) {
+                    return {
+                        cardNumber: user.card.code,
+                        price: dto.price,
+                        donation: transaction.paymentValue
+                    }
+                } else {
+                    return {
+                        cardNumber: user.card.code,
+                        price: dto.price,
+                    }
+                }
+
             });
         } catch (e) {
             handleException(e, 'transaction', this.logger)
