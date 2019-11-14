@@ -1,7 +1,7 @@
-import {Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {Phone} from "./phone.entity";
-import {Account} from "./account.entity";
+import { Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { Phone } from "./phone.entity";
+import { Account } from "./account.entity";
 
 @Entity({schema: 'tds'})
 export class Admin extends TadeusEntity {

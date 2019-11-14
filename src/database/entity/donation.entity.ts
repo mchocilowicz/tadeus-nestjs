@@ -1,11 +1,11 @@
-import {Column, Entity, ManyToOne, OneToMany} from "typeorm";
-import {Ngo} from "./ngo.entity";
-import {User} from "./user.entity";
-import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
-import {TadeusEntity} from "./base.entity";
-import {Period} from "./period.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {Transaction} from "./transaction.entity";
+import { Column, Entity, ManyToOne, OneToMany } from "typeorm";
+import { Ngo } from "./ngo.entity";
+import { User } from "./user.entity";
+import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
+import { TadeusEntity } from "./base.entity";
+import { Period } from "./period.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { Transaction } from "./transaction.entity";
 
 @Entity({schema: 'tds'})
 export class Donation extends TadeusEntity {

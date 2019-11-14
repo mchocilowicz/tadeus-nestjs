@@ -1,6 +1,6 @@
-import {Column, Entity, ManyToOne} from "typeorm";
-import {User} from "./user.entity";
-import {TadeusEntity} from "./base.entity";
+import { Column, Entity, ManyToOne } from "typeorm";
+import { User } from "./user.entity";
+import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: 'tds'})
 export class Opinion extends TadeusEntity {

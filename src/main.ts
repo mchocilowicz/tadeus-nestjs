@@ -1,26 +1,26 @@
-import {NestFactory} from '@nestjs/core';
-import {NestExpressApplication} from '@nestjs/platform-express';
-import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
+import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as rateLimit from 'express-rate-limit';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
-import {AppModule} from './module/app.module';
-import {Const} from "./common/util/const";
-import {LoggerService} from "./common/service/logger.service";
-import {i18nMiddleware} from "./common/middleware/i18n.middleware";
-import {TadeusValidationPipe} from "./common/pipe/tadeus-validation.pipe";
-import {ClientModule} from "./module/client/client.module";
-import {PartnerModule} from "./module/partner/partner.module";
-import {DashboardModule} from "./module/dashboard/dashboard.module";
-import {join} from "path";
-import {RegisterModule} from "./module/client/register/register.module";
-import {PlaceModule} from "./module/client/place/place.module";
-import {NgoModule} from "./module/client/ngo/ngo.module";
-import {DonationModule} from "./module/client/donation/donation.module";
-import {TransactionModule} from "./module/partner/transaction/transaction.module";
-import {TerminalModule} from "./module/partner/terminal/terminal.module";
-import {DashboardNgoModule} from "./module/dashboard/ngo/dashboard-ngo.module";
-import {TradingPointModule} from "./module/dashboard/trading-point/trading-point.module";
+import { AppModule } from './module/app.module';
+import { Const } from "./common/util/const";
+import { LoggerService } from "./common/service/logger.service";
+import { i18nMiddleware } from "./common/middleware/i18n.middleware";
+import { TadeusValidationPipe } from "./common/pipe/tadeus-validation.pipe";
+import { ClientModule } from "./module/client/client.module";
+import { PartnerModule } from "./module/partner/partner.module";
+import { DashboardModule } from "./module/dashboard/dashboard.module";
+import { join } from "path";
+import { RegisterModule } from "./module/client/register/register.module";
+import { PlaceModule } from "./module/client/place/place.module";
+import { NgoModule } from "./module/client/ngo/ngo.module";
+import { DonationModule } from "./module/client/donation/donation.module";
+import { TransactionModule } from "./module/partner/transaction/transaction.module";
+import { TerminalModule } from "./module/partner/terminal/terminal.module";
+import { DashboardNgoModule } from "./module/dashboard/ngo/dashboard-ngo.module";
+import { TradingPointModule } from "./module/dashboard/trading-point/trading-point.module";
 import morgan = require("morgan");
 
 async function bootstrap() {
@@ -65,7 +65,7 @@ async function bootstrap() {
     app.useStaticAssets(join(__dirname, '..', 'public', 'excel'));
     app.useStaticAssets(join(__dirname, '..', 'public', 'import'));
     app.setGlobalPrefix('api');
-    
+
     const port = process.env.PORT ? process.env.PORT : 4000;
     await app.listen(port);
 }

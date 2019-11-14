@@ -1,5 +1,5 @@
-import {ApiModelProperty} from "@nestjs/swagger";
-import {IsAlpha, IsNotEmpty} from "class-validator";
+import { ApiModelProperty } from "@nestjs/swagger";
+import { IsAlpha, IsNotEmpty } from "class-validator";
 
 export class TradingPointTypeRequest {
     @ApiModelProperty({required: true})

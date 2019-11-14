@@ -1,5 +1,5 @@
-import {Module} from "@nestjs/common";
-import {PlaceController} from "./place.controller";
+import { Module } from "@nestjs/common";
+import { PlaceController } from "./place.controller";
 
 @Module({
     imports: [],

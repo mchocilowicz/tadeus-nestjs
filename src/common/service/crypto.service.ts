@@ -1,5 +1,5 @@
-import {BadRequestException, Injectable} from "@nestjs/common";
-import {RoleEnum} from "../enum/role.enum";
+import { BadRequestException, Injectable } from "@nestjs/common";
+import { RoleEnum } from "../enum/role.enum";
 
 const crypto = require('crypto');
 

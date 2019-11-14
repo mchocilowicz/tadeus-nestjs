@@ -1,9 +1,9 @@
-import {Module} from "@nestjs/common";
-import {PassportModule} from "@nestjs/passport";
-import {JwtModule} from "@nestjs/jwt";
-import {TadeusJwtService} from "./TadeusJwtService";
-import {CryptoService} from "../../../common/service/crypto.service";
-import {JwtStrategy} from "../../../common/strategy/jwt.strategy";
+import { Module } from "@nestjs/common";
+import { PassportModule } from "@nestjs/passport";
+import { JwtModule } from "@nestjs/jwt";
+import { TadeusJwtService } from "./TadeusJwtService";
+import { CryptoService } from "../../../common/service/crypto.service";
+import { JwtStrategy } from "../../../common/strategy/jwt.strategy";
 
 @Module({
     imports: [

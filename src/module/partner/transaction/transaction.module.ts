@@ -1,7 +1,7 @@
-import {Module} from "@nestjs/common";
-import {TransactionController} from "./transaction.controller";
-import {CalculationService} from "../../../common/service/calculation.service";
-import {CodeService} from "../../../common/service/code.service";
+import { Module } from "@nestjs/common";
+import { TransactionController } from "./transaction.controller";
+import { CalculationService } from "../../../common/service/calculation.service";
+import { CodeService } from "../../../common/service/code.service";
 
 
 @Module({

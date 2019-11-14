@@ -1,9 +1,9 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TradingPoint} from "./trading-point.entity";
-import {TadeusEntity} from "./base.entity";
-import {Transaction} from "./transaction.entity";
-import {Period} from "./period.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TradingPoint } from "./trading-point.entity";
+import { TadeusEntity } from "./base.entity";
+import { Transaction } from "./transaction.entity";
+import { Period } from "./period.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class PartnerPayment extends TadeusEntity {

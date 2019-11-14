@@ -11,40 +11,40 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {User} from "../../database/entity/user.entity";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
-import {getConnection} from "typeorm";
-import {Const} from "../../common/util/const";
-import {MainResponse} from "../../models/common/response/main.response";
-import {ClientHistoryResponse} from "../../models/common/response/client-history.response";
-import {VirtualCardResponse} from "../../models/common/response/virtual-card.response";
-import {CodeService} from "../../common/service/code.service";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {LoginService} from "../common/login.service";
-import {Transaction} from "../../database/entity/transaction.entity";
-import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
-import {SignInResponse} from "../../models/common/response/signIn.response";
-import {Notification} from "../../database/entity/notification.entity";
-import {Opinion} from "../../database/entity/opinion.entity";
-import {UserDetailsResponse} from "../../models/client/request/user-details.response";
-import {UserDetailsRequest} from "../../models/client/request/user-details.request";
-import {NotificationRequest} from "../../models/client/request/notification.request";
-import {VirtualCard} from "../../database/entity/virtual-card.entity";
-import {Phone} from "../../database/entity/phone.entity";
-import {TadeusEntity} from "../../database/entity/base.entity";
-import {groupDatesByComponent} from "../../common/util/functions";
-import {CalculationService} from "../../common/service/calculation.service";
-import {Correction} from "../../database/entity/correction.entity";
-import {Configuration} from "../../database/entity/configuration.entity";
-import {PartnerPayment} from "../../database/entity/partner-payment.entity";
-import {TradingPoint} from "../../database/entity/trading-point.entity";
-import {Period} from "../../database/entity/period.entity";
-import {Donation} from "../../database/entity/donation.entity";
-import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
+import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { User } from "../../database/entity/user.entity";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { getConnection } from "typeorm";
+import { Const } from "../../common/util/const";
+import { MainResponse } from "../../models/common/response/main.response";
+import { ClientHistoryResponse } from "../../models/common/response/client-history.response";
+import { VirtualCardResponse } from "../../models/common/response/virtual-card.response";
+import { CodeService } from "../../common/service/code.service";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { LoginService } from "../common/login.service";
+import { Transaction } from "../../database/entity/transaction.entity";
+import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
+import { SignInResponse } from "../../models/common/response/signIn.response";
+import { Notification } from "../../database/entity/notification.entity";
+import { Opinion } from "../../database/entity/opinion.entity";
+import { UserDetailsResponse } from "../../models/client/request/user-details.response";
+import { UserDetailsRequest } from "../../models/client/request/user-details.request";
+import { NotificationRequest } from "../../models/client/request/notification.request";
+import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { Phone } from "../../database/entity/phone.entity";
+import { TadeusEntity } from "../../database/entity/base.entity";
+import { groupDatesByComponent } from "../../common/util/functions";
+import { CalculationService } from "../../common/service/calculation.service";
+import { Correction } from "../../database/entity/correction.entity";
+import { Configuration } from "../../database/entity/configuration.entity";
+import { PartnerPayment } from "../../database/entity/partner-payment.entity";
+import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { Period } from "../../database/entity/period.entity";
+import { Donation } from "../../database/entity/donation.entity";
+import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -119,7 +119,7 @@ export class ClientController {
         const card: VirtualCard | undefined = user.card;
 
         if (!card) {
-            this.logger.error(`User ${user.id} does not have assigned  VirtualCard`);
+            this.logger.error(`User ${ user.id } does not have assigned  VirtualCard`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -151,14 +151,14 @@ export class ClientController {
     async history(@Req() req: any) {
         const user: User = req.user;
         if (!user.id) {
-            this.logger.error(`User ${user.id} does not exists`);
+            this.logger.error(`User ${ user.id } does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
         let tempUser: User | undefined = await User.findOneWithistoryData(user.id);
 
         if (!tempUser) {
-            this.logger.error(`User ${user.id} does not exists`);
+            this.logger.error(`User ${ user.id } does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -197,7 +197,7 @@ export class ClientController {
         const virtualCard: VirtualCard | undefined = user.card;
 
         if (!virtualCard) {
-            this.logger.error(`User ${user.id} does not have assigned VirtualCard`);
+            this.logger.error(`User ${ user.id } does not have assigned VirtualCard`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -226,7 +226,7 @@ export class ClientController {
         const phone: Phone | undefined = user.phone;
 
         if (!phone) {
-            this.logger.error(`User ${user.id} does not have assigned Phone`);
+            this.logger.error(`User ${ user.id } does not have assigned Phone`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -262,7 +262,7 @@ export class ClientController {
         let phone: Phone | undefined = user.phone;
 
         if (!phone) {
-            this.logger.error(`User ${user.id} does not have assigned Phone`);
+            this.logger.error(`User ${ user.id } does not have assigned Phone`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -445,7 +445,7 @@ export class ClientController {
                         if (user.ngo) {
                             let card = user.ngo.card;
                             if (!card) {
-                                this.logger.error(`Physical Card is not assigned to ngo ${user.ngo.id}`);
+                                this.logger.error(`Physical Card is not assigned to ngo ${ user.ngo.id }`);
                                 throw new BadRequestException('internal_server_error');
                             }
                             card.collectedMoney += pool;

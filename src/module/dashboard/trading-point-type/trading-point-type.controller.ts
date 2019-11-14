@@ -1,9 +1,9 @@
-import {Body, Controller, Get, Logger, NotFoundException, Param, Post, Put} from "@nestjs/common";
-import {ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {handleException} from "../../../common/util/functions";
-import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
-import {TradingPointTypeRequest} from "../../../models/common/request/trading-point-type.request";
+import { Body, Controller, Get, Logger, NotFoundException, Param, Post, Put } from "@nestjs/common";
+import { ApiImplicitBody, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { handleException } from "../../../common/util/functions";
+import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
+import { TradingPointTypeRequest } from "../../../models/common/request/trading-point-type.request";
 
 @Controller()
 @ApiUseTags('trading-point-type')

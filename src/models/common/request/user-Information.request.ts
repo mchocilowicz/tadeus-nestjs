@@ -1,6 +1,6 @@
-import {ApiModelProperty} from "@nestjs/swagger";
-import {IsAlpha, IsEmail, IsNotEmpty} from "class-validator";
-import {PhoneRequest} from "./phone.request";
+import { ApiModelProperty } from "@nestjs/swagger";
+import { IsAlpha, IsEmail, IsNotEmpty } from "class-validator";
+import { PhoneRequest } from "./phone.request";
 
 export class UserInformationRequest extends PhoneRequest {
     @IsNotEmpty({

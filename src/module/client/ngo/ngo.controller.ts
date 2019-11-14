@@ -12,7 +12,7 @@ import {
     Res,
     UseGuards
 } from "@nestjs/common";
-import {getConnection} from "typeorm";
+import { getConnection } from "typeorm";
 import {
     ApiBearerAuth,
     ApiImplicitBody,
@@ -21,22 +21,22 @@ import {
     ApiResponse,
     ApiUseTags
 } from "@nestjs/swagger";
-import {Ngo} from "../../../database/entity/ngo.entity";
-import {Const} from "../../../common/util/const";
-import {NgoType} from "../../../database/entity/ngo-type.entity";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {CodeService} from "../../../common/service/code.service";
-import {CityResponse} from "../../../models/common/response/city.response";
-import {City} from "../../../database/entity/city.entity";
-import {SelectedNgoRequest} from "../../../models/client/request/selected-ngo.request";
-import {NgoQuery} from "../../../models/client/ngo.query";
-import {Donation} from "../../../database/entity/donation.entity";
-import {User} from "../../../database/entity/user.entity";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
-import {Period} from "../../../database/entity/period.entity";
+import { Ngo } from "../../../database/entity/ngo.entity";
+import { Const } from "../../../common/util/const";
+import { NgoType } from "../../../database/entity/ngo-type.entity";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { CodeService } from "../../../common/service/code.service";
+import { CityResponse } from "../../../models/common/response/city.response";
+import { City } from "../../../database/entity/city.entity";
+import { SelectedNgoRequest } from "../../../models/client/request/selected-ngo.request";
+import { NgoQuery } from "../../../models/client/ngo.query";
+import { Donation } from "../../../database/entity/donation.entity";
+import { User } from "../../../database/entity/user.entity";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import { Period } from "../../../database/entity/period.entity";
 
 
 @Controller()
@@ -74,7 +74,7 @@ export class NgoController {
         }
 
         if (!user || !virtualCard || !period) {
-            this.logger.error(`User or Virtual Card or Current Period for user ${user.id} does not exists.`);
+            this.logger.error(`User or Virtual Card or Current Period for user ${ user.id } does not exists.`);
             throw new BadRequestException("internal_server_error")
         }
 
@@ -86,7 +86,7 @@ export class NgoController {
                 try {
                     await getConnection().transaction(async entityManager => {
                         if (!user || !virtualCard || !period) {
-                            this.logger.error(`User or Virtual Card or Current Period for user ${user.id} does not exists.`);
+                            this.logger.error(`User or Virtual Card or Current Period for user ${ user.id } does not exists.`);
                             throw new BadRequestException("internal_server_error")
                         }
                         if (!ngo) {
@@ -163,14 +163,14 @@ export class NgoController {
             const lo = Number(query['longitude']);
             const la = Number(query['latitude']);
 
-            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
+            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${ lo } ${ la })'::geometry,3857)) * cosd(42.3521)`;
             const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
             sqlQuery = sqlQuery.addSelect(a, 'address_distance');
-            sqlQuery = sqlQuery.andWhere(`${a} > 0`)
+            sqlQuery = sqlQuery.andWhere(`${ a } > 0`)
                 .orderBy(c)
                 .limit(10);
         }
@@ -179,7 +179,7 @@ export class NgoController {
             // @ts-ignore
             if (query[key] && key !== 'longitude' && key !== 'latitude') {
                 // @ts-ignore
-                sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
+                sqlQuery = sqlQuery.andWhere(`${ key }.id = :id`, {id: query[key]})
             }
         });
 

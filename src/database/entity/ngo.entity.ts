@@ -1,12 +1,12 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
-import {NgoType} from "./ngo-type.entity";
-import {Donation} from "./donation.entity";
-import {PhysicalCard} from "./physical-card.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {Address} from "./address.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {User} from "./user.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { NgoType } from "./ngo-type.entity";
+import { Donation } from "./donation.entity";
+import { PhysicalCard } from "./physical-card.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { Address } from "./address.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { User } from "./user.entity";
 
 @Entity({schema: 'tds'})
 export class Ngo extends TadeusEntity {

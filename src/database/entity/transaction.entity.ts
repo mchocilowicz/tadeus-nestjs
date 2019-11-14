@@ -1,12 +1,12 @@
-import {Column, Entity, ManyToOne} from "typeorm";
-import {TradingPoint} from "./trading-point.entity";
-import {User} from "./user.entity";
+import { Column, Entity, ManyToOne } from "typeorm";
+import { TradingPoint } from "./trading-point.entity";
+import { User } from "./user.entity";
 
-import {Terminal} from "./terminal.entity";
-import {TadeusEntity} from "./base.entity";
-import {PartnerPayment} from "./partner-payment.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {Donation} from "./donation.entity";
+import { Terminal } from "./terminal.entity";
+import { TadeusEntity } from "./base.entity";
+import { PartnerPayment } from "./partner-payment.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { Donation } from "./donation.entity";
 
 const moment = require('moment');
 
@@ -90,7 +90,7 @@ export class Transaction extends TadeusEntity {
     static findByTradingPointMadeToday(tradingPointId: string) {
         return this.createQueryBuilder('transaction')
             .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
-            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${ moment().format('YYYY-MM-DD') }','YYYY-MM-DD')`)
             .andWhere('transaction.isCorrection = false')
             .andWhere('tradingPoint.id = :id', {id: tradingPointId})
             .getMany();
@@ -100,7 +100,7 @@ export class Transaction extends TadeusEntity {
         return this.createQueryBuilder('transaction')
             .leftJoinAndSelect("transaction.user", 'user')
             .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
-            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${ moment().format('YYYY-MM-DD') }','YYYY-MM-DD')`)
             .andWhere('transaction.isCorrection = false')
             .andWhere('user.id = :user', {user: userId})
             .getMany();

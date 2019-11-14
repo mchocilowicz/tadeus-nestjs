@@ -1,6 +1,6 @@
-import {ApiModelProperty} from "@nestjs/swagger";
-import {IsOptional} from "class-validator";
-import {PhoneRequest} from "./phone.request";
+import { ApiModelProperty } from "@nestjs/swagger";
+import { IsOptional } from "class-validator";
+import { PhoneRequest } from "./phone.request";
 
 export class NewPhoneRequest extends PhoneRequest {
     @IsOptional()

@@ -1,9 +1,9 @@
-import {Body, Controller, Get, NotFoundException, Post, Put} from "@nestjs/common";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {ApiUseTags} from "@nestjs/swagger";
-import {ConfigurationRequest, PeriodRequest} from "../../../models/dashboard/request/configuration.request";
-import {Period} from "../../../database/entity/period.entity";
-import {getConnection} from "typeorm";
+import { Body, Controller, Get, NotFoundException, Post, Put } from "@nestjs/common";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { ApiUseTags } from "@nestjs/swagger";
+import { ConfigurationRequest, PeriodRequest } from "../../../models/dashboard/request/configuration.request";
+import { Period } from "../../../database/entity/period.entity";
+import { getConnection } from "typeorm";
 
 const moment = require('moment');
 

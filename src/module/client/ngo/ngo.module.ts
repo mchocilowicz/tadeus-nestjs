@@ -1,6 +1,6 @@
-import {Module} from "@nestjs/common";
-import {NgoController} from "./ngo.controller";
-import {CodeService} from "../../../common/service/code.service";
+import { Module } from "@nestjs/common";
+import { NgoController } from "./ngo.controller";
+import { CodeService } from "../../../common/service/code.service";
 
 @Module({
     imports: [],

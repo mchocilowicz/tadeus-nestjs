@@ -1,10 +1,10 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {Terminal} from "./terminal.entity";
-import {Transaction} from "./transaction.entity";
-import {User} from "./user.entity";
-import {TradingPoint} from "./trading-point.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { Terminal } from "./terminal.entity";
+import { Transaction } from "./transaction.entity";
+import { User } from "./user.entity";
+import { TradingPoint } from "./trading-point.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Correction extends TadeusEntity {

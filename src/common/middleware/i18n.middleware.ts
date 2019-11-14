@@ -1,4 +1,4 @@
-import {messages} from "../../i18n/i18n";
+import { messages } from "../../i18n/i18n";
 
 const Polyglot = require('node-polyglot');
 

@@ -1,9 +1,9 @@
-import {TadeusEntity} from "./base.entity";
-import {BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {City} from "./city.entity";
-import {Ngo} from "./ngo.entity";
-import {TradingPoint} from "./trading-point.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { TadeusEntity } from "./base.entity";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { City } from "./city.entity";
+import { Ngo } from "./ngo.entity";
+import { TradingPoint } from "./trading-point.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Address extends TadeusEntity {

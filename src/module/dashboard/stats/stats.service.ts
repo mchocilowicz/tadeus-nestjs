@@ -1,7 +1,7 @@
-import {Injectable} from "@nestjs/common";
-import {Transaction} from "../../../database/entity/transaction.entity";
-import {TadeusEntity} from "../../../database/entity/base.entity";
-import {Const} from "../../../common/util/const";
+import { Injectable } from "@nestjs/common";
+import { Transaction } from "../../../database/entity/transaction.entity";
+import { TadeusEntity } from "../../../database/entity/base.entity";
+import { Const } from "../../../common/util/const";
 
 const moment = require("moment");
 
@@ -19,7 +19,7 @@ export class StatsService {
                 }
             } else {
                 return {
-                    period: `${value[0].createdAt} - ${value[value.length - 1].createdAt}`,
+                    period: `${ value[0].createdAt } - ${ value[value.length - 1].createdAt }`,
                     price: value.reduce((p: number, v: Transaction) => p + v.price, 0)
                 }
             }

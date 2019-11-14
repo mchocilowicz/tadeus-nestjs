@@ -1,6 +1,6 @@
-import {Cron, NestSchedule} from "nest-schedule";
-import {Injectable} from "@nestjs/common";
-import {Period} from "../database/entity/period.entity";
+import { Cron, NestSchedule } from "nest-schedule";
+import { Injectable } from "@nestjs/common";
+import { Period } from "../database/entity/period.entity";
 
 const moment = require('moment');
 

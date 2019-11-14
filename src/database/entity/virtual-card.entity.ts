@@ -1,6 +1,6 @@
-import {Column, Entity, Generated} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, Generated } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class VirtualCard extends TadeusEntity {

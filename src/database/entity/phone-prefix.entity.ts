@@ -1,7 +1,7 @@
-import {Column, Entity, OneToMany, Unique} from "typeorm";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, OneToMany, Unique } from "typeorm";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 @Unique(['value'])

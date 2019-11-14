@@ -1,28 +1,28 @@
-import {BadRequestException, Body, Controller, Logger, Post, Req, UseGuards} from "@nestjs/common";
-import {CalculationService} from "../../../common/service/calculation.service";
-import {CodeService} from "../../../common/service/code.service";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../database/entity/transaction.entity";
-import {TransactionResponse} from "../../../models/common/response/transaction.response";
-import {getConnection} from "typeorm";
-import {CorrectionRequest, TransactionRequest} from "../../../models/partner/request/transaction.request";
-import {handleException} from "../../../common/util/functions";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {User} from "../../../database/entity/user.entity";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {Notification} from "../../../database/entity/notification.entity";
-import {Correction} from "../../../database/entity/correction.entity";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
-import {Period} from "../../../database/entity/period.entity";
-import {Donation} from "../../../database/entity/donation.entity";
-import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
+import { BadRequestException, Body, Controller, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { CalculationService } from "../../../common/service/calculation.service";
+import { CodeService } from "../../../common/service/code.service";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../database/entity/transaction.entity";
+import { TransactionResponse } from "../../../models/common/response/transaction.response";
+import { getConnection } from "typeorm";
+import { CorrectionRequest, TransactionRequest } from "../../../models/partner/request/transaction.request";
+import { handleException } from "../../../common/util/functions";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { User } from "../../../database/entity/user.entity";
+import { Terminal } from "../../../database/entity/terminal.entity";
+import { Notification } from "../../../database/entity/notification.entity";
+import { Correction } from "../../../database/entity/correction.entity";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
+import { Period } from "../../../database/entity/period.entity";
+import { Donation } from "../../../database/entity/donation.entity";
+import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
 
 const moment = require('moment');
 
@@ -183,7 +183,7 @@ export class TransactionController {
                 if (user.ngo) {
                     let card = user.ngo.card;
                     if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${user.ngo.id}`);
+                        this.logger.error(`Physical Card is not assigned to Ngo ${ user.ngo.id }`);
                         throw new BadRequestException('internal_server_error');
                     }
                     card.collectedMoney += pool;

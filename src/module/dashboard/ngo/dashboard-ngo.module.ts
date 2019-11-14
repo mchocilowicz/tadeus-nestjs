@@ -1,9 +1,9 @@
-import {Module} from "@nestjs/common";
-import {DashboardNgoController} from "./dashboard-ngo.controller";
-import {CodeService} from "../../../common/service/code.service";
-import {MulterModule} from "@nestjs/platform-express";
-import {join} from "path";
-import {diskStorage} from "multer";
+import { Module } from "@nestjs/common";
+import { DashboardNgoController } from "./dashboard-ngo.controller";
+import { CodeService } from "../../../common/service/code.service";
+import { MulterModule } from "@nestjs/platform-express";
+import { join } from "path";
+import { diskStorage } from "multer";
 
 const moment = require("moment");
 
@@ -16,7 +16,7 @@ const moment = require("moment");
                 filename: (req, file, cb) => {
                     const newFileName = moment().format("YYYYMMDDHHmmss");
 
-                    return cb(null, `${newFileName}_${file.originalname}`)
+                    return cb(null, `${ newFileName }_${ file.originalname }`)
                 }
             })
         }),

@@ -18,22 +18,22 @@ import {
     ApiResponse,
     ApiUseTags
 } from "@nestjs/swagger";
-import {Const} from "../../common/util/const";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {PhoneRequest} from "../../models/common/request/phone.request";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {LoginService} from "../common/login.service";
-import {User} from "../../database/entity/user.entity";
-import {createQueryBuilder} from "typeorm";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
-import {PartnerDetailsResponse} from "../../models/common/response/partner-details.response";
-import {TradingPoint} from "../../database/entity/trading-point.entity";
-import {Transaction} from "../../database/entity/transaction.entity";
-import {CodeService} from "../../common/service/code.service";
-import {Terminal} from "../../database/entity/terminal.entity";
-import {Account} from "../../database/entity/account.entity";
+import { Const } from "../../common/util/const";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { PhoneRequest } from "../../models/common/request/phone.request";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { LoginService } from "../common/login.service";
+import { User } from "../../database/entity/user.entity";
+import { createQueryBuilder } from "typeorm";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { PartnerDetailsResponse } from "../../models/common/response/partner-details.response";
+import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { Transaction } from "../../database/entity/transaction.entity";
+import { CodeService } from "../../common/service/code.service";
+import { Terminal } from "../../database/entity/terminal.entity";
+import { Account } from "../../database/entity/account.entity";
 
 const moment = require('moment');
 
@@ -91,7 +91,7 @@ export class PartnerController {
         const account: Account = terminal.account;
 
         if (!terminal || !account) {
-            this.logger.error(`Terminal or Accounts does not exists for ${terminal.id}`);
+            this.logger.error(`Terminal or Accounts does not exists for ${ terminal.id }`);
             throw new BadRequestException('internal_server_error')
         }
 

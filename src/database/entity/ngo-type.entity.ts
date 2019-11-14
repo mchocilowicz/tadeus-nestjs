@@ -1,8 +1,8 @@
-import {Column, Entity, Generated, OneToMany} from "typeorm";
-import {ApiModelProperty} from "@nestjs/swagger";
-import {Ngo} from "./ngo.entity";
-import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, Generated, OneToMany } from "typeorm";
+import { ApiModelProperty } from "@nestjs/swagger";
+import { Ngo } from "./ngo.entity";
+import { TadeusEntity } from "./base.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class NgoType extends TadeusEntity {

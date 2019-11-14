@@ -1,8 +1,8 @@
-import {Controller, Get, NotFoundException, Param} from "@nestjs/common";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {User} from "../../../database/entity/user.entity";
-import {Status} from "../../../common/enum/status.enum";
-import {ApiUseTags} from "@nestjs/swagger";
+import { Controller, Get, NotFoundException, Param } from "@nestjs/common";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { User } from "../../../database/entity/user.entity";
+import { Status } from "../../../common/enum/status.enum";
+import { ApiUseTags } from "@nestjs/swagger";
 
 @Controller()
 @ApiUseTags('user')

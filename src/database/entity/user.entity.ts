@@ -1,18 +1,18 @@
-import {Column, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, OneToOne} from "typeorm";
-import {Transaction} from "./transaction.entity";
-import {Donation} from "./donation.entity";
-import {Account} from "./account.entity";
-import {VirtualCard} from "./virtual-card.entity";
-import {Opinion} from "./opinion.entity";
-import {Notification} from "./notification.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {UserPayout} from "./user-payment.entity";
-import {Correction} from "./correction.entity";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {Ngo} from "./ngo.entity";
-import {Status} from "../../common/enum/status.enum";
+import { Column, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { Transaction } from "./transaction.entity";
+import { Donation } from "./donation.entity";
+import { Account } from "./account.entity";
+import { VirtualCard } from "./virtual-card.entity";
+import { Opinion } from "./opinion.entity";
+import { Notification } from "./notification.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { UserPayout } from "./user-payment.entity";
+import { Correction } from "./correction.entity";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { Ngo } from "./ngo.entity";
+import { Status } from "../../common/enum/status.enum";
 
 @Entity({schema: 'tds'})
 export class User extends TadeusEntity {
