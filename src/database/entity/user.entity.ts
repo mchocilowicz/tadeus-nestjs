@@ -90,6 +90,7 @@ export class User extends TadeusEntity {
     static getUserWithClientData(accountId: string) {
         return this.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
+            .leftJoinAndSelect('user.phone', 'phone')
             .leftJoinAndSelect('account.role', 'role')
             .leftJoinAndSelect('user.card', 'card')
             .leftJoinAndSelect('user.ngo', 'ngo')

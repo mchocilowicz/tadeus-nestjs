@@ -45,6 +45,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             .leftJoinAndSelect('terminal.account', 'account')
             .leftJoinAndSelect('account.role', 'role')
             .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
+            .leftJoinAndSelect('terminal.phone', 'phone')
             .where(`account.id = :id`, {id: id})
             .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
             .andWhere(`account.status = :status`, {status: Status.ACTIVE})
