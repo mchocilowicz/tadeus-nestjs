@@ -176,6 +176,8 @@ export class LoginService {
                     let account = new Account(this.codeService.generateUserNumber(), role);
                     let card: VirtualCard = new VirtualCard(this.codeService.generateVirtualCardNumber());
 
+                    account.code = this.codeService.generateSmsCode();
+
                     account = await entityManager.save(account);
                     card = await entityManager.save(card);
                     user = new User(card, account, phone);
