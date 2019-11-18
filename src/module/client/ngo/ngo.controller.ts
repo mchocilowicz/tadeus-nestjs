@@ -28,7 +28,6 @@ import { Roles } from "../../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
-import { CodeService } from "../../../common/service/code.service";
 import { CityResponse } from "../../../models/common/response/city.response";
 import { City } from "../../../database/entity/city.entity";
 import { SelectedNgoRequest } from "../../../models/client/request/selected-ngo.request";
@@ -42,9 +41,6 @@ import { Period } from "../../../database/entity/period.entity";
 @Controller()
 export class NgoController {
     private readonly logger = new Logger(NgoController.name);
-
-    constructor(private readonly codeService: CodeService) {
-    }
 
     @Put()
     @HttpCode(200)

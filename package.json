@@ -9,7 +9,7 @@
     "npm": "6.9.0"
   },
   "scripts": {
-    "build": "npm run typeorm-migration-run",
+    "build": "tsc -p tsconfig.build.json",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
     "start:dev": "concurrently --handle-input \"wait-on dist/main.js && nodemon\" \"tsc -w -p tsconfig.build.json\" ",
     "prestart:prod": "rimraf prod && npm run build",

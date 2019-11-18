@@ -7,7 +7,6 @@ import {
     Logger,
     Param,
     Post,
-    Put,
     Req,
     UseGuards
 } from "@nestjs/common";
@@ -29,12 +28,7 @@ import { Transaction } from "../../database/entity/transaction.entity";
 import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
 import { SignInResponse } from "../../models/common/response/signIn.response";
 import { Notification } from "../../database/entity/notification.entity";
-import { Opinion } from "../../database/entity/opinion.entity";
-import { UserDetailsResponse } from "../../models/client/request/user-details.response";
-import { UserDetailsRequest } from "../../models/client/request/user-details.request";
-import { NotificationRequest } from "../../models/client/request/notification.request";
 import { VirtualCard } from "../../database/entity/virtual-card.entity";
-import { Phone } from "../../database/entity/phone.entity";
 import { TadeusEntity } from "../../database/entity/base.entity";
 import { groupDatesByComponent } from "../../common/util/functions";
 import { CalculationService } from "../../common/service/calculation.service";
@@ -47,7 +41,6 @@ import { Donation } from "../../database/entity/donation.entity";
 import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
 
 const _ = require('lodash');
-const moment = require('moment');
 
 @Controller()
 export class ClientController {
@@ -204,71 +197,6 @@ export class ClientController {
         return new VirtualCardResponse(virtualCard);
     }
 
-    @Put('user')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: []})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiUseTags('user')
-    @ApiImplicitBody({name: '', type: UserDetailsRequest})
-    async updateUserData(@Req() req: any, @Body() dto: UserDetailsRequest) {
-        const user: User = req.user;
-        const phone: Phone | undefined = user.phone;
-
-        if (!phone) {
-            this.logger.error(`User ${ user.id } does not have assigned Phone`);
-            throw new BadRequestException('internal_server_error')
-        }
-
-        phone.value = dto.phone;
-
-        await getConnection().transaction(async entityManager => {
-
-            user.updateInformation(dto.firstName, dto.lastName, dto.email, dto.bankAccount);
-            await entityManager.save(user);
-            await entityManager.save(phone);
-
-        });
-    }
-
-    @Get('user')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: UserDetailsResponse})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiUseTags('user')
-    getUserData(@Req() req: any): UserDetailsResponse {
-        let user: User = req.user;
-        let phone: Phone | undefined = user.phone;
-
-        if (!phone) {
-            this.logger.error(`User ${ user.id } does not have assigned Phone`);
-            throw new BadRequestException('internal_server_error')
-        }
-
-        return new UserDetailsResponse(user, phone);
-    }
-
     @Get('notification')
     @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
@@ -291,47 +219,6 @@ export class ClientController {
             await Notification.remove(noti)
         }
         return noti
-    }
-
-    @Get('opinion')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: "string", description: 'User email'})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiBearerAuth()
-    async getEmailForOption(@Req() req: any) {
-        return req.user.email;
-    }
-
-    @Post('opinion')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiImplicitBody({name: '', type: NotificationRequest})
-    async createOpinion(@Req() req: any, @Body() dto: NotificationRequest) {
-        let opinion = new Opinion(dto.email, dto.value, req.user);
-        await opinion.save();
     }
 
     @ApiBearerAuth()

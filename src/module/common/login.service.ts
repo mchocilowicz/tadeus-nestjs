@@ -222,7 +222,7 @@ export class LoginService {
         let user: User | undefined = await this.getUser(request, RoleEnum.CLIENT);
 
         if (!user) {
-            throw new NotFoundException('invalid_code')
+            throw new NotFoundException('user_does_not_exists')
         }
 
         if (!user.registered) {

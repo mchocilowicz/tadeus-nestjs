@@ -32,6 +32,11 @@ export class RegisterService {
 
         const account: Account = user.account;
 
+        if (!account || !account.token) {
+            this.logger.error(`User ${ user.id } does not have CLIENT account`);
+            throw new BadRequestException('internal_server_error')
+        }
+
         try {
             await getConnection().transaction(async entityManager => {
                 if (user) {
@@ -44,14 +49,8 @@ export class RegisterService {
             handleException(e, 'user', this.logger)
         }
 
-        if (!account) {
-            this.logger.error(`User ${ user.id } does not have CLIENT account`);
-            throw new BadRequestException('internal_server_error')
-        }
-
         let id = this.cryptoService.encryptId(account.id, RoleEnum.CLIENT);
         return this.jwtService.signToken({id: id})
-
     }
 
     async checkCode(dto: CodeVerificationRequest) {
@@ -62,8 +61,7 @@ export class RegisterService {
         }
         let account = user.account;
 
-
-        if (!account || !account.id || !account.code || account.role.value !== RoleEnum.CLIENT) {
+        if (!account || !account.code || account.role.value !== RoleEnum.CLIENT) {
             this.logger.error(`User ${ user.id } does not have CLIENT account`);
             throw new BadRequestException('internal_server_error');
         }

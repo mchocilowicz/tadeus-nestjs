@@ -21,6 +21,8 @@ import { TransactionModule } from "./module/partner/transaction/transaction.modu
 import { TerminalModule } from "./module/partner/terminal/terminal.module";
 import { DashboardNgoModule } from "./module/dashboard/ngo/dashboard-ngo.module";
 import { TradingPointModule } from "./module/dashboard/trading-point/trading-point.module";
+import { OpinionModule } from "./module/client/opinion/opinion.module";
+import { UserModule } from "./module/client/user/user.module";
 import morgan = require("morgan");
 
 async function bootstrap() {
@@ -35,7 +37,7 @@ async function bootstrap() {
         .build();
 
     const clientDocument = SwaggerModule.createDocument(app, options, {
-        include: [ClientModule, RegisterModule, PlaceModule, NgoModule, DonationModule],
+        include: [ClientModule, RegisterModule, PlaceModule, NgoModule, DonationModule, UserModule, OpinionModule],
     });
     SwaggerModule.setup('api/docs/client', app, clientDocument);
 

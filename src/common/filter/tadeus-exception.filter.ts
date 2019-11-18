@@ -15,7 +15,7 @@ export class TadeusExceptionFilter implements ExceptionFilter {
             ? exception.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        const logMessage = `${ new Date() }: ${ status }: ${ request.url }: ${ request.originalUrl }: ${ JSON.stringify(request.body) }: ${ JSON.stringify(exception) }`;
+        const logMessage = `${ new Date() }: ${ status }: ${ request.method } - ${ request.url } :body = ${ JSON.stringify(request.body) } :params = ${ JSON.stringify(request.query) } : exception = ${ JSON.stringify(exception) }`;
         this.logger.error(logMessage);
 
         let responseObject;
