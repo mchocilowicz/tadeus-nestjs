@@ -2,7 +2,8 @@ export enum Status {
     ACTIVE = 'ACTIVE',
     SUSPENDED = 'SUSPENDED',
     BLOCKED = 'BLOCKED',
-    NOT_ACTIVE = 'NOT_ACTIVE'
+    NOT_ACTIVE = 'NOT_ACTIVE',
+    DELETED = 'DELETED'
 }
 
 export enum Step {

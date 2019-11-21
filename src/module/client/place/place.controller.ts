@@ -1,4 +1,4 @@
-import { Controller, Get, Logger, Param, Query, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Logger, Query, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { Const } from "../../../common/util/const";
@@ -88,14 +88,5 @@ export class PlaceController {
     })
     getCities() {
         return City.findWhereTradingPointExists();
-    }
-
-    @Get('/img/:imageName')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: "File", description: "Image"})
-    getImage(@Param('imageName') imageName: string, @Res() res: any) {
-        res.sendFile(imageName, {root: 'public/image'});
     }
 }

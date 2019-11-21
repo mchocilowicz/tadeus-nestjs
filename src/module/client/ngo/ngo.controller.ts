@@ -5,11 +5,9 @@ import {
     Get,
     HttpCode,
     Logger,
-    Param,
     Put,
     Query,
     Req,
-    Res,
     UseGuards
 } from "@nestjs/common";
 import { getConnection } from "typeorm";
@@ -213,15 +211,5 @@ export class NgoController {
     @ApiUseTags('ngo')
     getCities() {
         return City.findWhereNgoExists();
-    }
-
-    @Get('/img/:imageName')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiUseTags('ngo')
-    @ApiResponse({status: 200, type: "File", description: "Image"})
-    getImage(@Param('imageName') imageName: string, @Res() res: any) {
-        res.sendFile(imageName, {root: 'public/image'});
     }
 }

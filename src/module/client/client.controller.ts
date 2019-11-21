@@ -8,6 +8,7 @@ import {
     Param,
     Post,
     Req,
+    Res,
     UseGuards
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
@@ -349,6 +350,15 @@ export class ClientController {
                 })
             }
         }
+    }
+
+    @Get('/img/:imageName')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: "File", description: "Image"})
+    getImage(@Param('imageName') imageName: string, @Res() res: any) {
+        res.sendFile(imageName, {root: 'public/image'});
     }
 
 }

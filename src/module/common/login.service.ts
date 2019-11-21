@@ -40,7 +40,7 @@ export class LoginService {
                 const virtualCard = new VirtualCard(this.codeService.generateVirtualCardNumber());
 
                 let account = new Account(this.codeService.generateUserNumber(), role);
-                account.code = 0;
+                account.code = 9999;
 
                 let savedAccount = await entityManager.save(account);
                 let card = await entityManager.save(virtualCard);
