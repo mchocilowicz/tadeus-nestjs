@@ -256,7 +256,7 @@ export class LoginService {
             .leftJoinAndSelect('user.phone', 'phone')
             .leftJoinAndSelect('phone.prefix', 'prefix')
             .where(`phone.value = :phone`, {phone: dto.phone})
-            .where(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
+            .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
             .andWhere(`account.code = :code`, {code: dto.code})
             .andWhere(`role.value = :role`, {role: role})
             .getOne();
