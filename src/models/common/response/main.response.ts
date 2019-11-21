@@ -19,13 +19,13 @@ export class MainResponse {
     @ApiModelProperty()
     userActivity: number;
 
-    constructor(details: User, card: VirtualCard, activity: number) {
-        this.ngo = details.ngo;
+    constructor(user: User, card: VirtualCard, activity: number) {
+        this.ngo = user.ngo;
         this.donationPool = card.donationPool;
         this.personalPool = card.personalPool;
-        this.collectedMoney = details.collectedMoney;
-        this.xp = details.xp;
-        this.name = details.name;
+        this.collectedMoney = user.collectedMoney;
+        this.xp = user.xp;
+        this.name = user.isAnonymous ? 'Anonimowy' : user.name;
         this.userActivity = activity;
     }
 }
