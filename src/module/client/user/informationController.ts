@@ -13,10 +13,10 @@ import { UserDetailsResponse } from "../../../models/client/request/user-details
 
 @Controller()
 @ApiBearerAuth()
-@ApiUseTags('user')
-export class UserController {
+@ApiUseTags('information')
+export class InformationController {
 
-    private readonly logger = new Logger(UserController.name);
+    private readonly logger = new Logger(InformationController.name);
 
     @Put()
     @Roles(RoleEnum.CLIENT)

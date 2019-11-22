@@ -19,7 +19,7 @@ import { TradingPointModule } from "./dashboard/trading-point/trading-point.modu
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { StatsModule } from "./dashboard/stats/stats.module";
 import { TadeusTransformInterceptor } from "../common/interceptors/tadeus-transform.interceptor";
-import { UserModule } from "./client/user/user.module";
+import { InformationModule } from "./client/user/informationModule";
 import { OpinionModule } from "./client/opinion/opinion.module";
 
 const routes: Routes = [
@@ -45,8 +45,8 @@ const routes: Routes = [
                 module: DonationModule
             },
             {
-                path: '/user',
-                module: UserModule
+                path: '/information',
+                module: InformationModule
             },
             {
                 path: '/opinion',
@@ -130,7 +130,7 @@ const routes: Routes = [
         RegisterModule,
         PlaceModule,
         DonationModule,
-        UserModule,
+        InformationModule,
         OpinionModule,
 
         //Partner Module
