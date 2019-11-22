@@ -45,6 +45,7 @@ export class LoginService {
                 let savedAccount = await entityManager.save(account);
                 let card = await entityManager.save(virtualCard);
                 let user = new User(card, savedAccount);
+                user.isAnonymous = true;
 
                 await entityManager.save(user);
 
