@@ -149,7 +149,7 @@ export class ClientController {
             throw new BadRequestException('internal_server_error')
         }
 
-        let tempUser: User | undefined = await User.findOneWithistoryData(user.id);
+        let tempUser: User | undefined = await User.findOneWithHistoryData(user.id);
 
         if (!tempUser) {
             this.logger.error(`User ${ user.id } does not exists`);

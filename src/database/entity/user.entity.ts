@@ -153,11 +153,12 @@ export class User extends TadeusEntity {
             .getOne();
     }
 
-    static findOneWithistoryData(userId: string) {
+    static findOneWithHistoryData(userId: string) {
         return this.createQueryBuilder("user")
             .leftJoinAndSelect("user.transactions", "transactions")
             .leftJoinAndSelect('transactions.tradingPoint', 'tradingPoint')
-            .leftJoinAndSelect('tradingPoint.city', 'city')
+            .leftJoinAndSelect('tradingPoint.address', 'address')
+            .leftJoinAndSelect('address.city', 'city')
             .leftJoinAndSelect('user.payouts', 'payouts')
             .leftJoinAndSelect("user.donations", "donations")
             .leftJoinAndSelect("donations.ngo", 'ngo')
