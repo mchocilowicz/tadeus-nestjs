@@ -48,12 +48,13 @@ export class Terminal extends TadeusEntity {
         this.name = name;
     }
 
-    static findAllWithoutCurrentTerminal(terminalId: string, pointId: string) {
+    static findAllTerminals(pointId: string) {
         return this.createQueryBuilder('terminal')
             .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
+            .leftJoinAndSelect('terminal.phone', 'phone')
+            .leftJoinAndSelect('phone.prefix', 'prefix')
             .leftJoin('terminal.account', 'account')
             .where('account.status = :status', {status: Status.ACTIVE})
-            .andWhere('terminal.id != :id', {id: terminalId})
             .andWhere('tradingPoint.id = :id', {id: pointId})
             .getMany();
     }

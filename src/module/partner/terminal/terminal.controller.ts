@@ -55,17 +55,19 @@ export class TerminalController {
         let terminal: Terminal = req.user;
         let point: TradingPoint = terminal.tradingPoint;
 
-        let terminals = await Terminal.findAllWithoutCurrentTerminal(terminal.id, point.id);
+        let terminals = await Terminal.findAllTerminals(point.id);
 
         return {
-            phone: terminal.phone,
-            terminals: terminals.map((t: any) => {
-                return {
-                    id: t.id,
-                    phone: t.phone,
-                    step: t.step
-                }
-            })
+            phone: terminal.phone ? terminal.phone.value : null,
+            terminals: terminals
+                .filter((t: Terminal) => t.id !== terminal.id)
+                .map((t: any) => {
+                    return {
+                        id: t.id,
+                        phone: t.phone ? t.phone.value : null,
+                        step: t.step
+                    }
+                })
         }
 
     }
@@ -111,8 +113,8 @@ export class TerminalController {
                 }
             } else {
                 await getConnection().transaction(async entityManager => {
-                    if (terminal && phone) {
-                        this.createTerminal(entityManager, phone, dto.name, point)
+                    if (phone) {
+                        await this.createTerminal(entityManager, phone, dto.name, point)
                     }
                 })
             }
@@ -125,7 +127,7 @@ export class TerminalController {
                 let phone = new Phone(dto.phone, prefix);
                 phone = await entityManager.save(phone);
 
-                this.createTerminal(entityManager, phone, dto.name, point)
+                await this.createTerminal(entityManager, phone, dto.name, point)
             })
         }
     }
