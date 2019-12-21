@@ -18,8 +18,12 @@ export class MainResponse {
     xp: number;
     @ApiModelProperty()
     userActivity: number;
+    @ApiModelProperty()
+    selfPayoutDate: Date;
+    @ApiModelProperty()
+    selfPayoutPossible: boolean;
 
-    constructor(user: User, card: VirtualCard, activity: number) {
+    constructor(user: User, card: VirtualCard, activity: number, payout: Date, possible: boolean) {
         this.ngo = user.ngo;
         this.donationPool = card.donationPool;
         this.personalPool = card.personalPool;
@@ -27,5 +31,7 @@ export class MainResponse {
         this.xp = user.xp;
         this.name = user.isAnonymous ? 'Anonimowy' : user.name;
         this.userActivity = activity;
+        this.selfPayoutDate = payout;
+        this.selfPayoutPossible = possible;
     }
 }

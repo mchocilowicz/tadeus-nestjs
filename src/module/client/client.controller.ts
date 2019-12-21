@@ -42,6 +42,7 @@ import { Donation } from "../../database/entity/donation.entity";
 import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
 
 const _ = require('lodash');
+const moment = require('moment');
 
 @Controller()
 export class ClientController {
@@ -124,7 +125,12 @@ export class ClientController {
         const n: number = maxMoney / s;
         const result: number = n > 0 ? (100 * user.collectedMoney) / n : 0;
 
-        return new MainResponse(user, card, result);
+        let period: Period | undefined = await Period.findCurrentClientPeriod();
+        if (!period) {
+            throw new BadRequestException('internal_server_error')
+        }
+
+        return new MainResponse(user, card, result, period.to, moment().format('YYYY-MM-DD') === moment(period.to).format('YYYY-MM-DD'));
     }
 
     @Get('history')

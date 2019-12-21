@@ -52,12 +52,13 @@ export class TerminalController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
     async getPartnerTerminals(@Req() req: any) {
-        let user = req.user;
+        let terminal: Terminal = req.user;
+        let point: TradingPoint = terminal.tradingPoint;
 
-        let terminals = await Terminal.findAllWithoutCurrentTerminal(user.id);
+        let terminals = await Terminal.findAllWithoutCurrentTerminal(terminal.id, point.id);
 
         return {
-            phone: user.phone,
+            phone: terminal.phone,
             terminals: terminals.map((t: any) => {
                 return {
                     id: t.id,
