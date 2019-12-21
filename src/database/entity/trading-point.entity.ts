@@ -8,6 +8,7 @@ import { TadeusEntity } from "./base.entity";
 import { Correction } from "./correction.entity";
 import { Address } from "./address.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { Opinion } from "./opinion.entity";
 
 @Entity({schema: 'tds'})
 export class TradingPoint extends TadeusEntity {
@@ -25,6 +26,12 @@ export class TradingPoint extends TadeusEntity {
 
     @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
     fee: number = 0.66;
+
+    @Column({type: "decimal", transformer: new ColumnNumericTransformer(), default: 0})
+    price: number = 0;
+
+    @Column()
+    email: string;
 
     @Column({nullable: true})
     image: string = 'icon.jpg';
@@ -62,16 +69,21 @@ export class TradingPoint extends TadeusEntity {
     @OneToMany(type => Transaction, transactions => transactions.tradingPoint)
     transactions?: Transaction[];
 
+    @OneToMany(type => Opinion, opinion => opinion.tradingPoint)
+    opinions?: Opinion[];
+
     constructor(ID: string,
                 name: string,
                 longitude: number,
                 latitude: number,
+                email: string,
                 phone: Phone,
                 type: TradingPointType,
                 address: Address) {
         super();
         this.ID = ID;
         this.name = name;
+        this.email = email;
         this.phone = phone;
         this.type = type;
         this.address = address;

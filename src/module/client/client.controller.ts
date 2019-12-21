@@ -325,6 +325,7 @@ export class ClientController {
 
                         payment.price += transaction.paymentValue;
 
+                        transaction.setUserPool(card.personalPool, card.donationPool);
                         card.updatePool(pool);
                         user.updateCollectedMoney(pool);
 

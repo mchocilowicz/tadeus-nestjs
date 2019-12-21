@@ -15,26 +15,32 @@ export class Transaction extends TadeusEntity {
     @Column()
     ID: string;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     price: number;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     donationPercentage: number = 0;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     provisionPercentage: number = 0;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     paymentValue: number = 0;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     vat: number = 0;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     provision: number = 0;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     poolValue: number = 0;
+
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    donationPool: number = 0;
+
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    personalPool: number = 0;
 
     @Column({transformer: new ColumnNumericTransformer()})
     userXp: number = 0;
@@ -60,9 +66,7 @@ export class Transaction extends TadeusEntity {
     @ManyToOne(type => Donation, donation => donation.transactions)
     donation: Donation;
 
-
-    @Column({default: 'TRANSACTION'})
-    class: string = 'TRANSACTION';
+    readonly class: string = 'TRANSACTION';
 
     constructor(terminal: Terminal,
                 user: User,
@@ -115,5 +119,10 @@ export class Transaction extends TadeusEntity {
         this.paymentValue = Number(provision + pool);
         this.poolValue = Number(pool);
         this.provision = Number(provision);
+    }
+
+    setUserPool(personal: number, donation: number) {
+        this.personalPool = personal;
+        this.donationPool = donation;
     }
 }

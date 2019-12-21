@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { CalculationService } from "../../../common/service/calculation.service";
 import { CodeService } from "../../../common/service/code.service";
 import { Roles } from "../../../common/decorators/roles.decorator";
@@ -176,6 +176,7 @@ export class TransactionController {
                 payment.price += Number(provision + pool);
 
                 virtualCard.updatePool(pool);
+                transaction.setUserPool(virtualCard.personalPool, virtualCard.donationPool);
                 user.updateCollectedMoney(pool);
 
                 await entityManager.save(transaction);
@@ -214,6 +215,43 @@ export class TransactionController {
             });
         } catch (e) {
             handleException(e, 'transaction', this.logger)
+        }
+    }
+
+    @Get()
+    async getTransactionsToCorrection(@Query() query: { prefix: number, phone: number, code: string }) {
+        if (query.prefix && query.phone) {
+            let t: Transaction[] = await Transaction.createQueryBuilder('transaction')
+                .leftJoin('transaction.user', 'user')
+                .leftJoin('user.phone', 'phone')
+                .leftJoin('phone.prefix', 'prefix')
+                .where('phone.value = :phone', {phone: query.phone})
+                .andWhere('prefix.value = :prefix', {prefix: query.prefix})
+                .andWhere('transaction.isCorrection = false')
+                .getMany();
+
+            return t.map((tran: Transaction) => {
+                return {
+                    id: tran.ID,
+                    price: tran.price,
+                    date: tran.createdAt
+                }
+            })
+        } else if (query.code) {
+            let t: Transaction[] = await Transaction.createQueryBuilder('transaction')
+                .leftJoin('transaction.user', 'user')
+                .leftJoin('user.card', 'card')
+                .where('card.code = :code', {code: query.code})
+                .andWhere('transaction.isCorrection = false')
+                .getMany();
+
+            return t.map((tran: Transaction) => {
+                return {
+                    id: tran.ID,
+                    price: tran.price,
+                    date: tran.createdAt
+                }
+            })
         }
     }
 

@@ -21,6 +21,8 @@ import { StatsModule } from "./dashboard/stats/stats.module";
 import { TadeusTransformInterceptor } from "../common/interceptors/tadeus-transform.interceptor";
 import { InformationModule } from "./client/user/informationModule";
 import { OpinionModule } from "./client/opinion/opinion.module";
+import { PayoutModule } from "./client/payout/payout.module";
+import { SettingsModule } from "./partner/settings/settings.module";
 
 const routes: Routes = [
     {
@@ -51,6 +53,10 @@ const routes: Routes = [
             {
                 path: '/opinion',
                 module: OpinionModule
+            },
+            {
+                path: '/payout',
+                module: PayoutModule
             }
         ]
     },
@@ -65,7 +71,11 @@ const routes: Routes = [
             {
                 path: '/terminal',
                 module: TerminalModule
-            }
+            },
+            {
+                path: '/settings',
+                module: SettingsModule
+            },
         ]
     },
     {

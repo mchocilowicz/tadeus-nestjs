@@ -34,6 +34,8 @@ import { Transaction } from "../../database/entity/transaction.entity";
 import { CodeService } from "../../common/service/code.service";
 import { Terminal } from "../../database/entity/terminal.entity";
 import { Account } from "../../database/entity/account.entity";
+import { Period } from "../../database/entity/period.entity";
+import { PartnerPayment } from "../../database/entity/partner-payment.entity";
 
 const moment = require('moment');
 
@@ -101,7 +103,16 @@ export class PartnerController {
             throw new NotFoundException('trading_point_does_not_exists')
         }
 
-        return new PartnerDetailsResponse(account.ID, partner)
+        let period = await Period.findCurrentPartnerPeriod();
+
+        if (!period) {
+            throw new BadRequestException('')
+        }
+
+        let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period, tradingPoint: partner});
+        let code = this.codeService.createCode(0, 99999) + '-' + this.codeService.createCode(0, 9999) + "-" + this.codeService.createCode(0, 99);
+
+        return new PartnerDetailsResponse(account.ID, partner, code, period.to, payment)
     }
 
     @Get('history')
@@ -125,10 +136,11 @@ export class PartnerController {
 
         let sqlQuery = createQueryBuilder('Transaction')
             .leftJoinAndSelect('Transaction.tradingPoint', 'tradingPoint')
+            .leftJoinAndSelect('Transaction.terminal', 'terminal')
             .where('tradingPoint.id = :id', {id: point.id});
 
         if (query && query.terminal) {
-            sqlQuery = sqlQuery.andWhere('Transaction.terminalID = :terminal', {terminal: query.terminal})
+            sqlQuery = sqlQuery.andWhere('terminal.ID = :terminal', {terminal: query.terminal})
         }
         try {
             let transactions = await sqlQuery
@@ -177,24 +189,33 @@ export class PartnerController {
     @ApiBearerAuth()
     @ApiUseTags('partner')
     @ApiImplicitQuery({name: 'card', type: "string", description: 'Card code', required: false})
-    @ApiImplicitQuery({name: 'phone', type: "string", description: 'Phone number', required: false})
-    async verifyClient(@Query() query: { card: string, phone: string }) {
-        let sqlQuery = createQueryBuilder('User', 'user');
+    @ApiImplicitQuery({name: 'prefix', type: "number", description: 'Phone Prefix', required: false})
+    @ApiImplicitQuery({name: 'phone', type: "number", description: 'Phone number', required: false})
+    async verifyClient(@Query() query: { card: string, prefix: number, phone: number }) {
+        let sqlQuery = User.createQueryBuilder('user')
+            .leftJoinAndSelect('user.card', 'card')
+            .leftJoinAndSelect('user.phone', 'phone')
+            .leftJoinAndSelect('phone.prefix', 'prefix');
 
         if (query.card) {
             let user = await sqlQuery
-                .leftJoinAndSelect('user.card', 'card')
                 .where('card.code = :code', {code: query.card}).getOne();
             if (!user) {
                 throw new BadRequestException('partner_bad_qr')
             }
-        } else if (query.phone) {
-            let user = sqlQuery
-                .where('user.phone = :phone', {phone: query.phone})
+
+            return user.name;
+        } else if (query.prefix && query.phone) {
+            let user = await sqlQuery
+                .where('phone.value = :phone', {phone: query.phone})
+                .andWhere('prefix.value = :prefix', {prefix: query.prefix})
                 .getOne();
+
             if (!user) {
                 throw new BadRequestException('partner_bad_phone')
             }
+
+            return user.name;
         } else {
             throw new BadRequestException('user_no_exists')
         }

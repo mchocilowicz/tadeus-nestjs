@@ -279,6 +279,7 @@ export class TradingPointController {
                         row.name,
                         row.latitude,
                         row.longitude,
+                        row.email,
                         phone,
                         type,
                         await entityManager.save(address)
@@ -306,6 +307,7 @@ export class TradingPointController {
     private mapRowColumns(row: any) {
         const columnMapping: any = {
             'Name': 'name',
+            'E-mail': 'email',
             'Type': 'type',
             'Latitude': 'latitude',
             'Longitude': 'longitude',

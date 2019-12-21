@@ -15,20 +15,18 @@ export class UserPayout extends TadeusEntity {
     accountNumber: string;
 
     @Column({transformer: new ColumnNumericTransformer()})
-    price: number;
+    price: number = 0;
 
-    @Column({default: 'PAYOUT'})
-    class: string = 'PAYOUT';
+    readonly class: string = 'PAYOUT';
 
     @ManyToOne(type => User, user => user.payouts)
     user: User;
 
-    constructor(firstName: string, lastName: string, price: number, account: string, user: User) {
+    constructor(firstName: string, lastName: string, account: string, user: User) {
         super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.accountNumber = account;
-        this.price = price;
         this.user = user;
     }
 

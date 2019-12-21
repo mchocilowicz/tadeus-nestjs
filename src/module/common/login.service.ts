@@ -209,14 +209,17 @@ export class LoginService {
         return this.getTokenForEntity(admin, RoleEnum.DASHBOARD)
     }
 
-    async checkCodeForTerminal(request: CodeVerificationRequest): Promise<string> {
+    async checkCodeForTerminal(request: CodeVerificationRequest): Promise<object> {
         let terminal: Terminal | undefined = await this.getTerminal(request, RoleEnum.TERMINAL);
 
         if (!terminal) {
             throw new NotFoundException('invalid_code')
         }
 
-        return this.getTokenForEntity(terminal, RoleEnum.TERMINAL)
+        return {
+            token: await this.getTokenForEntity(terminal, RoleEnum.TERMINAL),
+            mainTerminal: terminal.isMain
+        }
     }
 
     async checkCodeForUser(request: CodeVerificationRequest): Promise<string> {

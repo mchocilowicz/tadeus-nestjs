@@ -65,7 +65,7 @@ export class CodeService {
         return '' + count;
     }
 
-    private createCode(min: number, max: number) {
+    createCode(min: number, max: number) {
         return Math.random() * (max - min) + min;
     }
 
