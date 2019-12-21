@@ -24,7 +24,6 @@ import { PhoneRequest } from "../../models/common/request/phone.request";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { LoginService } from "../common/login.service";
 import { User } from "../../database/entity/user.entity";
-import { createQueryBuilder } from "typeorm";
 import { Roles } from "../../common/decorators/roles.decorator";
 import { JwtAuthGuard } from "../../common/guards/jwt.guard";
 import { RolesGuard } from "../../common/guards/roles.guard";
@@ -134,9 +133,9 @@ export class PartnerController {
     async getPartnerHistory(@Req() req: any, @Query() query: { terminal: string }) {
         let point = req.user.tradingPoint;
 
-        let sqlQuery = createQueryBuilder('Transaction')
-            .leftJoinAndSelect('Transaction.tradingPoint', 'tradingPoint')
-            .leftJoinAndSelect('Transaction.terminal', 'terminal')
+        let sqlQuery = Transaction.createQueryBuilder('transaction')
+            .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
+            .leftJoinAndSelect('transaction.terminal', 'terminal')
             .where('tradingPoint.id = :id', {id: point.id});
 
         if (query && query.terminal) {
@@ -144,7 +143,7 @@ export class PartnerController {
         }
         try {
             let transactions = await sqlQuery
-                .orderBy('Transaction.createdAt', 'DESC')
+                .orderBy('transaction.createdAt', 'DESC')
                 .getMany();
             let d = [];
             if (transactions.length > 0) {
