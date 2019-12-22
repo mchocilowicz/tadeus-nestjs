@@ -6,6 +6,7 @@ const moment = require('moment');
 
 @Injectable()
 export class ConfigurationScheduler extends NestSchedule {
+
     @Cron('0 0 4 ? * * *')
     async cronJob() {
         let ngoPeriod: Period | undefined = await Period.findCurrentNgoPeriod();
