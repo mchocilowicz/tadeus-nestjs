@@ -19,7 +19,7 @@ import { TradingPointModule } from "./dashboard/trading-point/trading-point.modu
 import { DashboardModule } from "./dashboard/dashboard.module";
 import { StatsModule } from "./dashboard/stats/stats.module";
 import { TadeusTransformInterceptor } from "../common/interceptors/tadeus-transform.interceptor";
-import { InformationModule } from "./client/user/informationModule";
+import { InformationModule } from "./client/user/information.module";
 import { OpinionModule } from "./client/opinion/opinion.module";
 import { PayoutModule } from "./client/payout/payout.module";
 import { SettingsModule } from "./partner/settings/settings.module";

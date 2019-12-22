@@ -46,6 +46,9 @@ export class User extends TadeusEntity {
     @Column({default: 0, transformer: new ColumnNumericTransformer()})
     ngoSelectionCount: number = 0;
 
+    @Column({nullable: true})
+    prevName?: string;
+
     @ManyToOne(type => Ngo)
     @JoinTable()
     ngo?: Ngo;
@@ -177,7 +180,10 @@ export class User extends TadeusEntity {
     }
 
     updateInformation(name: string, lastName: string, email: string, bankAccount: number) {
-        this.name = name;
+        if (this.name !== name) {
+            this.prevName = this.name;
+            this.name = name;
+        }
         this.lastName = lastName;
         this.email = email;
         this.bankAccount = bankAccount;

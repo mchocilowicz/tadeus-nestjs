@@ -18,6 +18,32 @@ export class InformationController {
 
     private readonly logger = new Logger(InformationController.name);
 
+    @Get()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: UserDetailsResponse})
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    getUserData(@Req() req: any): UserDetailsResponse {
+        let user: User = req.user;
+        let phone: Phone | undefined = user.phone;
+
+        if (!phone) {
+            this.logger.error(`User ${ user.id } does not have assigned Phone`);
+            throw new BadRequestException('internal_server_error')
+        }
+
+        return new UserDetailsResponse(user, phone);
+    }
+
     @Put()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -45,38 +71,14 @@ export class InformationController {
         phone.value = dto.phone;
 
         await getConnection().transaction(async entityManager => {
+            if (user.prevName) {
+                throw new BadRequestException('user_name_changed')
+            }
 
             user.updateInformation(dto.firstName, dto.lastName, dto.email, dto.bankAccount);
             await entityManager.save(user);
             await entityManager.save(phone);
-
         });
-    }
-
-    @Get()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: UserDetailsResponse})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    getUserData(@Req() req: any): UserDetailsResponse {
-        let user: User = req.user;
-        let phone: Phone | undefined = user.phone;
-
-        if (!phone) {
-            this.logger.error(`User ${ user.id } does not have assigned Phone`);
-            throw new BadRequestException('internal_server_error')
-        }
-
-        return new UserDetailsResponse(user, phone);
     }
 }
 

@@ -22,7 +22,7 @@ import { TerminalModule } from "./module/partner/terminal/terminal.module";
 import { DashboardNgoModule } from "./module/dashboard/ngo/dashboard-ngo.module";
 import { TradingPointModule } from "./module/dashboard/trading-point/trading-point.module";
 import { OpinionModule } from "./module/client/opinion/opinion.module";
-import { InformationModule } from "./module/client/user/informationModule";
+import { InformationModule } from "./module/client/user/information.module";
 import { PayoutModule } from "./module/client/payout/payout.module";
 import { SettingsModule } from "./module/partner/settings/settings.module";
 import morgan = require("morgan");
