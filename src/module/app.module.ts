@@ -6,8 +6,8 @@ import { ClientModule } from "./client/client.module";
 import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
 import { TadeusExceptionFilter } from "../common/filter/tadeus-exception.filter";
 import { PartnerModule } from "./partner/partner.module";
-import { TransactionModule } from "./partner/transaction/transaction.module";
-import { TerminalModule } from "./partner/terminal/terminal.module";
+import { PartnerTransactionModule } from "./partner/transaction/partner-transaction.module";
+import { PartnerTerminalModule } from "./partner/terminal/partner-terminal.module";
 import { NgoModule } from "./client/ngo/ngo.module";
 import { RegisterModule } from "./client/register/register.module";
 import { PlaceModule } from "./client/place/place.module";
@@ -22,11 +22,12 @@ import { TadeusTransformInterceptor } from "../common/interceptors/tadeus-transf
 import { InformationModule } from "./client/user/information.module";
 import { OpinionModule } from "./client/opinion/opinion.module";
 import { PayoutModule } from "./client/payout/payout.module";
-import { SettingsModule } from "./partner/settings/settings.module";
+import { PartnerSettingsModule } from "./partner/settings/partner-settings.module";
+import {PartnerDonationModule} from "./partner/donation/partner-donation.module";
+import {PartnerOpinionModule} from "./partner/opinion/partner-opinion.module";
 
 const routes: Routes = [
     {
-
         path: '/client',
         module: ClientModule,
         children: [
@@ -66,16 +67,24 @@ const routes: Routes = [
         children: [
             {
                 path: '/transaction',
-                module: TransactionModule
+                module: PartnerTransactionModule
             },
             {
                 path: '/terminal',
-                module: TerminalModule
+                module: PartnerTerminalModule
             },
             {
-                path: '/settings',
-                module: SettingsModule
+                path: '/settingss',
+                module: PartnerSettingsModule
             },
+            {
+                path: '/donationn',
+                module: PartnerDonationModule
+            },
+            {
+                path: '/opinionn',
+                module: PartnerOpinionModule
+            }
         ]
     },
     {
@@ -146,8 +155,11 @@ const routes: Routes = [
         //Partner Module
 
         PartnerModule,
-        TransactionModule,
-        TerminalModule,
+        PartnerTransactionModule,
+        PartnerTerminalModule,
+        PartnerDonationModule,
+        PartnerOpinionModule,
+        PartnerSettingsModule,
         //Dashboard Module
 
         DashboardModule,
@@ -176,6 +188,5 @@ const routes: Routes = [
         ConfigurationScheduler,
     ],
 })
-
 export class AppModule {
 }

@@ -30,9 +30,9 @@ import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
 
 @Controller()
 @ApiUseTags('terminal')
-export class TerminalController {
+export class PartnerTerminalController {
 
-    private readonly logger = new Logger(TerminalController.name);
+    private readonly logger = new Logger(PartnerTerminalController.name);
 
     constructor(private readonly codeService: CodeService) {
     }

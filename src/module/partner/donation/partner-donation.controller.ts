@@ -8,18 +8,31 @@ import { Roles } from "../../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
-import { ApiImplicitBody, ApiResponse } from "@nestjs/swagger";
+import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
 import { PartnerPaymentResponse } from "../../../models/partner/response/partner-payment.response";
+import {Const} from "../../../common/util/const";
 
 @Controller()
+@ApiUseTags('donation')
 export class PartnerDonationController {
 
     constructor(private readonly codeService: CodeService) {
     }
 
     @Get()
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
     @ApiResponse({status: 200, type: PartnerPaymentResponse})
     async getPaymentInformation(@Req() req: any) {
         let terminal: Terminal = req.user;
@@ -38,8 +51,19 @@ export class PartnerDonationController {
     }
 
     @Put(':id')
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth()
     @ApiImplicitBody({name: '', type: {payUextOrderId: 'string'}})
     async updatePaymentInformation(@Req() req: any, @Param('id') id: string, dto: { payUextOrderId: string }) {
         let payment: PartnerPayment | undefined = await PartnerPayment.findOne({id: id});
@@ -50,7 +74,7 @@ export class PartnerDonationController {
         payment.isPaid = true;
         payment.paymentNumber = dto.payUextOrderId;
         payment.partnerPaymentAt = new Date();
-        payment.save();
+        await payment.save();
     }
 
 }

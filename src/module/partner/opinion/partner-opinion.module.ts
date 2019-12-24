@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { PartnerOpinionController } from "./opinion.controller";
+import { PartnerOpinionController } from "./partner-opinion.controller";
 
 @Module({
     controllers: [PartnerOpinionController]

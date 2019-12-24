@@ -28,8 +28,8 @@ const moment = require('moment');
 
 @Controller()
 @ApiUseTags("transaction")
-export class TransactionController {
-    private readonly logger = new Logger(TransactionController.name);
+export class PartnerTransactionController {
+    private readonly logger = new Logger(PartnerTransactionController.name);
 
     constructor(private readonly calService: CalculationService, private readonly codeService: CodeService) {
     }
