@@ -1,15 +1,17 @@
 import {Body, Controller, Get, Put, Req, UseGuards} from "@nestjs/common";
-import { Terminal } from "../../../database/entity/terminal.entity";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import {ApiBearerAuth, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
+import {Terminal} from "../../../database/entity/terminal.entity";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
+import {SettingsRequest} from "../../../models/partner/request/settings.request";
 
 @Controller()
 @ApiUseTags('settings')
+@ApiBearerAuth()
 export class PartnerSettingsController {
 
     @Get()
@@ -25,7 +27,6 @@ export class PartnerSettingsController {
     })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiBearerAuth()
     async getTradingPointSettings(@Req() req: any) {
         let terminal: Terminal = req.user;
         let point: TradingPoint = terminal.tradingPoint;
@@ -49,8 +50,8 @@ export class PartnerSettingsController {
     })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiBearerAuth()
-    async updateTradingPointSettings(@Req() req: any, @Body() dto: { defaultDonationPercent: number, defaultReceipt: number }) {
+    @ApiImplicitBody({name: '', type: SettingsRequest})
+    async updateTradingPointSettings(@Req() req: any, @Body() dto: SettingsRequest) {
         let terminal: Terminal = req.user;
         let point: TradingPoint = terminal.tradingPoint;
 

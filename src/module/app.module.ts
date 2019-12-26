@@ -131,9 +131,9 @@ const routes: Routes = [
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRootAsync({
             useFactory: () => ({
-                url: process.env.TDS_DATABASE_URL,
+                url: "postgres://postgres:marcin12@localhost:5432/tadeus",
                 type: "postgres",
-                ssl: true,
+                ssl: false,
                 schema: 'tds',
                 entities: [
                     join(__dirname, "../../**/*.entity{.ts,.js}")

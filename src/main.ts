@@ -30,14 +30,12 @@ import {PartnerOpinionModule} from "./module/partner/opinion/partner-opinion.mod
 import {AppModule} from "./module/app.module";
 
 async function bootstrap() {
-    console.log('D');
 
     try {
          const app = await NestFactory.create<NestExpressApplication>(AppModule, {
             logger: new LoggerService(Const.APP_NAME)
         });
 
-        console.log('DD');
         const options = new DocumentBuilder()
             .setTitle(Const.APP_NAME)
             .setDescription('The TADEUS API description')
@@ -83,4 +81,4 @@ async function bootstrap() {
     }
 }
 
-bootstrap().then(() => console.log('API - running'));
+bootstrap();

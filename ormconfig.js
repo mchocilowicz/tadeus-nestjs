@@ -1,5 +1,5 @@
 module.exports = {
-    url: "postgres://odssiaxcokktlf:508b8f90d75523785d99fd579694491c4bfc694bbed9fcb5bb3adde361db6f70@ec2-54-228-243-29.eu-west-1.compute.amazonaws.com:5432/d94jjeruacf7r4",
+    url: "postgres://postgres:marcin12@localhost:5432/tadeus",
     type: "postgres",
     extra: {
         ssl: false

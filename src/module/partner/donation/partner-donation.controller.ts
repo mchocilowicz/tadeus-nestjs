@@ -11,9 +11,11 @@ import { RolesGuard } from "../../../common/guards/roles.guard";
 import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
 import { PartnerPaymentResponse } from "../../../models/partner/response/partner-payment.response";
 import {Const} from "../../../common/util/const";
+import {DonationRequest} from "../../../models/partner/request/donation.request";
 
 @Controller()
 @ApiUseTags('donation')
+@ApiBearerAuth()
 export class PartnerDonationController {
 
     constructor(private readonly codeService: CodeService) {
@@ -32,7 +34,6 @@ export class PartnerDonationController {
     })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiBearerAuth()
     @ApiResponse({status: 200, type: PartnerPaymentResponse})
     async getPaymentInformation(@Req() req: any) {
         let terminal: Terminal = req.user;
@@ -63,9 +64,8 @@ export class PartnerDonationController {
     })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiBearerAuth()
-    @ApiImplicitBody({name: '', type: {payUextOrderId: 'string'}})
-    async updatePaymentInformation(@Req() req: any, @Param('id') id: string, dto: { payUextOrderId: string }) {
+    @ApiImplicitBody({name: '', type: DonationRequest})
+    async updatePaymentInformation(@Req() req: any, @Param('id') id: string, dto: DonationRequest) {
         let payment: PartnerPayment | undefined = await PartnerPayment.findOne({id: id});
         if (!payment) {
             throw new BadRequestException('partner_payment_does_not_exists')
