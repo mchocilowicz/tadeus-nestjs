@@ -42,7 +42,7 @@ export class PayoutController {
 
         await getConnection().transaction(async entityManager => {
             let payout = new UserPayout(dto.name, dto.surName, dto.bankAccount, user);
-            payout.price = user.card.personalPool;
+            payout.price = Number(user.card.personalPool);
             user.card.personalPool = 0;
 
             await entityManager.save(user.card);
