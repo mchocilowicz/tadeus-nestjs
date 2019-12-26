@@ -40,6 +40,7 @@ import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { Period } from "../../database/entity/period.entity";
 import { Donation } from "../../database/entity/donation.entity";
 import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
+import {UserPayout} from "../../database/entity/user-payment.entity";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -118,6 +119,13 @@ export class ClientController {
             throw new BadRequestException('internal_server_error')
         }
 
+        const payouts: UserPayout[] = await UserPayout.find({user: user});
+        let payout = moment(user.createdAt).add(30,'days');
+        if(payouts.length > 0) {
+            let last = _.sortBy(payouts,'createdAt')[payouts.length - 1]
+            payout = moment(last.createdAt).add(30,'days');
+        }
+
         const count: number = await User.count();
         const s: number = count / 10;
         const detail: User[] = await User.findTopDetailsSortedByCollectedMoney(s);
@@ -130,7 +138,7 @@ export class ClientController {
             throw new BadRequestException('internal_server_error')
         }
 
-        return new MainResponse(user, card, result, period.to, moment().format('YYYY-MM-DD') === moment(period.to).format('YYYY-MM-DD'));
+        return new MainResponse(user, card, result, payout, moment().isAfter(payout));
     }
 
     @Get('history')
