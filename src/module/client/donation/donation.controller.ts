@@ -38,7 +38,6 @@ export class DonationController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    @ApiUseTags('donation')
     @ApiResponse({status: 200, type: "boolean", description: "Check if user can make donation for selected NGO"})
     async getNgoSelectionCount(@Req() req: any) {
         let user: User = req.user;
@@ -74,10 +73,9 @@ export class DonationController {
         required: true,
         description: Const.HEADER_AUTHORIZATION_DESC
     })
-    @ApiUseTags('donation')
     async donationAnotherNgo(@Req() req: any, @Body() request: NgoDonationRequest) {
         const user: User = req.user;
-        const virtualCard: VirtualCard | undefined = user.card;
+        // const virtualCard: VirtualCard | undefined = user.card;
         const config: Configuration | undefined = await Configuration.getMain();
         const period: Period | undefined = await Period.findCurrentNgoPeriod();
 
@@ -86,20 +84,20 @@ export class DonationController {
             throw new BadRequestException("internal_error")
         }
 
-        if (!virtualCard) {
-            this.logger.error('Virtual Card Object is not available for User: ' + user.id);
-            throw new BadRequestException("internal_error")
-        }
-
-        const totalPrice = request.ngoDonation + request.tadeusDonation;
-
-        if (config.minNgoTransfer > totalPrice) {
-            throw new BadRequestException('donation_value_to_low')
-        }
-
-        if (totalPrice > virtualCard.personalPool) {
-            throw new BadRequestException('personal_pool_to_low')
-        }
+        // if (!virtualCard) {
+        //     this.logger.error('Virtual Card Object is not available for User: ' + user.id);
+        //     throw new BadRequestException("internal_error")
+        // }
+        //
+        // const totalPrice = request.ngoDonation + request.tadeusDonation;
+        //
+        // if (config.minNgoTransfer > totalPrice) {
+        //     throw new BadRequestException('donation_value_to_low')
+        // }
+        //
+        // if (totalPrice > virtualCard.personalPool) {
+        //     throw new BadRequestException('personal_pool_to_low')
+        // }
 
         await getConnection().transaction(async entityManager => {
             if (request.ngoDonation > 0) {
@@ -114,7 +112,7 @@ export class DonationController {
                 donation.ngo = ngo;
                 donation.price = request.ngoDonation;
                 donation.invoiceNumber = request.payUextOrderId;
-                virtualCard.personalPool -= request.ngoDonation;
+                // virtualCard.personalPool -= request.ngoDonation;
                 await entityManager.save(donation);
             }
 
@@ -124,11 +122,11 @@ export class DonationController {
                 donation.price = request.tadeusDonation;
                 donation.ngo = await Ngo.findOne({isTadeus: true});
                 donation.invoiceNumber = request.payUextOrderId;
-                virtualCard.personalPool -= request.tadeusDonation;
+                // virtualCard.personalPool -= request.tadeusDonation;
                 await entityManager.save(donation);
             }
 
-            await entityManager.save(virtualCard);
+            // await entityManager.save(virtualCard);
         });
 
     }
