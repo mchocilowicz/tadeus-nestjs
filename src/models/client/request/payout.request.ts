@@ -4,7 +4,7 @@ export class PayoutRequest {
     @ApiModelProperty()
     name: string;
     @ApiModelProperty()
-    sureName: string;
+    surName: string;
     @ApiModelProperty()
     bankAccount: string;
 
@@ -13,7 +13,7 @@ export class PayoutRequest {
                 lastName: string,
                 bankAccount: string) {
         this.name = firstName;
-        this.sureName = lastName;
+        this.surName = lastName;
         this.bankAccount = bankAccount;
     }
 }

@@ -151,6 +151,7 @@ const routes: Routes = [
         DonationModule,
         InformationModule,
         OpinionModule,
+        PayoutModule,
 
         //Partner Module
 

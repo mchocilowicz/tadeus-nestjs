@@ -20,7 +20,6 @@ export class PayoutController {
     @Post()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiResponse({status: 200, type: []})
     @ApiImplicitHeader({
         name: Const.HEADER_ACCEPT_LANGUAGE,
         required: true,
@@ -42,7 +41,7 @@ export class PayoutController {
         }
 
         await getConnection().transaction(async entityManager => {
-            let payout = new UserPayout(dto.name, dto.sureName, dto.bankAccount, user);
+            let payout = new UserPayout(dto.name, dto.surName, dto.bankAccount, user);
             payout.price = user.card.personalPool;
             user.card.personalPool = 0;
 
