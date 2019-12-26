@@ -74,15 +74,15 @@ const routes: Routes = [
                 module: PartnerTerminalModule
             },
             {
-                path: '/settingss',
+                path: '/settings',
                 module: PartnerSettingsModule
             },
             {
-                path: '/donationn',
+                path: '/donation',
                 module: PartnerDonationModule
             },
             {
-                path: '/opinionn',
+                path: '/opinion',
                 module: PartnerOpinionModule
             }
         ]
