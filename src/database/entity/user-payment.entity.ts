@@ -1,7 +1,7 @@
-import { Column, Entity, ManyToOne } from "typeorm";
-import { TadeusEntity } from "./base.entity";
-import { User } from "./user.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import {Column, Entity, ManyToOne} from "typeorm";
+import {TadeusEntity} from "./base.entity";
+import {User} from "./user.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class UserPayout extends TadeusEntity {
@@ -14,7 +14,7 @@ export class UserPayout extends TadeusEntity {
     @Column()
     accountNumber: string;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     price: number = 0;
 
     readonly class: string = 'PAYOUT';
