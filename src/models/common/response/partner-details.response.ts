@@ -20,7 +20,7 @@ export class PartnerDetailsResponse {
     @ApiModelProperty()
     code: string;
     @ApiModelProperty()
-    totalDonation?: number;
+    totalDonation: number = 0;
     @ApiModelProperty()
     donationDeadline?: Date;
 

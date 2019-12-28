@@ -5,7 +5,7 @@ import { Roles } from "../../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
-import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { Transaction } from "../../../database/entity/transaction.entity";
 import { TransactionResponse } from "../../../models/common/response/transaction.response";
@@ -23,6 +23,7 @@ import { PartnerPayment } from "../../../database/entity/partner-payment.entity"
 import { Period } from "../../../database/entity/period.entity";
 import { Donation } from "../../../database/entity/donation.entity";
 import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
+import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
 
 const moment = require('moment');
 
@@ -219,7 +220,23 @@ export class PartnerTransactionController {
     }
 
     @Get()
-    async getTransactionsToCorrection(@Query() query: { prefix: number, phone: number, code: string }) {
+    @Roles(RoleEnum.TERMINAL)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiImplicitHeader({
+        name: Const.HEADER_ACCEPT_LANGUAGE,
+        required: true,
+        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
+    })
+    @ApiImplicitHeader({
+        name: Const.HEADER_AUTHORIZATION,
+        required: true,
+        description: Const.HEADER_AUTHORIZATION_DESC
+    })
+    @ApiResponse({status: 200, type: PartnerTransactionResponse, isArray: true})
+    @ApiImplicitQuery({name: 'prefix', type: "number", description: 'Phone prefix', required: false})
+    @ApiImplicitQuery({name: 'phone', type: "number", description: 'Phone number', required: false})
+    @ApiImplicitQuery({name: 'code', type: "string", description: 'User QR code', required: false})
+    async getTransactionsToCorrection(@Req() req: any, @Query() query: { prefix: number, phone: number, code: string }) {
         if (query.prefix && query.phone) {
             let t: Transaction[] = await Transaction.createQueryBuilder('transaction')
                 .leftJoin('transaction.user', 'user')
@@ -230,13 +247,7 @@ export class PartnerTransactionController {
                 .andWhere('transaction.isCorrection = false')
                 .getMany();
 
-            return t.map((tran: Transaction) => {
-                return {
-                    id: tran.ID,
-                    price: tran.price,
-                    date: tran.createdAt
-                }
-            })
+            return this.mapTransactionToGetResponse(t);
         } else if (query.code) {
             let t: Transaction[] = await Transaction.createQueryBuilder('transaction')
                 .leftJoin('transaction.user', 'user')
@@ -245,14 +256,23 @@ export class PartnerTransactionController {
                 .andWhere('transaction.isCorrection = false')
                 .getMany();
 
-            return t.map((tran: Transaction) => {
-                return {
-                    id: tran.ID,
-                    price: tran.price,
-                    date: tran.createdAt
-                }
-            })
+            return this.mapTransactionToGetResponse(t);
+        } else {
+            let terminal: Terminal = req.user;
+            let point: TradingPoint = terminal.tradingPoint;
+
+            let t = await Transaction.createQueryBuilder('transaction')
+                .leftJoin('transaction.tradingPoint', 'tradingPoint')
+                .where('tradingPoint.id = :id', {id: point.id})
+                .andWhere('transaction.isCorrection = false')
+                .getMany();
+
+            return this.mapTransactionToGetResponse(t);
         }
+    }
+
+    private mapTransactionToGetResponse(transactions: Transaction[]) {
+        return transactions.map((t: Transaction) => new PartnerTransactionResponse(t.id, t.price, t.createdAt))
     }
 
 }
