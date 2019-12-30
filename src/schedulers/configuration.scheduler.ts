@@ -1,13 +1,15 @@
-import { Cron, NestSchedule } from "nest-schedule";
-import { Injectable } from "@nestjs/common";
-import { Period } from "../database/entity/period.entity";
+import {Cron, NestSchedule} from "nest-schedule";
+import {Injectable, Logger} from "@nestjs/common";
+import {Period} from "../database/entity/period.entity";
 
 const moment = require('moment');
 
 @Injectable()
 export class ConfigurationScheduler extends NestSchedule {
 
-    @Cron('0 0 4 ? * * *')
+    private readonly logger = new Logger(ConfigurationScheduler.name);
+
+    @Cron('* * 6 * * *')
     async cronJob() {
         let ngoPeriod: Period | undefined = await Period.findCurrentNgoPeriod();
         let userPeriod: Period | undefined = await Period.findCurrentClientPeriod();

@@ -1,8 +1,8 @@
 module.exports = {
-    url: "postgres://postgres:marcin12@localhost:5432/tadeus",
+    url: "",
     type: "postgres",
     extra: {
-        ssl: false
+        ssl: true
     },
     schema: 'tds',
     entities: [

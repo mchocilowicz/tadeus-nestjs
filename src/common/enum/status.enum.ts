@@ -8,6 +8,6 @@ export enum Status {
 
 export enum Step {
     CODE = 'CODE',
-    ACTOVE = 'ACTIVE',
+    ACTIVE = 'ACTIVE',
     SIGN_IN = 'SIGN_IN'
 }

@@ -1,21 +1,21 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CodeService } from "../../common/service/code.service";
-import { User } from "../../database/entity/user.entity";
-import { Role } from "../../database/entity/role.entity";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { PhoneRequest } from "../../models/common/request/phone.request";
-import { Status } from "../../common/enum/status.enum";
-import { CryptoService } from "../../common/service/crypto.service";
-import { getConnection } from "typeorm";
-import { Account } from "../../database/entity/account.entity";
-import { VirtualCard } from "../../database/entity/virtual-card.entity";
-import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
-import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
-import { Phone } from "../../database/entity/phone.entity";
-import { PhonePrefix } from "../../database/entity/phone-prefix.entity";
-import { Terminal } from "../../database/entity/terminal.entity";
-import { Admin } from "../../database/entity/admin.entity";
+import {BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException} from '@nestjs/common';
+import {CodeService} from "../../common/service/code.service";
+import {User} from "../../database/entity/user.entity";
+import {Role} from "../../database/entity/role.entity";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {PhoneRequest} from "../../models/common/request/phone.request";
+import {Status, Step} from "../../common/enum/status.enum";
+import {CryptoService} from "../../common/service/crypto.service";
+import {EntityManager, getConnection} from "typeorm";
+import {Account} from "../../database/entity/account.entity";
+import {VirtualCard} from "../../database/entity/virtual-card.entity";
+import {TadeusJwtService} from "./TadeusJwtModule/TadeusJwtService";
+import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
+import {Phone} from "../../database/entity/phone.entity";
+import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
+import {Terminal} from "../../database/entity/terminal.entity";
+import {Admin} from "../../database/entity/admin.entity";
 
 @Injectable()
 export class LoginService {
@@ -50,7 +50,7 @@ export class LoginService {
                 await entityManager.save(user);
 
                 if (!savedAccount.id || !savedAccount.code) {
-                    this.logger.error(`Account not saved properly for User(Anonymous) ${ user.id }`);
+                    this.logger.error(`Account not saved properly for User(Anonymous) ${user.id}`);
                     throw new BadRequestException('internal_server_error')
                 }
 
@@ -93,21 +93,6 @@ export class LoginService {
         await this.signInEntity(admin, RoleEnum.DASHBOARD)
     }
 
-
-    async signInUser(dto: PhoneRequest, role: RoleEnum): Promise<void> {
-        let user: User | undefined = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoin('user.phone', 'phone')
-            .leftJoin('phone.prefix', 'prefix')
-            .where(`phone.value = :phone`, {phone: dto.phone})
-            .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
-            .andWhere(`role.value = :role`, {role: role})
-            .getOne();
-
-        await this.signInEntity(user, RoleEnum.CLIENT)
-    }
-
     async clientSignIn(dto: NewPhoneRequest): Promise<boolean> {
         let user: User | undefined = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
@@ -137,7 +122,7 @@ export class LoginService {
             if (!phone) {
                 const prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
                 if (!prefix) {
-                    this.logger.error(`Prefix ${ dto.phonePrefix } is not in Database`);
+                    this.logger.error(`Prefix ${dto.phonePrefix} is not in Database`);
                     throw new BadRequestException('internal_server_error')
                 }
                 phone = await entityManager.save(new Phone(dto.phone, prefix));
@@ -147,7 +132,7 @@ export class LoginService {
                 const account = user.account;
 
                 if (!account || account.role.value !== RoleEnum.CLIENT) {
-                    this.logger.error(`Account CLIENT does not exists for registered User ${ user.id }`);
+                    this.logger.error(`Account CLIENT does not exists for registered User ${user.id}`);
                     throw new BadRequestException('internal_server_error')
                 }
 
@@ -205,8 +190,9 @@ export class LoginService {
         if (!admin) {
             throw new NotFoundException('invalid_code')
         }
-
-        return this.getTokenForEntity(admin, RoleEnum.DASHBOARD)
+        return await getConnection().transaction(async entityManager => {
+            return this.getTokenForEntity(entityManager, admin, RoleEnum.DASHBOARD)
+        })
     }
 
     async checkCodeForTerminal(request: CodeVerificationRequest): Promise<object> {
@@ -217,7 +203,16 @@ export class LoginService {
         }
 
         return {
-            token: await this.getTokenForEntity(terminal, RoleEnum.TERMINAL),
+            token: await getConnection().transaction(async entityManager => {
+                if (!terminal) {
+                    throw new NotFoundException('invalid_code')
+                }
+
+                terminal.step = Step.ACTIVE;
+                await entityManager.save(terminal);
+
+                return await this.getTokenForEntity(entityManager, terminal, RoleEnum.TERMINAL)
+            }),
             mainTerminal: terminal.isMain
         }
     }
@@ -233,20 +228,22 @@ export class LoginService {
             throw new NotFoundException('user_does_not_exists');
         }
 
-        return this.getTokenForEntity(user, RoleEnum.CLIENT)
+        return await getConnection().transaction(async entityManager => {
+            return this.getTokenForEntity(entityManager, user, RoleEnum.CLIENT)
+        })
     }
 
-    private async getTokenForEntity(entity: any, role: RoleEnum): Promise<string> {
+    private async getTokenForEntity(entityManager: EntityManager, entity: any, role: RoleEnum): Promise<string> {
         const account = entity.account;
 
         if (!account || !account.code) {
-            this.logger.error(`Account ${ role } for  ${ entity.id } does not exists`);
+            this.logger.error(`Account ${role} for  ${entity.id} does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
         account.token = this.cryptoService.generateToken(account.id, account.code);
 
-        await account.save();
+        await entityManager.save(account);
 
         let id: string = this.cryptoService.encryptId(account.id, role);
 
@@ -297,15 +294,22 @@ export class LoginService {
         const account = entity.account;
 
         if (!account) {
-            this.logger.error(`${ entity.id } does not have assigned Account ${ role }`);
+            this.logger.error(`${entity.id} does not have assigned Account ${role}`);
             throw new BadRequestException('internal_server_error')
         }
 
         this.checkUserRights(account, role);
 
-        account.code = this.codeService.generateSmsCode();
-        // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
-        await account.save()
+        await getConnection().transaction(async entityManager => {
+            if (account.role.value === RoleEnum.TERMINAL) {
+                entity.step = Step.CODE;
+                await entityManager.save(entity)
+            }
+
+            account.code = this.codeService.generateSmsCode();
+            // user.save().then(() => this.smsService.sendMessage(user.code, user.phone))
+            await entityManager.save(account)
+        })
     }
 
 }

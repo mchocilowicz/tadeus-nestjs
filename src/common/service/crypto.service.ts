@@ -1,25 +1,45 @@
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { RoleEnum } from "../enum/role.enum";
+import {Injectable, InternalServerErrorException, Logger} from "@nestjs/common";
+import {RoleEnum} from "../enum/role.enum";
 
 const crypto = require('crypto');
 
 @Injectable()
 export class CryptoService {
-    private vi: string;
-    private pwd: string;
+    private readonly vi: string;
+    private readonly pwd: string;
+    private readonly alg: any;
+    private readonly token: string;
+    private readonly crypto_hash: string;
+    private readonly salt: string;
+
+    private readonly logger = new Logger(CryptoService.name);
 
 
     constructor() {
-        if (!process.env.TDS_VI) throw new BadRequestException();
-        if (!process.env.TDS_PWD) throw new BadRequestException();
-        this.vi = process.env.TDS_VI;
-        this.pwd = process.env.TDS_PWD;
+        const tdsVi = process.env.TDS_VI;
+        const tdsPwd = process.env.TDS_PWD;
+        const tdsAlg = process.env.TDS_ALG;
+        const tdsToken = process.env.TDS_TOKEN;
+        const tdsCrypto = process.env.TDS_CRYPTO;
+        const tdsSalt = process.env.TDS_SALT;
+
+        if (!tdsVi && !tdsPwd && !tdsAlg && !tdsToken && !tdsCrypto && !tdsSalt) {
+            this.logger.error('Env properties not available');
+            throw new InternalServerErrorException()
+        }
+
+        this.vi = tdsVi ? tdsVi : "";
+        this.pwd = tdsPwd ? tdsPwd : "";
+        this.alg = tdsAlg ? tdsAlg : "";
+        this.token = tdsToken ? tdsToken : "";
+        this.crypto_hash = tdsCrypto ? tdsCrypto : "";
+        this.salt = tdsSalt ? tdsSalt : "";
     }
 
 
     encrypt(text: string): string {
         const vi = new Buffer(this.vi);
-        let cipher = crypto.createCipheriv(process.env.TDS_ALG, Buffer.from(this.pwd), vi, {
+        let cipher = crypto.createCipheriv(this.alg, Buffer.from(this.pwd), vi, {
             authTagLength: 16
         });
         let encrypted = cipher.update(text);
@@ -38,7 +58,7 @@ export class CryptoService {
 
         let iv = Buffer.from(part, 'hex');
         let encryptedText = Buffer.from(textParts.join(':'), 'hex');
-        let decipher = crypto.createDecipheriv(process.env.TDS_ALG, Buffer.from(this.pwd), iv, {
+        let decipher = crypto.createDecipheriv(this.alg, Buffer.from(this.pwd), iv, {
             authTagLength: 16
         });
 
@@ -49,12 +69,12 @@ export class CryptoService {
     }
 
     md5Tokne(text: string): string {
-        return crypto.createHash(process.env.TDS_TOKEN).update(text).digest("hex");
+        return crypto.createHash(this.token).update(text).digest("hex");
     }
 
     sweet(text: string): string {
-        return crypto.pbkdf2Sync(text, process.env.TDS_SALT,
-            1000, 64, process.env.TDS_CRYPTO).toString(`hex`);
+        return crypto.pbkdf2Sync(text, this.salt,
+            1000, 64, this.crypto_hash).toString(`hex`);
     }
 
     generateToken(id: string, code: number): string {

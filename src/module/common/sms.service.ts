@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import {Injectable} from "@nestjs/common";
 
 const twilio = require("twilio");
 
@@ -7,8 +7,8 @@ export class SmsService {
     private twilioClient: any;
 
     constructor() {
-        const accountSid = process.env.TWILIO_ACCOUNT_SKID;
-        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        // const accountSid = process.env.TWILIO_ACCOUNT_SKID;
+        // const authToken = process.env.TWILIO_AUTH_TOKEN;
         // this.twilioClient = twilio(accountSid, authToken)
     }
 

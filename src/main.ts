@@ -24,15 +24,19 @@ import {OpinionModule} from "./module/client/opinion/opinion.module";
 import {InformationModule} from "./module/client/user/information.module";
 import {PayoutModule} from "./module/client/payout/payout.module";
 import {PartnerSettingsModule} from "./module/partner/settings/partner-settings.module";
-import morgan = require("morgan");
 import {PartnerDonationModule} from "./module/partner/donation/partner-donation.module";
 import {PartnerOpinionModule} from "./module/partner/opinion/partner-opinion.module";
 import {AppModule} from "./module/app.module";
+import morgan = require("morgan");
 
 async function bootstrap() {
 
     try {
-         const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+        require('dotenv').config({
+            path: join(__dirname, '..', 'config', '.env')
+        });
+
+        const app = await NestFactory.create<NestExpressApplication>(AppModule, {
             logger: new LoggerService(Const.APP_NAME)
         });
 
@@ -76,7 +80,7 @@ async function bootstrap() {
 
         const port = process.env.PORT ? process.env.PORT : 4000;
         await app.listen(port);
-    } catch(e) {
+    } catch (e) {
         console.log(e)
     }
 }

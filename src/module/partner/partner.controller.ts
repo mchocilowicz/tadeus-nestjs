@@ -18,23 +18,25 @@ import {
     ApiResponse,
     ApiUseTags
 } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { PhoneRequest } from "../../models/common/request/phone.request";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { LoginService } from "../common/login.service";
-import { User } from "../../database/entity/user.entity";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { PartnerDetailsResponse } from "../../models/common/response/partner-details.response";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { CodeService } from "../../common/service/code.service";
-import { Terminal } from "../../database/entity/terminal.entity";
-import { Account } from "../../database/entity/account.entity";
-import { Period } from "../../database/entity/period.entity";
-import { PartnerPayment } from "../../database/entity/partner-payment.entity";
+import {Const} from "../../common/util/const";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {PhoneRequest} from "../../models/common/request/phone.request";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {LoginService} from "../common/login.service";
+import {User} from "../../database/entity/user.entity";
+import {Roles} from "../../common/decorators/roles.decorator";
+import {JwtAuthGuard} from "../../common/guards/jwt.guard";
+import {RolesGuard} from "../../common/guards/roles.guard";
+import {PartnerDetailsResponse} from "../../models/common/response/partner-details.response";
+import {TradingPoint} from "../../database/entity/trading-point.entity";
+import {Transaction} from "../../database/entity/transaction.entity";
+import {CodeService} from "../../common/service/code.service";
+import {Terminal} from "../../database/entity/terminal.entity";
+import {Account} from "../../database/entity/account.entity";
+import {Period} from "../../database/entity/period.entity";
+import {PartnerPayment} from "../../database/entity/partner-payment.entity";
+import {PartnerVerifyQuery} from "../../models/partner/partner-verify.query";
+import {PartnerVerifyResponse} from "../../models/partner/response/partner-verify.response";
 
 const moment = require('moment');
 
@@ -92,7 +94,7 @@ export class PartnerController {
         const account: Account = terminal.account;
 
         if (!terminal || !account) {
-            this.logger.error(`Terminal or Accounts does not exists for ${ terminal.id }`);
+            this.logger.error(`Terminal or Accounts does not exists for ${terminal.id}`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -190,7 +192,8 @@ export class PartnerController {
     @ApiImplicitQuery({name: 'card', type: "string", description: 'Card code', required: false})
     @ApiImplicitQuery({name: 'prefix', type: "number", description: 'Phone Prefix', required: false})
     @ApiImplicitQuery({name: 'phone', type: "number", description: 'Phone number', required: false})
-    async verifyClient(@Query() query: { card: string, prefix: number, phone: number }) {
+    @ApiResponse({status: 200, type: PartnerVerifyResponse})
+    async verifyClient(@Query() query: PartnerVerifyQuery) {
         let sqlQuery = User.createQueryBuilder('user')
             .leftJoinAndSelect('user.card', 'card')
             .leftJoinAndSelect('user.phone', 'phone')
@@ -198,12 +201,14 @@ export class PartnerController {
 
         if (query.card) {
             let user = await sqlQuery
-                .where('card.code = :code', {code: query.card}).getOne();
+                .where('card.code = :code', {code: query.card})
+                .getOne();
+
             if (!user) {
                 throw new BadRequestException('partner_bad_qr')
             }
 
-            return user.name;
+            return new PartnerVerifyResponse(user.card.code, user.name)
         } else if (query.prefix && query.phone) {
             let user = await sqlQuery
                 .where('phone.value = :phone', {phone: query.phone})
@@ -214,7 +219,7 @@ export class PartnerController {
                 throw new BadRequestException('partner_bad_phone')
             }
 
-            return user.name;
+            return new PartnerVerifyResponse(user.card.code, user.name)
         } else {
             throw new BadRequestException('user_no_exists')
         }
