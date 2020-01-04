@@ -1,10 +1,10 @@
 module.exports = {
-    url: "",
+    url: process.env.TDS_DATABASE_URL,
+    schema: process.env.TDS_DATABASE_SCHEMA,
     type: "postgres",
     extra: {
         ssl: true
     },
-    schema: 'tds',
     entities: [
         "src/database/entity/*.entity{.ts,.js}"
     ],
@@ -13,5 +13,7 @@ module.exports = {
     ],
     cli: {
         migrationsDir: "src/database/migrations"
-    }
+    },
+    synchronize: false,
+    logging: true
 };

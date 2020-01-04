@@ -9,16 +9,16 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 @Entity({schema: 'tds'})
 export class Correction extends TadeusEntity {
 
-    @Column()
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     price: number;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     transactionPrice: number;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     transactionPool: number;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     pool: number;
 
     @Column()

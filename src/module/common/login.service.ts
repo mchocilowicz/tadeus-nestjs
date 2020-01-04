@@ -1,21 +1,21 @@
-import {BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException} from '@nestjs/common';
-import {CodeService} from "../../common/service/code.service";
-import {User} from "../../database/entity/user.entity";
-import {Role} from "../../database/entity/role.entity";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {PhoneRequest} from "../../models/common/request/phone.request";
-import {Status, Step} from "../../common/enum/status.enum";
-import {CryptoService} from "../../common/service/crypto.service";
-import {EntityManager, getConnection} from "typeorm";
-import {Account} from "../../database/entity/account.entity";
-import {VirtualCard} from "../../database/entity/virtual-card.entity";
-import {TadeusJwtService} from "./TadeusJwtModule/TadeusJwtService";
-import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
-import {Phone} from "../../database/entity/phone.entity";
-import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
-import {Terminal} from "../../database/entity/terminal.entity";
-import {Admin} from "../../database/entity/admin.entity";
+import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { CodeService } from "../../common/service/code.service";
+import { User } from "../../database/entity/user.entity";
+import { Role } from "../../database/entity/role.entity";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { PhoneRequest } from "../../models/common/request/phone.request";
+import { Status, Step } from "../../common/enum/status.enum";
+import { CryptoService } from "../../common/service/crypto.service";
+import { EntityManager, getConnection } from "typeorm";
+import { Account } from "../../database/entity/account.entity";
+import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
+import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
+import { Phone } from "../../database/entity/phone.entity";
+import { PhonePrefix } from "../../database/entity/phone-prefix.entity";
+import { Terminal } from "../../database/entity/terminal.entity";
+import { Admin } from "../../database/entity/admin.entity";
 
 @Injectable()
 export class LoginService {
@@ -260,6 +260,7 @@ export class LoginService {
             .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
             .andWhere(`account.code = :code`, {code: dto.code})
             .andWhere(`role.value = :role`, {role: role})
+            .andWhere('account.status = :status', {status: Status.ACTIVE})
             .getOne();
     }
 
@@ -269,10 +270,11 @@ export class LoginService {
             .leftJoinAndSelect('account.role', 'role')
             .leftJoinAndSelect('terminal.phone', 'phone')
             .leftJoinAndSelect('phone.prefix', 'prefix')
-            .where(`phone.value = :phone`, {phone: dto.phone})
-            .where(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
-            .andWhere(`account.code = :code`, {code: dto.code})
-            .andWhere(`role.value = :role`, {role: role})
+            .where('phone.value = :phone', {phone: dto.phone})
+            .andWhere('prefix.value = :prefix', {prefix: dto.phonePrefix})
+            .andWhere('account.code = :code', {code: dto.code})
+            .andWhere('role.value = :role', {role: role})
+            .andWhere('account.status = :status', {status: Status.ACTIVE})
             .getOne();
     }
 

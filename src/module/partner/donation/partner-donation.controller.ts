@@ -8,10 +8,10 @@ import { Roles } from "../../../common/decorators/roles.decorator";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
-import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
+import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
 import { PartnerPaymentResponse } from "../../../models/partner/response/partner-payment.response";
-import {Const} from "../../../common/util/const";
-import {DonationRequest} from "../../../models/partner/request/donation.request";
+import { Const } from "../../../common/util/const";
+import { DonationRequest } from "../../../models/partner/request/donation.request";
 
 @Controller()
 @ApiUseTags('donation')
@@ -45,10 +45,7 @@ export class PartnerDonationController {
         }
 
         let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period, tradingPoint: point});
-        if (payment) {
-            const code = this.codeService.createCode(0, 99999) + '-' + this.codeService.createCode(0, 9999) + "-" + this.codeService.createCode(0, 99);
-            return new PartnerPaymentResponse(period.to, payment, code)
-        }
+        return new PartnerPaymentResponse(period.to, payment)
     }
 
     @Put(':id')

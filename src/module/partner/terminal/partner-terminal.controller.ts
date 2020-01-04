@@ -11,22 +11,22 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {EntityManager, getConnection} from "typeorm";
-import {CodeService} from "../../../common/service/code.service";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {TerminalRequest} from "../../../models/common/request/terminal.request";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {Phone} from "../../../database/entity/phone.entity";
-import {Status} from "../../../common/enum/status.enum";
-import {Account} from "../../../database/entity/account.entity";
-import {Role} from "../../../database/entity/role.entity";
-import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { EntityManager, getConnection } from "typeorm";
+import { CodeService } from "../../../common/service/code.service";
+import { Terminal } from "../../../database/entity/terminal.entity";
+import { TerminalRequest } from "../../../models/common/request/terminal.request";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { Phone } from "../../../database/entity/phone.entity";
+import { Status } from "../../../common/enum/status.enum";
+import { Account } from "../../../database/entity/account.entity";
+import { Role } from "../../../database/entity/role.entity";
+import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
 
 @Controller()
 @ApiUseTags('terminal')
@@ -153,7 +153,7 @@ export class PartnerTerminalController {
             .leftJoinAndSelect('terminal.transactions', 'transaction')
             .leftJoinAndSelect('terminal.corrections', 'correction')
             .where('terminal.id = :id', {id: id})
-            .where('account.status = :status', {status: Status.ACTIVE})
+            .andWhere('account.status = :status', {status: Status.ACTIVE})
             .getOne();
 
         if (!terminal) {
@@ -168,7 +168,9 @@ export class PartnerTerminalController {
                 if (transactions.length > 0 || corrections.length > 0) {
                     terminal.name = '';
                     terminal.phone = undefined;
+                    terminal.account.status = Status.DELETED;
                     await entityManager.save(terminal);
+                    await entityManager.save(terminal.account);
                 } else {
                     await entityManager.remove(terminal);
                     await entityManager.remove(terminal.account)
