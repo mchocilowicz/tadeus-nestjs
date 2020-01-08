@@ -4,29 +4,30 @@ import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import * as rateLimit from 'express-rate-limit';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
-import { Const } from "./common/util/const";
-import { LoggerService } from "./common/service/logger.service";
-import { i18nMiddleware } from "./common/middleware/i18n.middleware";
-import { TadeusValidationPipe } from "./common/pipe/tadeus-validation.pipe";
-import { ClientModule } from "./module/client/client.module";
-import { PartnerModule } from "./module/partner/partner.module";
-import { DashboardModule } from "./module/dashboard/dashboard.module";
-import { join } from "path";
-import { RegisterModule } from "./module/client/register/register.module";
-import { PlaceModule } from "./module/client/place/place.module";
-import { NgoModule } from "./module/client/ngo/ngo.module";
-import { DonationModule } from "./module/client/donation/donation.module";
-import { PartnerTransactionModule } from "./module/partner/transaction/partner-transaction.module";
-import { PartnerTerminalModule } from "./module/partner/terminal/partner-terminal.module";
-import { DashboardNgoModule } from "./module/dashboard/ngo/dashboard-ngo.module";
-import { TradingPointModule } from "./module/dashboard/trading-point/trading-point.module";
-import { OpinionModule } from "./module/client/opinion/opinion.module";
-import { InformationModule } from "./module/client/user/information.module";
-import { PayoutModule } from "./module/client/payout/payout.module";
-import { PartnerSettingsModule } from "./module/partner/settings/partner-settings.module";
-import { PartnerDonationModule } from "./module/partner/donation/partner-donation.module";
-import { PartnerOpinionModule } from "./module/partner/opinion/partner-opinion.module";
-import { AppModule } from "./module/app.module";
+import {Const} from "./common/util/const";
+import {LoggerService} from "./common/service/logger.service";
+import {i18nMiddleware} from "./common/middleware/i18n.middleware";
+import {TadeusValidationPipe} from "./common/pipe/tadeus-validation.pipe";
+import {ClientModule} from "./module/client/client.module";
+import {PartnerModule} from "./module/partner/partner.module";
+import {DashboardModule} from "./module/dashboard/dashboard.module";
+import {join} from "path";
+import {RegisterModule} from "./module/client/register/register.module";
+import {PlaceModule} from "./module/client/place/place.module";
+import {NgoModule} from "./module/client/ngo/ngo.module";
+import {DonationModule} from "./module/client/donation/donation.module";
+import {PartnerTransactionModule} from "./module/partner/transaction/partner-transaction.module";
+import {PartnerTerminalModule} from "./module/partner/terminal/partner-terminal.module";
+import {DashboardNgoModule} from "./module/dashboard/ngo/dashboard-ngo.module";
+import {TradingPointModule} from "./module/dashboard/trading-point/trading-point.module";
+import {OpinionModule} from "./module/client/opinion/opinion.module";
+import {InformationModule} from "./module/client/user/information.module";
+import {PayoutModule} from "./module/client/payout/payout.module";
+import {PartnerSettingsModule} from "./module/partner/settings/partner-settings.module";
+import {PartnerDonationModule} from "./module/partner/donation/partner-donation.module";
+import {PartnerOpinionModule} from "./module/partner/opinion/partner-opinion.module";
+import {AppModule} from "./module/app.module";
+import {ConfigurationModule} from "./module/dashboard/configuration/configuration.module";
 import morgan = require("morgan");
 
 async function bootstrap() {
@@ -57,7 +58,7 @@ async function bootstrap() {
         SwaggerModule.setup('api/docs/partner', app, partnerDocument);
 
         const dashboardDocument = SwaggerModule.createDocument(app, options, {
-            include: [DashboardModule, DashboardNgoModule, TradingPointModule],
+            include: [DashboardModule, DashboardNgoModule, TradingPointModule, ConfigurationModule],
         });
         SwaggerModule.setup('api/docs/dashboard', app, dashboardDocument);
 

@@ -18,11 +18,11 @@ export class ConfigurationRequest {
 }
 
 export class PeriodRequest {
-    to: Date;
+    from: Date;
     interval: number;
 
-    constructor(to: Date, interval: number) {
-        this.to = to;
+    constructor(from: Date, interval: number) {
+        this.from = from;
         this.interval = interval;
     }
 }

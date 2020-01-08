@@ -1,9 +1,9 @@
-import { Body, Controller, Get, NotFoundException, Post, Put } from "@nestjs/common";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { ApiUseTags } from "@nestjs/swagger";
-import { ConfigurationRequest, PeriodRequest } from "../../../models/dashboard/request/configuration.request";
-import { Period } from "../../../database/entity/period.entity";
-import { getConnection } from "typeorm";
+import {Body, Controller, Get, NotFoundException, Post, Put} from "@nestjs/common";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {ApiUseTags} from "@nestjs/swagger";
+import {ConfigurationRequest, PeriodRequest} from "../../../models/dashboard/request/configuration.request";
+import {Period} from "../../../database/entity/period.entity";
+import {getConnection} from "typeorm";
 
 const moment = require('moment');
 
@@ -91,11 +91,11 @@ export class ConfigurationController {
 
     private updatePeriod(request: PeriodRequest, type: string, period?: Period) {
         if (period) {
-            period.to = request.to;
+            period.from = request.from;
             period.interval = request.interval;
             return period;
         } else {
-            return new Period(moment().subtract(5, 'months'), request.to, request.interval, type)
+            return new Period(request.from, moment().add(request.interval, 'days'), request.interval, type)
         }
     }
 
