@@ -1,9 +1,9 @@
-import {Body, Controller, Get, NotFoundException, Post, Put} from "@nestjs/common";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {ApiUseTags} from "@nestjs/swagger";
-import {ConfigurationRequest, PeriodRequest} from "../../../models/dashboard/request/configuration.request";
-import {Period} from "../../../database/entity/period.entity";
-import {getConnection} from "typeorm";
+import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { ApiUseTags } from "@nestjs/swagger";
+import { ConfigurationRequest, PeriodRequest } from "../../../models/dashboard/request/configuration.request";
+import { Period } from "../../../database/entity/period.entity";
+import { getConnection } from "typeorm";
 
 const moment = require('moment');
 
@@ -24,14 +24,12 @@ export class ConfigurationController {
             config.userExpirationAfterDays = dto.userExpiration;
 
             let ngoPeriod = await Period.findCurrentNgoPeriod();
-            ngoPeriod = this.updatePeriod(dto.ngoPeriod, 'NGO', ngoPeriod);
-
             let partnerPeriod = await Period.findCurrentPartnerPeriod();
-            partnerPeriod = this.updatePeriod(dto.partnerPeriod, 'PARTNER', partnerPeriod);
-
             let clientPeriod = await Period.findCurrentClientPeriod();
-            clientPeriod = this.updatePeriod(dto.clientPeriod, 'CLIENT', clientPeriod);
 
+            ngoPeriod = this.updatePeriod(dto.ngoPeriod, 'NGO', ngoPeriod);
+            partnerPeriod = this.updatePeriod(dto.partnerPeriod, 'PARTNER', partnerPeriod);
+            clientPeriod = this.updatePeriod(dto.clientPeriod, 'CLIENT', clientPeriod);
 
             let savedConfig = await entityManager.save(config);
             clientPeriod = await entityManager.save(clientPeriod);
@@ -57,38 +55,6 @@ export class ConfigurationController {
         return null;
     }
 
-    @Put()
-    async updateConfiguration(dto: ConfigurationRequest) {
-        return await getConnection().transaction(async entityManager => {
-            let config = await Configuration.getMain();
-            let ngoPeriod = await Period.findCurrentNgoPeriod();
-            let partnerPeriod = await Period.findCurrentPartnerPeriod();
-            let clientPeriod = await Period.findCurrentClientPeriod();
-
-            if (!config || !ngoPeriod || !partnerPeriod || !clientPeriod) {
-                throw new NotFoundException('internal_server_error')
-            }
-
-            config.minNgoTransfer = dto.minNgoTransfer;
-            config.minPersonalPool = dto.minPersonalPool;
-            config.userExpirationAfterDays = dto.userExpiration;
-
-            ngoPeriod = this.updatePeriod(dto.ngoPeriod, 'NGO', ngoPeriod);
-            partnerPeriod = this.updatePeriod(dto.partnerPeriod, 'PARTNER', partnerPeriod);
-            clientPeriod = this.updatePeriod(dto.clientPeriod, 'CLIENT', clientPeriod);
-
-
-            let savedConfig = await entityManager.save(config);
-            clientPeriod = await entityManager.save(clientPeriod);
-            partnerPeriod.relation = clientPeriod;
-            partnerPeriod = await entityManager.save(partnerPeriod);
-            ngoPeriod.relation = partnerPeriod;
-            ngoPeriod = await entityManager.save(ngoPeriod);
-
-            return this.mapToResponse(savedConfig, ngoPeriod, partnerPeriod, clientPeriod)
-        })
-    }
-
     private updatePeriod(request: PeriodRequest, type: string, period?: Period) {
         if (period) {
             period.from = request.from;
@@ -103,6 +69,7 @@ export class ConfigurationController {
         let ngoRequest = new PeriodRequest(ngo.from, ngo.interval);
         let partnerRequest = new PeriodRequest(partner.from, partner.interval);
         let clientRequest = new PeriodRequest(client.from, client.interval);
+
         return new ConfigurationRequest(
             config.minNgoTransfer,
             config.minPersonalPool,
