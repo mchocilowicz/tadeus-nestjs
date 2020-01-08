@@ -95,14 +95,14 @@ export class ConfigurationController {
             period.interval = request.interval;
             return period;
         } else {
-            return new Period(request.from, moment().add(request.interval, 'days'), request.interval, type)
+            return new Period(request.from, moment(request.from).add(request.interval, 'days'), request.interval, type)
         }
     }
 
     private mapToResponse(config: Configuration, ngo: Period, partner: Period, client: Period) {
-        let ngoRequest = new PeriodRequest(ngo.to, ngo.interval);
-        let partnerRequest = new PeriodRequest(partner.to, partner.interval);
-        let clientRequest = new PeriodRequest(client.to, client.interval);
+        let ngoRequest = new PeriodRequest(ngo.from, ngo.interval);
+        let partnerRequest = new PeriodRequest(partner.from, partner.interval);
+        let clientRequest = new PeriodRequest(client.from, client.interval);
         return new ConfigurationRequest(
             config.minNgoTransfer,
             config.minPersonalPool,

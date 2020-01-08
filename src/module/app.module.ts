@@ -1,7 +1,6 @@
 import {Module} from '@nestjs/common';
 import {TypeOrmModule} from '@nestjs/typeorm';
 import {RouterModule, Routes} from "nest-router";
-import {join} from "path";
 import {ClientModule} from "./client/client.module";
 import {APP_FILTER, APP_INTERCEPTOR} from "@nestjs/core";
 import {TadeusExceptionFilter} from "../common/filter/tadeus-exception.filter";
@@ -129,19 +128,6 @@ const routes: Routes = [
         ScheduleModule.register(),
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRoot(),
-        // TypeOrmModule.forRootAsync({
-        //     useFactory: () => ({
-        //         url: process.env.TDS_DATABASE_URL,
-        //         type: "postgres",
-        //         ssl: false,
-        //         schema: process.env.TDS_DATABASE_SCHEMA,
-        //         entities: [
-        //             join(__dirname, "../../**/*.entity{.ts,.js}")
-        //         ],
-        //         synchronize: false,
-        //         logging: true
-        //     })
-        // }),
         //Client Module
 
         ClientModule,
