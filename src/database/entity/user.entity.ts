@@ -1,18 +1,20 @@
-import { Column, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, OneToOne } from "typeorm";
-import { Transaction } from "./transaction.entity";
-import { Donation } from "./donation.entity";
-import { Account } from "./account.entity";
-import { VirtualCard } from "./virtual-card.entity";
-import { Opinion } from "./opinion.entity";
-import { Notification } from "./notification.entity";
-import { Phone } from "./phone.entity";
-import { TadeusEntity } from "./base.entity";
-import { UserPayout } from "./user-payment.entity";
-import { Correction } from "./correction.entity";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
-import { Ngo } from "./ngo.entity";
-import { Status } from "../../common/enum/status.enum";
+import {Column, Entity, JoinColumn, JoinTable, ManyToOne, OneToMany, OneToOne} from "typeorm";
+import {Transaction} from "./transaction.entity";
+import {Donation} from "./donation.entity";
+import {Account} from "./account.entity";
+import {VirtualCard} from "./virtual-card.entity";
+import {Opinion} from "./opinion.entity";
+import {Notification} from "./notification.entity";
+import {Phone} from "./phone.entity";
+import {TadeusEntity} from "./base.entity";
+import {UserPayout} from "./user-payment.entity";
+import {Correction} from "./correction.entity";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {Ngo} from "./ngo.entity";
+import {Status} from "../../common/enum/status.enum";
+
+const moment = require('moment');
 
 @Entity({schema: 'tds'})
 export class User extends TadeusEntity {
@@ -122,10 +124,10 @@ export class User extends TadeusEntity {
             .getOne();
     }
 
-    static findTopDetailsSortedByCollectedMoney(top: number) {
+    static findTopDetailsSortedByCollectedMoney() {
         return this.createQueryBuilder('user')
-            .orderBy('user.collectedMoney', 'DESC')
-            .take(Math.ceil(top))
+            .where(`to_date(cast(user.updatedAt as TEXT),'YYYY-MM-DD') > to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .orderBy('user.xp', 'DESC')
             .getMany();
     }
 
@@ -173,7 +175,7 @@ export class User extends TadeusEntity {
         this.collectedMoney += Number(value)
     }
 
-    setBasicInformation(name: string, email: string) {
+    setBasicInformation(name: string, email?: string) {
         this.email = email;
         this.name = name;
         this.xp = 50;

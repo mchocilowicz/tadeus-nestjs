@@ -52,5 +52,6 @@ export default {
 
     'partner_payment_payed': 'Payment has been already payed.',
     'partner_payment_does_not_exists': 'Payment does not exists.',
-    'transaction_corrected': 'Correction has already been made for this transaction.'
+    'transaction_corrected': 'Correction has already been accepted for this transaction.',
+    'correction_exists': 'Correction awaits user approval.'
 }

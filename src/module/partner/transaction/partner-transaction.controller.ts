@@ -57,6 +57,10 @@ export class PartnerTransactionController {
 
         let t: Transaction | undefined = await Transaction.findOne({id: i}, {relations: ['user']});
         if (t) {
+            let correction: Correction | undefined = await Correction.findOne({transaction: t});
+            if (correction) {
+                throw new BadRequestException('correction_exists')
+            }
 
             if (t.isCorrection) {
                 throw new BadRequestException('transaction_corrected')
@@ -190,7 +194,7 @@ export class PartnerTransactionController {
                 if (user.ngo) {
                     let card = user.ngo.card;
                     if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${ user.ngo.id }`);
+                        this.logger.error(`Physical Card is not assigned to Ngo ${user.ngo.id}`);
                         throw new BadRequestException('internal_server_error');
                     }
                     card.collectedMoney += pool;

@@ -1,6 +1,6 @@
-import { ApiModelProperty } from "@nestjs/swagger";
-import { IsAlpha, IsEmail, IsNotEmpty } from "class-validator";
-import { PhoneRequest } from "./phone.request";
+import {ApiModelProperty} from "@nestjs/swagger";
+import {IsAlpha, IsEmail, IsNotEmpty, IsOptional} from "class-validator";
+import {PhoneRequest} from "./phone.request";
 
 export class UserInformationRequest extends PhoneRequest {
     @IsNotEmpty({
@@ -13,17 +13,14 @@ export class UserInformationRequest extends PhoneRequest {
     name: string;
 
     @ApiModelProperty({required: true})
-    @IsNotEmpty({
-        message: "user_data_required"
-    })
+    @IsOptional()
     @IsEmail({}, {
         message: "email_format"
     })
-    email: string;
+    email?: string;
 
-    constructor(name: string, email: string, phone: number, prefix: number) {
+    constructor(name: string, phone: number, prefix: number) {
         super(phone, prefix);
         this.name = name;
-        this.email = email;
     }
 }

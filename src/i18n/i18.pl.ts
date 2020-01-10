@@ -51,5 +51,6 @@ export default {
     'user_name_changed': 'Imie zostało juz zmienione.',
     'partner_payment_payed': 'Płatność została juz opłacona',
     'partner_payment_does_not_exists': 'Płatność nie istnieje.',
-    'transaction_corrected': 'Korekta zostala juz stworzona dla tej transakcji'
+    'transaction_corrected': 'Korekta zostala juz zaakceptowana dla tej transakcji',
+    'correction_exists': 'Korekta oczekuje na potwierdzenie.'
 }

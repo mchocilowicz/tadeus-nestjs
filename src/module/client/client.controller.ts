@@ -11,35 +11,35 @@ import {
     Res,
     UseGuards
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { User } from "../../database/entity/user.entity";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { getConnection } from "typeorm";
-import { Const } from "../../common/util/const";
-import { MainResponse } from "../../models/common/response/main.response";
-import { ClientHistoryResponse } from "../../models/common/response/client-history.response";
-import { VirtualCardResponse } from "../../models/common/response/virtual-card.response";
-import { CodeService } from "../../common/service/code.service";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { LoginService } from "../common/login.service";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
-import { SignInResponse } from "../../models/common/response/signIn.response";
-import { Notification } from "../../database/entity/notification.entity";
-import { VirtualCard } from "../../database/entity/virtual-card.entity";
-import { TadeusEntity } from "../../database/entity/base.entity";
-import { groupDatesByComponent } from "../../common/util/functions";
-import { CalculationService } from "../../common/service/calculation.service";
-import { Correction } from "../../database/entity/correction.entity";
-import { Configuration } from "../../database/entity/configuration.entity";
-import { PartnerPayment } from "../../database/entity/partner-payment.entity";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { Period } from "../../database/entity/period.entity";
-import { Donation } from "../../database/entity/donation.entity";
-import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
+import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
+import {Roles} from "../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {User} from "../../database/entity/user.entity";
+import {JwtAuthGuard} from "../../common/guards/jwt.guard";
+import {RolesGuard} from "../../common/guards/roles.guard";
+import {getConnection} from "typeorm";
+import {Const} from "../../common/util/const";
+import {MainResponse} from "../../models/common/response/main.response";
+import {ClientHistoryResponse} from "../../models/common/response/client-history.response";
+import {VirtualCardResponse} from "../../models/common/response/virtual-card.response";
+import {CodeService} from "../../common/service/code.service";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {LoginService} from "../common/login.service";
+import {Transaction} from "../../database/entity/transaction.entity";
+import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
+import {SignInResponse} from "../../models/common/response/signIn.response";
+import {Notification} from "../../database/entity/notification.entity";
+import {VirtualCard} from "../../database/entity/virtual-card.entity";
+import {TadeusEntity} from "../../database/entity/base.entity";
+import {groupDatesByComponent} from "../../common/util/functions";
+import {CalculationService} from "../../common/service/calculation.service";
+import {Correction} from "../../database/entity/correction.entity";
+import {Configuration} from "../../database/entity/configuration.entity";
+import {PartnerPayment} from "../../database/entity/partner-payment.entity";
+import {TradingPoint} from "../../database/entity/trading-point.entity";
+import {Period} from "../../database/entity/period.entity";
+import {Donation} from "../../database/entity/donation.entity";
+import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
 import {UserPayout} from "../../database/entity/user-payment.entity";
 
 const _ = require('lodash');
@@ -115,30 +115,32 @@ export class ClientController {
         const card: VirtualCard | undefined = user.card;
 
         if (!card) {
-            this.logger.error(`User ${ user.id } does not have assigned  VirtualCard`);
+            this.logger.error(`User ${user.id} does not have assigned  VirtualCard`);
             throw new BadRequestException('internal_server_error')
         }
 
         const payouts: UserPayout[] = await UserPayout.find({user: user});
-        let payout = moment(user.createdAt).add(30,'days');
-        if(payouts.length > 0) {
-            let last = _.sortBy(payouts,'createdAt')[payouts.length - 1]
-            payout = moment(last.createdAt).add(30,'days');
+        let payout = moment(user.createdAt).add(30, 'days');
+        if (payouts.length > 0) {
+            let last = _.sortBy(payouts, 'createdAt')[payouts.length - 1]
+            payout = moment(last.createdAt).add(30, 'days');
         }
 
-        const count: number = await User.count();
-        const s: number = count / 10;
-        const detail: User[] = await User.findTopDetailsSortedByCollectedMoney(s);
-        const maxMoney: number = detail.reduce((previousValue: number, currentValue: User) => previousValue + currentValue.collectedMoney, 0);
-        const n: number = maxMoney / s;
-        const result: number = n > 0 ? (100 * user.collectedMoney) / n : 0;
+        const usersInLast30Days: User[] = await User.findTopDetailsSortedByCollectedMoney();
+        const tenPercentage: number = (usersInLast30Days.length * 10) / 100;
+        const topXp: number = usersInLast30Days
+            .slice(0, tenPercentage)
+            .reduce((previousValue: number, currentValue: User) => previousValue + currentValue.xp, 0);
+
+        const userXpRating = (user.xp / topXp) * 100;
+        const ratingValue = userXpRating > 100 ? 100 : userXpRating;
 
         let period: Period | undefined = await Period.findCurrentClientPeriod();
         if (!period) {
             throw new BadRequestException('internal_server_error')
         }
 
-        return new MainResponse(user, card, result, payout, moment().isAfter(payout));
+        return new MainResponse(user, card, ratingValue, payout, moment().isAfter(payout));
     }
 
     @Get('history')
@@ -159,14 +161,14 @@ export class ClientController {
     async history(@Req() req: any) {
         const user: User = req.user;
         if (!user.id) {
-            this.logger.error(`User ${ user.id } does not exists`);
+            this.logger.error(`User ${user.id} does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
         let tempUser: User | undefined = await User.findOneWithHistoryData(user.id);
 
         if (!tempUser) {
-            this.logger.error(`User ${ user.id } does not exists`);
+            this.logger.error(`User ${user.id} does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -205,7 +207,7 @@ export class ClientController {
         const virtualCard: VirtualCard | undefined = user.card;
 
         if (!virtualCard) {
-            this.logger.error(`User ${ user.id } does not have assigned VirtualCard`);
+            this.logger.error(`User ${user.id} does not have assigned VirtualCard`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -348,7 +350,7 @@ export class ClientController {
                         if (user.ngo) {
                             let card = user.ngo.card;
                             if (!card) {
-                                this.logger.error(`Physical Card is not assigned to ngo ${ user.ngo.id }`);
+                                this.logger.error(`Physical Card is not assigned to ngo ${user.ngo.id}`);
                                 throw new BadRequestException('internal_server_error');
                             }
                             card.collectedMoney += pool;
