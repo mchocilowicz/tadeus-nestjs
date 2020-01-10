@@ -48,5 +48,8 @@ export default {
 
     'personal_pool_to_low': 'Wartość puli osobistej jest za mała',
     'donation_value_to_low': 'Podana wartość dotacji jest za mała',
-    'user_name_changed': 'Imie zostało juz zmienione.'
+    'user_name_changed': 'Imie zostało juz zmienione.',
+    'partner_payment_payed': 'Płatność została juz opłacona',
+    'partner_payment_does_not_exists': 'Płatność nie istnieje.',
+    'transaction_corrected': 'Korekta zostala juz stworzona dla tej transakcji'
 }

@@ -48,5 +48,9 @@ export default {
     'phone_prefix_required': 'Phone prefix is required',
     'personal_pool_to_low': 'Donation pool is too low for donation.',
     'donation_value_to_low': 'Donation Value is too low',
-    'user_name_changed': 'Name has been already changed.'
+    'user_name_changed': 'Name has been already changed.',
+
+    'partner_payment_payed': 'Payment has been already payed.',
+    'partner_payment_does_not_exists': 'Payment does not exists.',
+    'transaction_corrected': 'Correction has already been made for this transaction.'
 }

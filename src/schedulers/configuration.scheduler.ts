@@ -18,18 +18,19 @@ export class ConfigurationScheduler extends NestSchedule {
         let currentDate = moment().format('YYYY-MM-DD');
 
         if (userPeriod) {
-            if (moment(userPeriod.to).format('YYYY-MM-DD') === currentDate) {
+            if (moment(userPeriod.to).add(1, 'days').format('YYYY-MM-DD') === currentDate) {
                 const period = new Period(
                     moment(),
                     moment().add(userPeriod.interval, 'days'),
                     userPeriod.interval,
                     'CLIENT');
+                period.relation = userPeriod;
                 await period.save()
             }
         }
 
         if (partnerPeriod) {
-            if (moment(partnerPeriod.to).format('YYYY-MM-DD') === currentDate) {
+            if (moment(partnerPeriod.to).add(1, 'days').format('YYYY-MM-DD') === currentDate) {
                 if (userPeriod) {
                     const period = new Period(
                         moment(),
@@ -43,7 +44,7 @@ export class ConfigurationScheduler extends NestSchedule {
         }
 
         if (ngoPeriod) {
-            if (moment(ngoPeriod.to).format('YYYY-MM-DD') === currentDate) {
+            if (moment(ngoPeriod.to).add(1, 'days').format('YYYY-MM-DD') === currentDate) {
                 if (partnerPeriod) {
                     const period = new Period(
                         moment(),

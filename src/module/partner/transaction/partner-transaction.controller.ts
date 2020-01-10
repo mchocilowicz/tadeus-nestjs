@@ -1,29 +1,29 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards } from "@nestjs/common";
-import { CalculationService } from "../../../common/service/calculation.service";
-import { CodeService } from "../../../common/service/code.service";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { Transaction } from "../../../database/entity/transaction.entity";
-import { TransactionResponse } from "../../../models/common/response/transaction.response";
-import { getConnection } from "typeorm";
-import { CorrectionRequest, TransactionRequest } from "../../../models/partner/request/transaction.request";
-import { handleException } from "../../../common/util/functions";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { User } from "../../../database/entity/user.entity";
-import { Terminal } from "../../../database/entity/terminal.entity";
-import { Notification } from "../../../database/entity/notification.entity";
-import { Correction } from "../../../database/entity/correction.entity";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
-import { Period } from "../../../database/entity/period.entity";
-import { Donation } from "../../../database/entity/donation.entity";
-import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
-import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
+import {BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards} from "@nestjs/common";
+import {CalculationService} from "../../../common/service/calculation.service";
+import {CodeService} from "../../../common/service/code.service";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {Transaction} from "../../../database/entity/transaction.entity";
+import {TransactionResponse} from "../../../models/common/response/transaction.response";
+import {getConnection} from "typeorm";
+import {CorrectionRequest, TransactionRequest} from "../../../models/partner/request/transaction.request";
+import {handleException} from "../../../common/util/functions";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {User} from "../../../database/entity/user.entity";
+import {Terminal} from "../../../database/entity/terminal.entity";
+import {Notification} from "../../../database/entity/notification.entity";
+import {Correction} from "../../../database/entity/correction.entity";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
+import {Period} from "../../../database/entity/period.entity";
+import {Donation} from "../../../database/entity/donation.entity";
+import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
+import {PartnerTransactionResponse} from "../../../models/partner/response/partner-transaction.response";
 
 const moment = require('moment');
 
@@ -57,6 +57,11 @@ export class PartnerTransactionController {
 
         let t: Transaction | undefined = await Transaction.findOne({id: i}, {relations: ['user']});
         if (t) {
+
+            if (t.isCorrection) {
+                throw new BadRequestException('transaction_corrected')
+            }
+
             let request = new Correction(p, 'CV', terminal, t, t.user, t.tradingPoint, t.poolValue, t.paymentValue, t.price);
             await getConnection().transaction(async entityManager => {
                 await entityManager.save(t);
