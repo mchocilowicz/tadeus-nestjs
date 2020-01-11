@@ -232,6 +232,10 @@ export class ClientController {
     })
     @Post('correction')
     async verifyCorrection(@Req() req: any, @Body() dto: CorrectionRequest) {
+        if (!dto.correctionAccepted) {
+            return
+        }
+
         await getConnection().transaction(async entityManager => {
             const user: User = req.user;
 
