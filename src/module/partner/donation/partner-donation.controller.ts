@@ -1,4 +1,4 @@
-import {BadRequestException, Controller, Get, Put, Req, UseGuards} from "@nestjs/common";
+import {BadRequestException, Body, Controller, Get, Put, Req, UseGuards} from "@nestjs/common";
 import {Terminal} from "../../../database/entity/terminal.entity";
 import {TradingPoint} from "../../../database/entity/trading-point.entity";
 import {Period} from "../../../database/entity/period.entity";
@@ -62,7 +62,7 @@ export class PartnerDonationController {
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiImplicitBody({name: '', type: DonationRequest})
-    async updatePaymentInformation(@Req() req: any, dto: DonationRequest) {
+    async updatePaymentInformation(@Req() req: any, @Body() dto: DonationRequest) {
         let payment: PartnerPayment | undefined = await PartnerPayment.findOne({id: dto.paymentId});
         if (!payment) {
             throw new BadRequestException('partner_payment_does_not_exists')

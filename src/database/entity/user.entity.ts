@@ -4,11 +4,9 @@ import {Donation} from "./donation.entity";
 import {Account} from "./account.entity";
 import {VirtualCard} from "./virtual-card.entity";
 import {Opinion} from "./opinion.entity";
-import {Notification} from "./notification.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {UserPayout} from "./user-payment.entity";
-import {Correction} from "./correction.entity";
 import {RoleEnum} from "../../common/enum/role.enum";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 import {Ngo} from "./ngo.entity";
@@ -73,17 +71,11 @@ export class User extends TadeusEntity {
     @OneToMany(type => Opinion, opinion => opinion.user)
     opinions?: Opinion[];
 
-    @OneToMany(type => Notification, notification => notification.user)
-    notifications?: Notification[];
-
     @OneToMany(type => Donation, donation => donation.user)
     donations?: Donation[];
 
     @OneToMany(type => UserPayout, payment => payment.user)
     payouts?: UserPayout[];
-
-    @OneToMany(type => Correction, correction => correction.user)
-    corrections?: Correction[];
 
     constructor(card: VirtualCard, account: Account, phone?: Phone) {
         super();

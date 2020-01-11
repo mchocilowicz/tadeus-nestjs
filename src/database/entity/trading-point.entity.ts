@@ -1,14 +1,13 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { TradingPointType } from "./trading-point-type.entity";
-import { Transaction } from "./transaction.entity";
-import { PartnerPayment } from "./partner-payment.entity";
-import { Terminal } from "./terminal.entity";
-import { Phone } from "./phone.entity";
-import { TadeusEntity } from "./base.entity";
-import { Correction } from "./correction.entity";
-import { Address } from "./address.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
-import { Opinion } from "./opinion.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
+import {TradingPointType} from "./trading-point-type.entity";
+import {Transaction} from "./transaction.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+import {Terminal} from "./terminal.entity";
+import {Phone} from "./phone.entity";
+import {TadeusEntity} from "./base.entity";
+import {Address} from "./address.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {Opinion} from "./opinion.entity";
 
 @Entity({schema: 'tds'})
 export class TradingPoint extends TadeusEntity {
@@ -62,9 +61,6 @@ export class TradingPoint extends TadeusEntity {
 
     @OneToMany(type => PartnerPayment, payment => payment.tradingPoint)
     payments?: PartnerPayment[];
-
-    @OneToMany(type => Correction, correction => correction.tradingPoint)
-    corrections?: Correction[];
 
     @OneToMany(type => Transaction, transactions => transactions.tradingPoint)
     transactions?: Transaction[];

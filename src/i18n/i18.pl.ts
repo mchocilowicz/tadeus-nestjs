@@ -52,5 +52,7 @@ export default {
     'partner_payment_payed': 'Płatność została juz opłacona',
     'partner_payment_does_not_exists': 'Płatność nie istnieje.',
     'transaction_corrected': 'Korekta zostala juz zaakceptowana dla tej transakcji',
-    'correction_exists': 'Korekta oczekuje na potwierdzenie.'
+    'correction_exists': 'Korekta oczekuje na potwierdzenie.',
+    'transaction_does_not_exists': 'Transakcja nie istnieje',
+    'transaction_does_not_belong_to_user': 'Korekta nie mozliwa. Transakcja nie nalezy do danego uzytkownika.'
 }

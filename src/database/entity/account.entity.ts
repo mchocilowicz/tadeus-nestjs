@@ -1,8 +1,8 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { Role } from "./role.entity";
-import { Status } from "../../common/enum/status.enum";
-import { TadeusEntity } from "./base.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
+import {Role} from "./role.entity";
+import {Status} from "../../common/enum/status.enum";
+import {TadeusEntity} from "./base.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Account extends TadeusEntity {
@@ -15,6 +15,9 @@ export class Account extends TadeusEntity {
 
     @Column({nullable: true})
     token?: string;
+
+    @Column({nullable: true})
+    firebaseToken?: string;
 
     @Column({type: 'text', default: Status.ACTIVE})
     status: Status = Status.ACTIVE;

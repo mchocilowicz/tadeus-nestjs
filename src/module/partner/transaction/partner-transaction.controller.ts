@@ -16,14 +16,13 @@ import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {TradingPoint} from "../../../database/entity/trading-point.entity";
 import {User} from "../../../database/entity/user.entity";
 import {Terminal} from "../../../database/entity/terminal.entity";
-import {Notification} from "../../../database/entity/notification.entity";
-import {Correction} from "../../../database/entity/correction.entity";
 import {Configuration} from "../../../database/entity/configuration.entity";
 import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
 import {Period} from "../../../database/entity/period.entity";
 import {Donation} from "../../../database/entity/donation.entity";
 import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
 import {PartnerTransactionResponse} from "../../../models/partner/response/partner-transaction.response";
+import {FirebaseAdminService} from "../../../common/service/firebase-admin.service";
 
 const moment = require('moment');
 
@@ -32,7 +31,9 @@ const moment = require('moment');
 export class PartnerTransactionController {
     private readonly logger = new Logger(PartnerTransactionController.name);
 
-    constructor(private readonly calService: CalculationService, private readonly codeService: CodeService) {
+    constructor(private readonly calService: CalculationService,
+                private readonly codeService: CodeService,
+                private readonly firebaseService: FirebaseAdminService) {
     }
 
     @Post('correction')
@@ -52,44 +53,58 @@ export class PartnerTransactionController {
     @ApiImplicitBody({name: '', type: CorrectionRequest})
     async createCorrection(@Req() req: any, @Body() request: CorrectionRequest) {
         let terminal: Terminal = req.user;
-        let i = request.transactionId;
         let p = request.price;
 
-        let t: Transaction | undefined = await Transaction.findOne({id: i}, {relations: ['user']});
-        if (t) {
-            let correction: Correction | undefined = await Correction.findOne({transaction: t});
-            if (correction) {
-                throw new BadRequestException('correction_exists')
+        const t: Transaction | undefined = await Transaction.createQueryBuilder('t')
+            .leftJoinAndSelect('t.user', 'user')
+            .leftJoinAndSelect('t.terminal', 'terminal')
+            .leftJoinAndSelect('t.tradingPoint', 'point')
+            .leftJoinAndSelect('user.account', 'account')
+            .where('t.id = :id', {id: request.transactionId})
+            .getOne();
+
+        if (!t) {
+            throw new BadRequestException('transaction_does_not_exists')
+        }
+
+        if (t.isCorrection) {
+            throw new BadRequestException('transaction_corrected')
+        }
+
+        if (!t.user.account.firebaseToken) {
+            this.logger.error('Phone Firebase token does not exists');
+            throw new BadRequestException('internal_server_error');
+        }
+
+        this.firebaseService.getAdmin().messaging().send({
+            token: t.user.account.firebaseToken,
+            // @ts-ignore
+            data: {
+                transactionID: t.ID,
+                tradingPointName: t.tradingPoint.name,
+                transactionDate: t.createdAt,
+                prevAmount: t.price,
+                newAmount: request.price,
+                terminalID: t.terminal.ID
+            },
+            notification: {
+                title: 'Tadeus',
+                body: 'Korekta transakcji do akceptacji',
             }
+        }).then(() => this.logger.log("Notification send"));
 
-            if (t.isCorrection) {
-                throw new BadRequestException('transaction_corrected')
+        if (terminal.isMain) {
+            return {
+                oldPrice: t.price,
+                price: p,
+                a: t.poolValue,
+                // b: this.calService.calculateCost(p,)
             }
-
-            let request = new Correction(p, 'CV', terminal, t, t.user, t.tradingPoint, t.poolValue, t.paymentValue, t.price);
-            await getConnection().transaction(async entityManager => {
-                await entityManager.save(t);
-                request = await entityManager.save(request);
-                if (request.id && t) {
-                    let n = new Notification('', t.user, request.id);
-                    await entityManager.save(n);
-                }
-            });
-
-            if (terminal.isMain) {
-                return {
-                    oldPrice: t.price,
-                    price: p,
-                    a: t.poolValue,
-                    // b: this.calService.calculateCost(p,)
-                }
-            } else {
-                return {
-                    oldPrice: t.price,
-                    price: p,
-                }
+        } else {
+            return {
+                oldPrice: t.price,
+                price: p,
             }
-
         }
     }
 

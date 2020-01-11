@@ -11,22 +11,22 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { EntityManager, getConnection } from "typeorm";
-import { CodeService } from "../../../common/service/code.service";
-import { Terminal } from "../../../database/entity/terminal.entity";
-import { TerminalRequest } from "../../../models/common/request/terminal.request";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { Phone } from "../../../database/entity/phone.entity";
-import { Status } from "../../../common/enum/status.enum";
-import { Account } from "../../../database/entity/account.entity";
-import { Role } from "../../../database/entity/role.entity";
-import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
+import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {EntityManager, getConnection} from "typeorm";
+import {CodeService} from "../../../common/service/code.service";
+import {Terminal} from "../../../database/entity/terminal.entity";
+import {TerminalRequest} from "../../../models/common/request/terminal.request";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {Phone} from "../../../database/entity/phone.entity";
+import {Status} from "../../../common/enum/status.enum";
+import {Account} from "../../../database/entity/account.entity";
+import {Role} from "../../../database/entity/role.entity";
+import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
 
 @Controller()
 @ApiUseTags('terminal')
@@ -91,7 +91,7 @@ export class PartnerTerminalController {
         let point = await TradingPoint.findOne({id: req.user.tradingPoint.id});
 
         if (!point) {
-            this.logger.error(`Trading Point with id ${ req.user.tradingPoint.id } does not exists`);
+            this.logger.error(`Trading Point with id ${req.user.tradingPoint.id} does not exists`);
             throw new NotFoundException('trading_point_does_not_exists')
         }
 
@@ -122,7 +122,7 @@ export class PartnerTerminalController {
             await getConnection().transaction(async entityManager => {
                 let prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
                 if (!prefix) {
-                    throw new NotFoundException(`Phone prefix ${ dto.phonePrefix } is not supported or does not exists`);
+                    throw new NotFoundException(`Phone prefix ${dto.phonePrefix} is not supported or does not exists`);
                 }
                 let phone = new Phone(dto.phone, prefix);
                 phone = await entityManager.save(phone);
@@ -151,21 +151,19 @@ export class PartnerTerminalController {
             .leftJoinAndSelect('terminal.account', 'account')
             .leftJoinAndSelect('account.role', 'role')
             .leftJoinAndSelect('terminal.transactions', 'transaction')
-            .leftJoinAndSelect('terminal.corrections', 'correction')
             .where('terminal.id = :id', {id: id})
             .andWhere('account.status = :status', {status: Status.ACTIVE})
             .getOne();
 
         if (!terminal) {
-            throw new NotFoundException(`Terminal with id ${ id } does not exists`)
+            throw new NotFoundException(`Terminal with id ${id} does not exists`)
         }
 
         await getConnection().transaction(async entityManager => {
             if (terminal) {
                 let transactions = terminal.transactions ? terminal.transactions : [];
-                let corrections = terminal.corrections ? terminal.corrections : [];
 
-                if (transactions.length > 0 || corrections.length > 0) {
+                if (transactions.length > 0) {
                     terminal.name = '';
                     terminal.phone = undefined;
                     terminal.account.status = Status.DELETED;

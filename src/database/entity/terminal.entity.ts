@@ -1,11 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
-import { Status, Step } from "../../common/enum/status.enum";
-import { TradingPoint } from "./trading-point.entity";
-import { Transaction } from "./transaction.entity";
-import { Phone } from "./phone.entity";
-import { TadeusEntity } from "./base.entity";
-import { Correction } from "./correction.entity";
-import { Account } from "./account.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
+import {Status, Step} from "../../common/enum/status.enum";
+import {TradingPoint} from "./trading-point.entity";
+import {Transaction} from "./transaction.entity";
+import {Phone} from "./phone.entity";
+import {TadeusEntity} from "./base.entity";
+import {Account} from "./account.entity";
 
 @Entity({schema: 'tds'})
 export class Terminal extends TadeusEntity {
@@ -31,9 +30,6 @@ export class Terminal extends TadeusEntity {
 
     @OneToMany(type => Transaction, transactions => transactions.terminal)
     transactions?: Transaction[];
-
-    @OneToMany(type => Correction, correction => correction.terminal)
-    corrections?: Correction[];
 
     @OneToOne(type => Account)
     @JoinColumn()
