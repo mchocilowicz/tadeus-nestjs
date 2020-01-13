@@ -36,6 +36,27 @@ export class PartnerTransactionController {
                 private readonly firebaseService: FirebaseAdminService) {
     }
 
+    @Post('message')
+    sendMessage(@Body() dto: { token: string }) {
+        this.firebaseService.getAdmin().messaging().send({
+            token: dto.token,
+            data: {
+                transactionID: "1",
+                tradingPointName: "1",
+                transactionDate: "1",
+                prevAmount: "1",
+                newAmount: "1",
+                terminalID: "1"
+            },
+            notification: {
+                title: 'Tadeus',
+                body: 'Korekta transakcji do akceptacji',
+            }
+        })
+            .then(() => this.logger.log("Notification send"))
+            .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+    }
+
     @Post('correction')
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
@@ -91,7 +112,9 @@ export class PartnerTransactionController {
                 title: 'Tadeus',
                 body: 'Korekta transakcji do akceptacji',
             }
-        }).then(() => this.logger.log("Notification send"));
+        })
+            .then(() => this.logger.log("Notification send"))
+            .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
 
         if (terminal.isMain) {
             return {
