@@ -1,10 +1,10 @@
 import { PhoneRequest } from "./phone.request";
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { IsAlphanumeric, IsNotEmpty } from "class-validator";
 
 export class TerminalRequest extends PhoneRequest {
 
-    @ApiModelProperty({description: 'Terminal user name', required: true})
+    @ApiProperty({description: 'Terminal user name', required: true})
     @IsAlphanumeric({
         message: "terminal_name_format",
     })

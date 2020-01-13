@@ -1,5 +1,5 @@
 import { Column, Entity, Generated, OneToMany } from "typeorm";
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Ngo } from "./ngo.entity";
 import { TadeusEntity } from "./base.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
@@ -8,7 +8,7 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 export class NgoType extends TadeusEntity {
 
     @Column()
-    @ApiModelProperty()
+    @ApiProperty()
     name: string;
 
     @Column({transformer: new ColumnNumericTransformer()})

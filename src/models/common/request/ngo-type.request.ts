@@ -1,8 +1,8 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { IsAlpha, IsNotEmpty } from "class-validator";
 
 export class NgoTypeRequest {
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     @IsNotEmpty({
         message: "name_required"
     })

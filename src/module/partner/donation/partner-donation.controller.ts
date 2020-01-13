@@ -1,37 +1,29 @@
-import {BadRequestException, Body, Controller, Get, Put, Req, UseGuards} from "@nestjs/common";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {Period} from "../../../database/entity/period.entity";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
-import {CodeService} from "../../../common/service/code.service";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
-import {PartnerPaymentResponse} from "../../../models/partner/response/partner-payment.response";
-import {Const} from "../../../common/util/const";
-import {DonationRequest} from "../../../models/partner/request/donation.request";
+import { BadRequestException, Body, Controller, Get, Put, Req, UseGuards } from "@nestjs/common";
+import { Terminal } from "../../../database/entity/terminal.entity";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { Period } from "../../../database/entity/period.entity";
+import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
+import { CodeService } from "../../../common/service/code.service";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { PartnerPaymentResponse } from "../../../models/partner/response/partner-payment.response";
+import { Const } from "../../../common/util/const";
+import { DonationRequest } from "../../../models/partner/request/donation.request";
 
 @Controller()
-@ApiUseTags('donation')
+@ApiTags('donation')
 @ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class PartnerDonationController {
 
     constructor(private readonly codeService: CodeService) {
     }
 
     @Get()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: PartnerPaymentResponse})
@@ -49,19 +41,9 @@ export class PartnerDonationController {
     }
 
     @Put()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitBody({name: '', type: DonationRequest})
+    @ApiBody({type: DonationRequest})
     async updatePaymentInformation(@Req() req: any, @Body() dto: DonationRequest) {
         let payment: PartnerPayment | undefined = await PartnerPayment.findOne({id: dto.paymentId});
         if (!payment) {

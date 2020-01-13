@@ -1,11 +1,11 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Donation } from "../../../database/entity/donation.entity";
 import { TadeusEntity } from "../../../database/entity/base.entity";
 
 export class ClientHistoryResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     donations?: Donation[];
-    @ApiModelProperty()
+    @ApiProperty()
     transactions?: TadeusEntity[];
 
     constructor(donations?: Donation[], transactions?: TadeusEntity[]) {

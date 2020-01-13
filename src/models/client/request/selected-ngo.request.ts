@@ -1,7 +1,7 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class SelectedNgoRequest {
-    @ApiModelProperty()
+    @ApiProperty()
     id: string;
 
     constructor(id: string) {

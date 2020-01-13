@@ -1,9 +1,9 @@
-import {ApiModelProperty} from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class SettingsRequest {
-    @ApiModelProperty()
+    @ApiProperty()
     defaultDonationPercent: number;
-    @ApiModelProperty()
+    @ApiProperty()
     defaultReceipt: number;
 
     constructor(donationPercentage: number, receipt: number) {

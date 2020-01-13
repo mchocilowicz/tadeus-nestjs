@@ -1,33 +1,36 @@
-import {BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards} from "@nestjs/common";
-import {CalculationService} from "../../../common/service/calculation.service";
-import {CodeService} from "../../../common/service/code.service";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {ApiImplicitBody, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../database/entity/transaction.entity";
-import {TransactionResponse} from "../../../models/common/response/transaction.response";
-import {getConnection} from "typeorm";
-import {CorrectionRequest, TransactionRequest} from "../../../models/partner/request/transaction.request";
-import {handleException} from "../../../common/util/functions";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {User} from "../../../database/entity/user.entity";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
-import {Period} from "../../../database/entity/period.entity";
-import {Donation} from "../../../database/entity/donation.entity";
-import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
-import {PartnerTransactionResponse} from "../../../models/partner/response/partner-transaction.response";
-import {FirebaseAdminService} from "../../../common/service/firebase-admin.service";
+import { BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { CalculationService } from "../../../common/service/calculation.service";
+import { CodeService } from "../../../common/service/code.service";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../database/entity/transaction.entity";
+import { TransactionResponse } from "../../../models/common/response/transaction.response";
+import { getConnection } from "typeorm";
+import { CorrectionRequest, TransactionRequest } from "../../../models/partner/request/transaction.request";
+import { handleException } from "../../../common/util/functions";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { User } from "../../../database/entity/user.entity";
+import { Terminal } from "../../../database/entity/terminal.entity";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
+import { Period } from "../../../database/entity/period.entity";
+import { Donation } from "../../../database/entity/donation.entity";
+import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
+import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
+import { FirebaseAdminService } from "../../../common/service/firebase-admin.service";
 
 const moment = require('moment');
 
 @Controller()
-@ApiUseTags("transaction")
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+@ApiTags("transaction")
 export class PartnerTransactionController {
     private readonly logger = new Logger(PartnerTransactionController.name);
 
@@ -61,17 +64,7 @@ export class PartnerTransactionController {
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TransactionResponse})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiImplicitBody({name: '', type: CorrectionRequest})
+    @ApiBody({type: CorrectionRequest})
     async createCorrection(@Req() req: any, @Body() request: CorrectionRequest) {
         let terminal: Terminal = req.user;
         let p = request.price;
@@ -99,13 +92,12 @@ export class PartnerTransactionController {
 
         this.firebaseService.getAdmin().messaging().send({
             token: t.user.account.firebaseToken,
-            // @ts-ignore
             data: {
                 transactionID: t.ID,
                 tradingPointName: t.tradingPoint.name,
-                transactionDate: t.createdAt,
-                prevAmount: t.price,
-                newAmount: request.price,
+                transactionDate: moment(t.createdAt).format(Const.DATE_FORMAT),
+                prevAmount: `${ t.price }`,
+                newAmount: `${ request.price }`,
                 terminalID: t.terminal.ID
             },
             notification: {
@@ -135,17 +127,7 @@ export class PartnerTransactionController {
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TransactionResponse})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiImplicitBody({name: '', type: TransactionRequest})
+    @ApiBody({type: TransactionRequest})
     async saveTransaction(@Req() req: any, @Body() dto: TransactionRequest) {
         try {
             return await getConnection().transaction(async entityManager => {
@@ -232,7 +214,7 @@ export class PartnerTransactionController {
                 if (user.ngo) {
                     let card = user.ngo.card;
                     if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${user.ngo.id}`);
+                        this.logger.error(`Physical Card is not assigned to Ngo ${ user.ngo.id }`);
                         throw new BadRequestException('internal_server_error');
                     }
                     card.collectedMoney += pool;
@@ -269,20 +251,10 @@ export class PartnerTransactionController {
     @Get()
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @ApiResponse({status: 200, type: PartnerTransactionResponse, isArray: true})
-    @ApiImplicitQuery({name: 'prefix', type: "number", description: 'Phone prefix', required: false})
-    @ApiImplicitQuery({name: 'phone', type: "number", description: 'Phone number', required: false})
-    @ApiImplicitQuery({name: 'code', type: "string", description: 'User QR code', required: false})
+    @ApiQuery({name: 'prefix', type: "number", description: 'Phone prefix', required: false})
+    @ApiQuery({name: 'phone', type: "number", description: 'Phone number', required: false})
+    @ApiQuery({name: 'code', type: "string", description: 'User QR code', required: false})
     async getTransactionsToCorrection(@Req() req: any, @Query() query: { prefix: number, phone: number, code: string }) {
         if (query.prefix && query.phone) {
             let t: Transaction[] = await Transaction.createQueryBuilder('transaction')

@@ -1,9 +1,9 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class NotificationRequest {
-    @ApiModelProperty()
+    @ApiProperty()
     email: string;
-    @ApiModelProperty()
+    @ApiProperty()
     value: string;
 
     constructor(email: string, value: string) {

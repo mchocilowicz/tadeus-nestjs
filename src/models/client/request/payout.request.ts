@@ -1,11 +1,11 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class PayoutRequest {
-    @ApiModelProperty()
+    @ApiProperty()
     name: string;
-    @ApiModelProperty()
+    @ApiProperty()
     surName: string;
-    @ApiModelProperty()
+    @ApiProperty()
     bankAccount: string;
 
 

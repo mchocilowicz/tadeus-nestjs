@@ -10,37 +10,31 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import {
-    ApiBearerAuth,
-    ApiImplicitBody,
-    ApiImplicitHeader,
-    ApiImplicitQuery,
-    ApiResponse,
-    ApiUseTags
-} from "@nestjs/swagger";
-import {Const} from "../../common/util/const";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {PhoneRequest} from "../../models/common/request/phone.request";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {LoginService} from "../common/login.service";
-import {User} from "../../database/entity/user.entity";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
-import {PartnerDetailsResponse} from "../../models/common/response/partner-details.response";
-import {TradingPoint} from "../../database/entity/trading-point.entity";
-import {Transaction} from "../../database/entity/transaction.entity";
-import {CodeService} from "../../common/service/code.service";
-import {Terminal} from "../../database/entity/terminal.entity";
-import {Account} from "../../database/entity/account.entity";
-import {Period} from "../../database/entity/period.entity";
-import {PartnerPayment} from "../../database/entity/partner-payment.entity";
-import {PartnerVerifyQuery} from "../../models/partner/partner-verify.query";
-import {PartnerVerifyResponse} from "../../models/partner/response/partner-verify.response";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../common/util/const";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { PhoneRequest } from "../../models/common/request/phone.request";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { LoginService } from "../common/login.service";
+import { User } from "../../database/entity/user.entity";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { PartnerDetailsResponse } from "../../models/common/response/partner-details.response";
+import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { Transaction } from "../../database/entity/transaction.entity";
+import { CodeService } from "../../common/service/code.service";
+import { Terminal } from "../../database/entity/terminal.entity";
+import { Account } from "../../database/entity/account.entity";
+import { Period } from "../../database/entity/period.entity";
+import { PartnerPayment } from "../../database/entity/partner-payment.entity";
+import { PartnerVerifyQuery } from "../../models/partner/partner-verify.query";
+import { PartnerVerifyResponse } from "../../models/partner/response/partner-verify.response";
 
 const moment = require('moment');
 
 @Controller()
+@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
 export class PartnerController {
     private readonly logger = new Logger(PartnerController.name);
 
@@ -49,45 +43,26 @@ export class PartnerController {
 
     @Post('code')
     @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiUseTags('auth')
-    @ApiImplicitBody({name: '', type: CodeVerificationRequest})
+    @ApiTags('auth')
+    @ApiBody({type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
         return this.service.checkCodeForTerminal(dto);
     }
 
     @Post('signIn')
-    @ApiResponse({status: 200, type: null})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiUseTags('auth')
-    @ApiImplicitBody({name: '', type: PhoneRequest})
+    @ApiResponse({status: 200})
+    @ApiTags('auth')
+    @ApiBody({type: PhoneRequest})
     async partnerSignIn(@Body() phone: PhoneRequest) {
         await this.service.signInTerminal(phone);
     }
 
     @Get()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
-    @ApiUseTags('partner')
+    @ApiTags('partner')
     @ApiResponse({status: 200, type: PartnerDetailsResponse})
     async getPartnerData(@Req() req: any) {
         const terminal: Terminal = req.user;
@@ -117,21 +92,12 @@ export class PartnerController {
     }
 
     @Get('history')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
-    @ApiUseTags('partner')
-    @ApiImplicitQuery({name: 'terminal', type: "string", description: 'Terminal ID', required: false})
+    @ApiTags('partner')
+    @ApiQuery({name: 'terminal', type: "string", description: 'Terminal ID', required: false})
     async getPartnerHistory(@Req() req: any, @Query() query: { terminal: string }) {
         let point = req.user.tradingPoint;
 
@@ -175,23 +141,14 @@ export class PartnerController {
     }
 
     @Get('verify')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
-    @ApiUseTags('partner')
-    @ApiImplicitQuery({name: 'card', type: "string", description: 'Card code', required: false})
-    @ApiImplicitQuery({name: 'prefix', type: "number", description: 'Phone Prefix', required: false})
-    @ApiImplicitQuery({name: 'phone', type: "number", description: 'Phone number', required: false})
+    @ApiTags('partner')
+    @ApiQuery({name: 'card', type: "string", description: 'Card code', required: false})
+    @ApiQuery({name: 'prefix', type: "number", description: 'Phone Prefix', required: false})
+    @ApiQuery({name: 'phone', type: "number", description: 'Phone number', required: false})
     @ApiResponse({status: 200, type: PartnerVerifyResponse})
     async verifyClient(@Query() query: PartnerVerifyQuery) {
         let sqlQuery = User.createQueryBuilder('user')

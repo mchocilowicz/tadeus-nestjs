@@ -1,13 +1,13 @@
-import {ApiModelProperty} from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class NgoDonationRequest {
-    @ApiModelProperty()
+    @ApiProperty()
     ngoId?: string;
-    @ApiModelProperty()
+    @ApiProperty()
     ngoDonation: number = 0;
-    @ApiModelProperty()
+    @ApiProperty()
     tadeusDonation: number = 0;
-    @ApiModelProperty()
+    @ApiProperty()
     payUextOrderId: string;
 
     constructor(ngoId: string, orderId: string) {

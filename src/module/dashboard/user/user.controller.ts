@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common";
 import { RoleEnum } from "../../../common/enum/role.enum";
 import { User } from "../../../database/entity/user.entity";
-import { ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UserResponse } from "../../../models/dashboard/response/user.response";
 import { Status } from "../../../common/enum/status.enum";
 import { UserViewResponse } from "../../../models/dashboard/response/user-view.response";
@@ -24,18 +24,17 @@ import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 const moment = require('moment');
 
 @Controller()
-@ApiUseTags('user')
+@ApiTags('user')
 export class UserController {
 
     @Get()
     @ApiResponse({status: 200, isArray: true, type: UserResponse})
-    @ApiImplicitQuery({name: 'updatedFrom', type: Date, description: 'updated from', required: false})
-    @ApiImplicitQuery({name: 'updatedTo', type: Date, description: 'updated to', required: false})
-    @ApiImplicitQuery({name: 'xpMin', type: Number, description: '', required: false})
-    @ApiImplicitQuery({name: 'xpMax', type: Number, description: '', required: false})
-    @ApiImplicitQuery({name: 'phonePrefix', type: Number, description: '', required: false})
-    @ApiImplicitQuery({name: 'phoneNumber', type: Number, description: '', required: false})
-    @ApiImplicitQuery({name: 'status', type: Status, description: '', required: false})
+    @ApiQuery({name: 'updatedFrom', type: Date, description: 'updated from', required: false})
+    @ApiQuery({name: 'updatedTo', type: Date, description: 'updated to', required: false})
+    @ApiQuery({name: 'xpMin', type: Number, description: '', required: false})
+    @ApiQuery({name: 'xpMax', type: Number, description: '', required: false})
+    @ApiQuery({name: 'phonePrefix', type: Number, description: '', required: false})
+    @ApiQuery({name: 'phoneNumber', type: Number, description: '', required: false})
     async getAllUsers(@Query() query: any) {
         let sqlQuery = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')

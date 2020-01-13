@@ -1,11 +1,11 @@
-import {ApiModelProperty} from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class DonationRequest {
-    @ApiModelProperty()
+    @ApiProperty()
     donation: number;
-    @ApiModelProperty()
+    @ApiProperty()
     paymentId: string;
-    @ApiModelProperty()
+    @ApiProperty()
     payUextOrderId: string;
 
     constructor(orderId: string, price: number, paymentId: string) {

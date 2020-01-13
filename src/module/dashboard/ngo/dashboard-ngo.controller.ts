@@ -12,7 +12,7 @@ import {
     UploadedFile,
     UseInterceptors
 } from "@nestjs/common";
-import { ApiConsumes, ApiImplicitBody, ApiImplicitFile, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
+import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { NgoRequest } from "../../../models/common/request/ngo.request";
 import { Ngo } from "../../../database/entity/ngo.entity";
@@ -34,7 +34,7 @@ import { Address } from "../../../database/entity/address.entity";
 const moment = require("moment");
 
 @Controller()
-@ApiUseTags('ngo')
+@ApiTags('ngo')
 export class DashboardNgoController {
     private readonly logger = new Logger(DashboardNgoController.name);
 
@@ -42,22 +42,14 @@ export class DashboardNgoController {
     }
 
     @Get()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     getNgoList() {
         return Ngo.find({relations: ['city', 'type']})
     }
 
     @Post()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: NgoRequest})
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiBody({type: NgoRequest})
     async create(@Body() dto: NgoRequest) {
         await getConnection().transaction(async (entityManager: EntityManager) => {
             let phone = await Phone.findNumber(dto.phonePrefix, dto.phone);
@@ -96,7 +88,6 @@ export class DashboardNgoController {
 
     @Post("import")
     @ApiConsumes('multipart/form-data')
-    @ApiImplicitFile({name: 'file', required: true, description: 'XLSX file with Ngo definitions'})
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
             destination(req, file, cb) {
@@ -163,11 +154,7 @@ export class DashboardNgoController {
     }
 
     @Delete()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     delete() {
     }
 

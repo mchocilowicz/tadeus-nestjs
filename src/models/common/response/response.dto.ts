@@ -1,11 +1,11 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class ResponseDto<T> {
-    @ApiModelProperty()
+    @ApiProperty()
     error: boolean = false;
-    @ApiModelProperty()
+    @ApiProperty()
     data: T;
-    @ApiModelProperty()
+    @ApiProperty()
     message: string | undefined;
 
     constructor(data: T) {

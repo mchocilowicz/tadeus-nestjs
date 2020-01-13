@@ -1,27 +1,27 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
 
 export class PartnerDetailsResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     id: string;
-    @ApiModelProperty()
+    @ApiProperty()
     name: string;
-    @ApiModelProperty()
+    @ApiProperty()
     city: string;
-    @ApiModelProperty()
+    @ApiProperty()
     street: string;
-    @ApiModelProperty()
+    @ApiProperty()
     number: number;
-    @ApiModelProperty()
+    @ApiProperty()
     postCode: string;
-    @ApiModelProperty()
+    @ApiProperty()
     xp: number;
-    @ApiModelProperty()
+    @ApiProperty()
     code: string;
-    @ApiModelProperty()
+    @ApiProperty()
     totalDonation: number = 0;
-    @ApiModelProperty()
+    @ApiProperty()
     donationDeadline?: Date;
 
     constructor(userID: string, tradingPoint: TradingPoint, code: string, to: Date, payment?: PartnerPayment) {

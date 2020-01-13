@@ -11,25 +11,28 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiUseTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {EntityManager, getConnection} from "typeorm";
-import {CodeService} from "../../../common/service/code.service";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {TerminalRequest} from "../../../models/common/request/terminal.request";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {Phone} from "../../../database/entity/phone.entity";
-import {Status} from "../../../common/enum/status.enum";
-import {Account} from "../../../database/entity/account.entity";
-import {Role} from "../../../database/entity/role.entity";
-import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { EntityManager, getConnection } from "typeorm";
+import { CodeService } from "../../../common/service/code.service";
+import { Terminal } from "../../../database/entity/terminal.entity";
+import { TerminalRequest } from "../../../models/common/request/terminal.request";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { Phone } from "../../../database/entity/phone.entity";
+import { Status } from "../../../common/enum/status.enum";
+import { Account } from "../../../database/entity/account.entity";
+import { Role } from "../../../database/entity/role.entity";
+import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
 
 @Controller()
-@ApiUseTags('terminal')
+@ApiTags('terminal')
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class PartnerTerminalController {
 
     private readonly logger = new Logger(PartnerTerminalController.name);
@@ -38,19 +41,8 @@ export class PartnerTerminalController {
     }
 
     @Get()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiBearerAuth()
     async getPartnerTerminals(@Req() req: any) {
         let terminal: Terminal = req.user;
         let point: TradingPoint = terminal.tradingPoint;
@@ -73,20 +65,9 @@ export class PartnerTerminalController {
     }
 
     @Post()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiBearerAuth()
-    @ApiImplicitBody({name: '', type: TerminalRequest})
+    @ApiBody({type: TerminalRequest})
     async assignNewTerminal(@Req() req: any, @Body() dto: TerminalRequest) {
         let point = await TradingPoint.findOne({id: req.user.tradingPoint.id});
 
@@ -133,19 +114,8 @@ export class PartnerTerminalController {
     }
 
     @Delete(':id')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiBearerAuth()
     async deleteTerminal(@Param('id') id: string) {
         let terminal: Terminal | undefined = await Terminal.createQueryBuilder('terminal')
             .leftJoinAndSelect('terminal.account', 'account')

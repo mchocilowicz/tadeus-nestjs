@@ -1,9 +1,9 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class CityResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     id: string;
-    @ApiModelProperty()
+    @ApiProperty()
     name: string;
 
     constructor(id: string, name: string) {

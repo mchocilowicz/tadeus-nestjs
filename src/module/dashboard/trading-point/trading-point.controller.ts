@@ -19,7 +19,7 @@ import { createQueryBuilder, EntityManager, getConnection, QueryFailedError } fr
 import { FileInterceptor } from "@nestjs/platform-express";
 import { City } from "../../../database/entity/city.entity";
 import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
-import { ApiConsumes, ApiImplicitFile, ApiUseTags } from "@nestjs/swagger";
+import { ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { validate } from "class-validator";
 import { extractErrors } from "../../../common/util/functions";
 import { ExcelException } from "../../../common/exceptions/excel.exception";
@@ -37,7 +37,7 @@ import { Address } from "../../../database/entity/address.entity";
 const moment = require("moment");
 
 @Controller()
-@ApiUseTags('trading-point')
+@ApiTags('trading-point')
 export class TradingPointController {
     private readonly logger = new Logger(TradingPointController.name);
 
@@ -90,7 +90,6 @@ export class TradingPointController {
 
     @Post("import")
     @ApiConsumes('multipart/form-data')
-    @ApiImplicitFile({name: 'file', required: true, description: 'XLSX file with TradingPoint definitions'})
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
             destination(req, file, cb) {

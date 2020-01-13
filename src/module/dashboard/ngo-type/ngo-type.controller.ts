@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Logger, NotFoundException, Param, Post, Put } from "@nestjs/common";
-import { ApiImplicitBody, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
+import { ApiBody, ApiHeader, ApiTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { NgoTypeRequest } from "../../../models/common/request/ngo-type.request";
 import { NgoType } from "../../../database/entity/ngo-type.entity";
 import { handleException } from "../../../common/util/functions";
 
 @Controller()
-@ApiUseTags('trading-point-type')
+@ApiTags('trading-point-type')
 export class NgoTypeController {
     private readonly logger = new Logger(NgoTypeController.name);
 
@@ -14,12 +14,8 @@ export class NgoTypeController {
     }
 
     @Post()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: NgoTypeRequest})
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiBody({type: NgoTypeRequest})
     async createNgoType(@Body() dto: NgoTypeRequest) {
         const type = new NgoType(dto.name);
         try {
@@ -30,11 +26,7 @@ export class NgoTypeController {
     }
 
     @Put(':id')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     async updateType(@Param('id') id: string, @Body() dto: any) {
         const type: NgoType | undefined = await NgoType.findOne({id: id});
 
@@ -47,11 +39,7 @@ export class NgoTypeController {
     }
 
     @Get()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     getAllTypes() {
         return NgoType.find();
     }

@@ -1,11 +1,11 @@
-import {ApiModelProperty} from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class PartnerVerifyQuery {
-    @ApiModelProperty()
+    @ApiProperty()
     card: string;
-    @ApiModelProperty()
+    @ApiProperty()
     prefix: number;
-    @ApiModelProperty()
+    @ApiProperty()
     phone: number;
 
     constructor(card: string, prefix: number, phone: number) {

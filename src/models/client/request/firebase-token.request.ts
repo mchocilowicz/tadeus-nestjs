@@ -1,9 +1,9 @@
-import {ApiModelProperty} from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class FirebaseTokenRequest {
-    @ApiModelProperty()
+    @ApiProperty()
     token: string;
-    @ApiModelProperty()
+    @ApiProperty()
     platform: string;
 
     constructor(token: string, platform: string) {

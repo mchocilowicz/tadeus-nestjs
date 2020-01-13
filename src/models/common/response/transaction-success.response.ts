@@ -1,11 +1,11 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class TransactionSuccessResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     date: string;
-    @ApiModelProperty()
+    @ApiProperty()
     price: number;
-    @ApiModelProperty()
+    @ApiProperty()
     xp: number;
 
     constructor(date: string, price: number, xp: number) {
@@ -16,9 +16,9 @@ export class TransactionSuccessResponse {
 }
 
 export class CorrectionResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     transactionId: string;
-    @ApiModelProperty()
+    @ApiProperty()
     price: number;
 
     constructor(id: string, price: number) {
@@ -28,11 +28,11 @@ export class CorrectionResponse {
 }
 
 export class CorrectionSuccessResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     date: string;
-    @ApiModelProperty()
+    @ApiProperty()
     price: number;
-    @ApiModelProperty()
+    @ApiProperty()
     xp: number;
 
     constructor(date: string, price: number, xp: number) {

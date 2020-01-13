@@ -11,43 +11,45 @@ import {
     Res,
     UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags} from "@nestjs/swagger";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {User} from "../../database/entity/user.entity";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
-import {getConnection} from "typeorm";
-import {Const} from "../../common/util/const";
-import {MainResponse} from "../../models/common/response/main.response";
-import {ClientHistoryResponse} from "../../models/common/response/client-history.response";
-import {VirtualCardResponse} from "../../models/common/response/virtual-card.response";
-import {CodeService} from "../../common/service/code.service";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {LoginService} from "../common/login.service";
-import {Transaction} from "../../database/entity/transaction.entity";
-import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
-import {SignInResponse} from "../../models/common/response/signIn.response";
-import {VirtualCard} from "../../database/entity/virtual-card.entity";
-import {TadeusEntity} from "../../database/entity/base.entity";
-import {groupDatesByComponent} from "../../common/util/functions";
-import {CalculationService} from "../../common/service/calculation.service";
-import {Configuration} from "../../database/entity/configuration.entity";
-import {PartnerPayment} from "../../database/entity/partner-payment.entity";
-import {TradingPoint} from "../../database/entity/trading-point.entity";
-import {Period} from "../../database/entity/period.entity";
-import {Donation} from "../../database/entity/donation.entity";
-import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
-import {UserPayout} from "../../database/entity/user-payment.entity";
-import {FirebaseTokenRequest} from "../../models/client/request/firebase-token.request";
-import {Account} from "../../database/entity/account.entity";
-import {CorrectionRequest} from "../../models/client/request/correction.request";
-import {Terminal} from "../../database/entity/terminal.entity";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { User } from "../../database/entity/user.entity";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { getConnection } from "typeorm";
+import { Const } from "../../common/util/const";
+import { MainResponse } from "../../models/common/response/main.response";
+import { ClientHistoryResponse } from "../../models/common/response/client-history.response";
+import { VirtualCardResponse } from "../../models/common/response/virtual-card.response";
+import { CodeService } from "../../common/service/code.service";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { LoginService } from "../common/login.service";
+import { Transaction } from "../../database/entity/transaction.entity";
+import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
+import { SignInResponse } from "../../models/common/response/signIn.response";
+import { VirtualCard } from "../../database/entity/virtual-card.entity";
+import { TadeusEntity } from "../../database/entity/base.entity";
+import { groupDatesByComponent } from "../../common/util/functions";
+import { CalculationService } from "../../common/service/calculation.service";
+import { Configuration } from "../../database/entity/configuration.entity";
+import { PartnerPayment } from "../../database/entity/partner-payment.entity";
+import { TradingPoint } from "../../database/entity/trading-point.entity";
+import { Period } from "../../database/entity/period.entity";
+import { Donation } from "../../database/entity/donation.entity";
+import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
+import { UserPayout } from "../../database/entity/user-payment.entity";
+import { FirebaseTokenRequest } from "../../models/client/request/firebase-token.request";
+import { Account } from "../../database/entity/account.entity";
+import { CorrectionRequest } from "../../models/client/request/correction.request";
+import { Terminal } from "../../database/entity/terminal.entity";
 
 const _ = require('lodash');
 const moment = require('moment');
 
 @Controller()
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
 export class ClientController {
 
     private readonly logger = new Logger(ClientController.name);
@@ -58,56 +60,31 @@ export class ClientController {
     }
 
     @Post('signIn')
-    @ApiUseTags('auth')
+    @ApiTags('auth')
     @HttpCode(200)
     @ApiResponse({status: 200, type: SignInResponse})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: NewPhoneRequest})
+    @ApiBody({type: NewPhoneRequest})
     async signIn(@Body() dto: NewPhoneRequest): Promise<SignInResponse> {
         const userExists = await this.service.clientSignIn(dto);
         return new SignInResponse(userExists);
     }
 
     @Post('anonymous')
-    @ApiUseTags('auth')
+    @ApiTags('auth')
     @ApiResponse({status: 200, type: "string", description: 'Authorization Token'})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
     createAnonymous(): Promise<string> {
         return this.service.createAnonymousUser();
     }
 
     @Post('code')
-    @ApiUseTags('auth')
+    @ApiTags('auth')
     @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: CodeVerificationRequest})
+    @ApiBody({type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
         return this.service.checkCodeForUser(dto);
     }
 
     @Get()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @ApiResponse({status: 200, type: MainResponse})
     @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
@@ -124,7 +101,7 @@ export class ClientController {
         const payouts: UserPayout[] = await UserPayout.find({user: user});
         let payout = moment(user.createdAt).add(30, 'days');
         if (payouts.length > 0) {
-            let last = _.sortBy(payouts, 'createdAt')[payouts.length - 1]
+            let last = _.sortBy(payouts, 'createdAt')[payouts.length - 1];
             payout = moment(last.createdAt).add(30, 'days');
         }
 
@@ -150,16 +127,6 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: ClientHistoryResponse})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     async history(@Req() req: any) {
         const user: User = req.user;
         if (!user.id) {
@@ -194,16 +161,6 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: VirtualCardResponse})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     virtualCard(@Req() req: any) {
         const user: User = req.user;
         const virtualCard: VirtualCard | undefined = user.card;
@@ -220,16 +177,6 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
     @Post('correction')
     async verifyCorrection(@Req() req: any, @Body() dto: CorrectionRequest) {
         if (!dto.correctionAccepted) {
@@ -368,17 +315,7 @@ export class ClientController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200})
-    @ApiImplicitBody({name: '', type: FirebaseTokenRequest})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
+    @ApiBody({type: FirebaseTokenRequest})
     async setUserFcmToken(@Req() req: any, @Body() dto: FirebaseTokenRequest) {
         const user: User = req.user;
         const account: Account = user.account;

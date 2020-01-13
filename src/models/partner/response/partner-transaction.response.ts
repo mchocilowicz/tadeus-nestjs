@@ -1,11 +1,11 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class PartnerTransactionResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     id: string;
-    @ApiModelProperty()
+    @ApiProperty()
     price: number;
-    @ApiModelProperty()
+    @ApiProperty()
     date: Date;
 
     constructor(id: string, price: number, date: Date) {

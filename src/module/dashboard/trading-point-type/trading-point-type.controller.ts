@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Logger, NotFoundException, Param, Post, Put } from "@nestjs/common";
-import { ApiImplicitBody, ApiImplicitHeader, ApiUseTags } from "@nestjs/swagger";
+import { ApiBody, ApiHeader, ApiTags } from "@nestjs/swagger";
 import { Const } from "../../../common/util/const";
 import { handleException } from "../../../common/util/functions";
 import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
 import { TradingPointTypeRequest } from "../../../models/common/request/trading-point-type.request";
 
 @Controller()
-@ApiUseTags('trading-point-type')
+@ApiTags('trading-point-type')
 export class TradingPointTypeController {
     private readonly logger = new Logger(TradingPointTypeController.name);
 
@@ -14,12 +14,8 @@ export class TradingPointTypeController {
     }
 
     @Post()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: TradingPointTypeRequest})
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiBody({type: TradingPointTypeRequest})
     async savePlaceType(@Body() dto: TradingPointTypeRequest) {
         const type = new TradingPointType(dto.name);
         try {
@@ -30,21 +26,12 @@ export class TradingPointTypeController {
     }
 
     @Get()
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     getAllTypes() {
         return TradingPointType.find();
     }
 
     @Put(':id')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
     async updateType(@Param('id') id: string, @Body() dto: any) {
         const type = await TradingPointType.findOne({id: id});
         if (!type) {

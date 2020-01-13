@@ -11,14 +11,7 @@ import {
     UseGuards
 } from "@nestjs/common";
 import { getConnection } from "typeorm";
-import {
-    ApiBearerAuth,
-    ApiImplicitBody,
-    ApiImplicitHeader,
-    ApiImplicitQuery,
-    ApiResponse,
-    ApiUseTags
-} from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Ngo } from "../../../database/entity/ngo.entity";
 import { Const } from "../../../common/util/const";
 import { NgoType } from "../../../database/entity/ngo-type.entity";
@@ -45,18 +38,10 @@ export class NgoController {
     @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitHeader({
-        name: Const.HEADER_AUTHORIZATION,
-        required: true,
-        description: Const.HEADER_AUTHORIZATION_DESC
-    })
-    @ApiUseTags('ngo')
-    @ApiImplicitBody({name: '', type: SelectedNgoRequest})
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+    @ApiTags('ngo')
+    @ApiBody({type: SelectedNgoRequest})
     async selectedNgo(@Req() req: any, @Body() dto: SelectedNgoRequest) {
         let user: User = req.user;
         let ngo: Ngo | undefined = await Ngo.findOne({id: dto.id, verified: true, isTadeus: false});
@@ -136,17 +121,13 @@ export class NgoController {
     @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})
-    @ApiImplicitQuery({name: 'ngoType', type: "string", description: 'ngo-type id', required: false})
-    @ApiImplicitQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
-    @ApiImplicitQuery({name: 'latitude', type: "number", description: 'latitude of user', required: false})
+    @ApiQuery({name: 'city', type: "string", description: 'city id', required: false})
+    @ApiQuery({name: 'ngoType', type: "string", description: 'ngo-type id', required: false})
+    @ApiQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
+    @ApiQuery({name: 'latitude', type: "number", description: 'latitude of user', required: false})
     @ApiResponse({status: 200, type: Ngo, isArray: true})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiUseTags('ngo')
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiTags('ngo')
     async getAll(@Query() query: NgoQuery) {
         let sqlQuery = Ngo.createQueryBuilder('ngo')
             .leftJoinAndSelect('ngo.address', 'address')
@@ -188,12 +169,8 @@ export class NgoController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: NgoType, isArray: true})
-    @ApiUseTags('ngo')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
+    @ApiTags('ngo')
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     getNgoTypes() {
         return NgoType.find();
     }
@@ -203,12 +180,8 @@ export class NgoController {
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: CityResponse, isArray: true})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiUseTags('ngo')
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiTags('ngo')
     getCities() {
         return City.findWhereNgoExists();
     }

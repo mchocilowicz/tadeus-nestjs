@@ -1,19 +1,19 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Phone } from "../../../database/entity/phone.entity";
 import { User } from "../../../database/entity/user.entity";
 
 export class UserDetailsResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     firstName?: string;
-    @ApiModelProperty()
+    @ApiProperty()
     lastName?: string;
-    @ApiModelProperty()
+    @ApiProperty()
     bankAccount?: number;
-    @ApiModelProperty()
+    @ApiProperty()
     phonePrefix: number;
-    @ApiModelProperty()
+    @ApiProperty()
     phone: number;
-    @ApiModelProperty()
+    @ApiProperty()
     email?: string;
 
     constructor(details: User, phone: Phone) {

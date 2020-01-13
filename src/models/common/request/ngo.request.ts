@@ -1,35 +1,35 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { City } from "../../../database/entity/city.entity";
 import { NgoType } from "../../../database/entity/ngo-type.entity";
 
 export class NgoRequest {
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     city: City;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     type: NgoType;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     latitude: number;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     longitude: number;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     name: string;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     longName: string;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     description: string;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     street: string;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     number: number;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     postCode: string;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     bankNumber: string;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     email: string;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     phone: number;
-    @ApiModelProperty({required: true})
+    @ApiProperty({required: true})
     phonePrefix: number;
 
     constructor(city: City,

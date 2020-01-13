@@ -1,7 +1,7 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class SignInResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     userExists: boolean;
 
     constructor(userExists: boolean) {

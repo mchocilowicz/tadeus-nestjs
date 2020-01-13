@@ -1,26 +1,26 @@
-import { ApiModelProperty } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { Ngo } from "../../../database/entity/ngo.entity";
 import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 import { User } from "../../../database/entity/user.entity";
 
 export class MainResponse {
-    @ApiModelProperty()
+    @ApiProperty()
     name?: string;
-    @ApiModelProperty()
+    @ApiProperty()
     donationPool: number;
-    @ApiModelProperty()
+    @ApiProperty()
     personalPool: number;
-    @ApiModelProperty()
+    @ApiProperty()
     ngo?: Ngo;
-    @ApiModelProperty()
+    @ApiProperty()
     collectedMoney: number;
-    @ApiModelProperty()
+    @ApiProperty()
     xp: number;
-    @ApiModelProperty()
+    @ApiProperty()
     userActivity: number;
-    @ApiModelProperty()
+    @ApiProperty()
     selfPayoutDate: Date;
-    @ApiModelProperty()
+    @ApiProperty()
     selfPayoutPossible: boolean;
 
     constructor(user: User, card: VirtualCard, activity: number, payout: Date, possible: boolean) {

@@ -1,4 +1,4 @@
-import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { RegisterService } from "./register.service";
 import { Body, Controller, HttpCode, Post, Put } from "@nestjs/common";
 import { Const } from "../../../common/util/const";
@@ -7,20 +7,16 @@ import { UserInformationRequest } from "../../../models/common/request/user-Info
 import { LoginService } from "../../common/login.service";
 
 @Controller()
+@ApiTags('register')
+@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
 export class RegisterController {
     constructor(private readonly service: RegisterService, private readonly loginService: LoginService) {
     }
 
     @Post('code')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: null})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiUseTags('register')
-    @ApiImplicitBody({name: '', type: CodeVerificationRequest})
+    @ApiResponse({status: 200})
+    @ApiBody({type: CodeVerificationRequest})
     async checkCode(@Body() dto: CodeVerificationRequest) {
         await this.service.checkCode(dto);
     }
@@ -28,13 +24,7 @@ export class RegisterController {
     @Put('information')
     @HttpCode(200)
     @ApiResponse({status: 200, type: "string", description: "Authorization token"})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiUseTags('register')
-    @ApiImplicitBody({name: '', type: UserInformationRequest})
+    @ApiBody({type: UserInformationRequest})
     async fillInformation(@Body() dto: UserInformationRequest) {
         return await this.service.fillUserInformation(dto);
     }

@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put } from "@nestjs/common";
-import { ApiImplicitBody, ApiImplicitHeader, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Const } from "../../common/util/const";
 import { PhoneRequest } from "../../models/common/request/phone.request";
 import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
@@ -8,7 +8,7 @@ import { City } from "../../database/entity/city.entity";
 import { TradingPointType } from "../../database/entity/trading-point-type.entity";
 
 @Controller()
-@ApiUseTags('auth')
+@ApiTags('auth')
 export class DashboardController {
 
     constructor(private readonly service: LoginService) {
@@ -16,35 +16,21 @@ export class DashboardController {
 
     @Post('signIn')
     @HttpCode(200)
-    @ApiResponse({status: 200, type: null})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: PhoneRequest})
+    @ApiResponse({status: 200})
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiBody({type: PhoneRequest})
     async dashboardSignIn(@Body() phone: PhoneRequest) {
         await this.service.signInDashboard(phone);
     }
 
     @Post('code')
     @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
-    @ApiImplicitBody({name: '', type: CodeVerificationRequest})
+    @ApiBody({type: CodeVerificationRequest})
     verifyCode(@Body() dto: CodeVerificationRequest) {
         return this.service.checkCodeForDashboard(dto);
     }
 
     @Get('city')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
     getCities() {
         return City.find();
     }
@@ -67,11 +53,7 @@ export class DashboardController {
     }
 
     @Get('trading-point-type')
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
+    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     getAllTypes() {
         return TradingPointType.find();
     }

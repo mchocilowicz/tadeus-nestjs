@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post } from "@nestjs/common";
 import { Configuration } from "../../../database/entity/configuration.entity";
-import { ApiUseTags } from "@nestjs/swagger";
+import { ApiTags } from "@nestjs/swagger";
 import { ConfigurationRequest, PeriodRequest } from "../../../models/dashboard/request/configuration.request";
 import { Period } from "../../../database/entity/period.entity";
 import { getConnection } from "typeorm";
@@ -8,7 +8,7 @@ import { getConnection } from "typeorm";
 const moment = require('moment');
 
 @Controller()
-@ApiUseTags('configuration')
+@ApiTags('configuration')
 export class ConfigurationController {
 
     @Post()

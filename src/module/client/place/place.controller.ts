@@ -1,5 +1,5 @@
 import { Controller, Get, Logger, Query, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiImplicitHeader, ApiImplicitQuery, ApiResponse, ApiUseTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { Const } from "../../../common/util/const";
 import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
@@ -12,24 +12,21 @@ import { RolesGuard } from "../../../common/guards/roles.guard";
 import { City } from "../../../database/entity/city.entity";
 
 @Controller()
-@ApiUseTags('place')
+@ApiTags('place')
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class PlaceController {
     private readonly logger = new Logger(PlaceController.name);
 
     @Get()
-    @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitQuery({name: 'city', type: "string", description: 'city id', required: false})
-    @ApiImplicitQuery({name: 'placeType', type: "string", description: 'place-type id', required: false})
-    @ApiImplicitQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
-    @ApiImplicitQuery({name: 'latitude', type: "number", description: 'latitude of user', required: false})
+    @ApiQuery({name: 'city', type: "string", description: 'city id', required: false})
+    @ApiQuery({name: 'placeType', type: "string", description: 'place-type id', required: false})
+    @ApiQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
+    @ApiQuery({name: 'latitude', type: "number", description: 'latitude of user', required: false})
     @ApiResponse({status: 200, type: TradingPoint, isArray: true})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
     async getAll(@Query() query: PlaceQuery) {
         let sqlQuery = TradingPoint.createQueryBuilder('tradingPoint')
             .leftJoinAndSelect('tradingPoint.address', 'address')
@@ -63,29 +60,17 @@ export class PlaceController {
     }
 
     @Get('type')
-    @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
     @ApiResponse({status: 200, type: TradingPointType, isArray: true})
     getPlaceTypes() {
         return TradingPointType.find()
     }
 
     @Get('city')
-    @ApiBearerAuth()
     @Roles(RoleEnum.CLIENT)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: CityResponse, isArray: true})
-    @ApiImplicitHeader({
-        name: Const.HEADER_ACCEPT_LANGUAGE,
-        required: true,
-        description: Const.HEADER_ACCEPT_LANGUAGE_DESC
-    })
     getCities() {
         return City.findWhereTradingPointExists();
     }
