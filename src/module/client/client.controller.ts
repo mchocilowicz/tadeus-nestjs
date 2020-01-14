@@ -43,6 +43,7 @@ import { FirebaseTokenRequest } from "../../models/client/request/firebase-token
 import { Account } from "../../database/entity/account.entity";
 import { CorrectionRequest } from "../../models/client/request/correction.request";
 import { Terminal } from "../../database/entity/terminal.entity";
+import {TransactionStatus} from "../../common/enum/status.enum";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -179,10 +180,6 @@ export class ClientController {
     @ApiResponse({status: 200})
     @Post('correction')
     async verifyCorrection(@Req() req: any, @Body() dto: CorrectionRequest) {
-        if (!dto.correctionAccepted) {
-            return
-        }
-
         await getConnection().transaction(async entityManager => {
             const user: User = req.user;
 
@@ -190,123 +187,158 @@ export class ClientController {
                 .leftJoinAndSelect('t.user', 'user')
                 .leftJoinAndSelect('t.terminal', 'terminal')
                 .leftJoinAndSelect('t.tradingPoint', 'point')
+                .leftJoinAndSelect('t.correction', 'correction')
+                .leftJoinAndSelect('t.payment', 'payment')
+                .leftJoinAndSelect('user.card', 'card')
+                .leftJoinAndSelect('user.ngo', 'ngo')
                 .where('t.ID = :ID', {ID: dto.transactionID})
-                .andWhere('t.isCorrection = false')
+                .andWhere('t.isCorrection = true')
+                .andWhere('correction IS NOT NULL')
                 .getOne();
 
             if (!transaction) {
                 throw new BadRequestException('transaction_does_not_exists')
-            }
-            if (transaction.isCorrection) {
-                throw new BadRequestException('transaction_corrected')
             }
 
             if (transaction.user.id !== user.id) {
                 throw new BadRequestException('transaction_does_not_belong_to_user')
             }
 
+            if (transaction.correction) {
+                transaction.status = dto.correctionAccepted ? TransactionStatus.ACCEPTED : TransactionStatus.REJECTED;
 
-            const terminal: Terminal | undefined = await Terminal.findOne({ID: dto.terminalID});
-            if (!terminal) {
-                throw new BadRequestException('terminal_does_not_exists')
-            }
+                const t: Transaction = transaction.correction;
 
-            const tradingPoint: TradingPoint = transaction.tradingPoint;
+                if (dto.correctionAccepted) {
+                    t.status = TransactionStatus.CORRECTED;
 
-            const config: Configuration | undefined = await Configuration.getMain();
-            const period: Period | undefined = await Period.findCurrentPartnerPeriod();
+                    // Remove old transaction Points
 
-            if (!config || !period) {
-                this.logger.error('Configuration or Current Period for Correction does not exists');
-                throw new BadRequestException('internal_server_error');
-            }
+                    const card: VirtualCard = user.card;
+                    const payment: PartnerPayment = t.payment;
+                    const point: TradingPoint = t.tradingPoint;
 
-            let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period});
+                    user.xp -= t.userXp;
+                    user.collectedMoney -= t.poolValue;
+                    card.donationPool -= t.poolValue / 2;
+                    card.personalPool -= t.poolValue / 2;
+                    point.xp -= t.tradingPointXp;
+                    payment.price -= t.paymentValue;
 
-            if (!payment) {
-                payment = new PartnerPayment(this.codeService.generatePartnerPaymentID(), tradingPoint, period);
-                payment = await entityManager.save(payment)
-            }
 
-            transaction.isCorrection = true;
+                    if (user.ngo) {
+                        let card = user.ngo.card;
+                        if (!card) {
+                            this.logger.error(`Physical Card is not assigned to Ngo ${user.ngo.id}`);
+                            throw new BadRequestException('internal_server_error');
+                        }
+                        card.collectedMoney -= t.poolValue;
+                        await entityManager.save(card)
+                    } else {
+                        user.ngoTempMoney -= t.poolValue;
+                    }
 
-            const card = user.card;
-            user.xp -= transaction.userXp;
-            user.collectedMoney -= transaction.poolValue;
+                    // Add new tranction points
 
-            card.donationPool -= transaction.poolValue / 2;
-            card.personalPool -= transaction.poolValue / 2;
+                    const virtualCard: VirtualCard = user.card;
+                    user.xp += transaction.userXp;
 
-            payment.price -= transaction.paymentValue;
 
-            await entityManager.save(transaction);
+                    payment.price += Number(transaction.provision + transaction.poolValue);
+                    virtualCard.updatePool(transaction.poolValue);
+                    user.updateCollectedMoney(transaction.poolValue);
 
-            let donation: Donation | undefined = await Donation.getCurrentDonationForUser(user, period);
-            if (!donation) {
-                donation = new Donation(
-                    this.codeService.generateDonationID(),
-                    DonationEnum.NGO,
-                    PoolEnum.DONATION,
-                    user,
-                    period
-                );
-                donation = await entityManager.save(donation);
-            }
 
-            let newTransaction: Transaction = new Transaction(
-                terminal,
-                user,
-                tradingPoint,
-                this.codeService.generateTransactionID(),
-                dto.price,
-                payment,
-                tradingPoint.vat,
-                tradingPoint.fee,
-                tradingPoint.donationPercentage,
-                donation
-            );
+                    if (user.ngo) {
+                        let card = user.ngo.card;
+                        if (!card) {
+                            this.logger.error(`Physical Card is not assigned to Ngo ${user.ngo.id}`);
+                            throw new BadRequestException('internal_server_error');
+                        }
+                        card.collectedMoney += transaction.poolValue;
+                        await entityManager.save(card)
+                    } else {
+                        user.ngoTempMoney += transaction.poolValue;
+                    }
 
-            if (!user || !user || !user.card) {
-                throw new BadRequestException('user_does_not_exists')
-            }
-
-            const userXp = await this.calService.calculateXpForUser(user.id, user.xp, newTransaction, transaction);
-            const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, newTransaction, transaction);
-
-            newTransaction.updateXpValues(userXp, tradingPointXp);
-            tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
-
-            user.xp += userXp;
-
-            let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
-            let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
-
-            transaction.updatePaymentValues(provision, pool);
-
-            payment.price += transaction.paymentValue;
-
-            transaction.setUserPool(card.personalPool, card.donationPool);
-            card.updatePool(pool);
-            user.updateCollectedMoney(pool);
-
-            await entityManager.save(transaction);
-
-            if (user.ngo) {
-                let card = user.ngo.card;
-                if (!card) {
-                    this.logger.error(`Physical Card is not assigned to ngo ${user.ngo.id}`);
-                    throw new BadRequestException('internal_server_error');
+                    await entityManager.save(card);
+                    await entityManager.save(payment);
+                    await entityManager.save(point);
+                    await entityManager.save(user);
+                    await entityManager.save(t);
                 }
-                card.collectedMoney += pool;
-                await entityManager.save(card)
-            } else {
-                user.ngoTempMoney += pool;
+                await entityManager.save(transaction);
             }
 
-            await entityManager.save(payment);
-            await entityManager.save(card);
-            await entityManager.save(tradingPoint);
-            await entityManager.save(user);
+        })
+    }
+
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200})
+    @Post('correction')
+    async verifyTransaction(@Req() req: any, @Body() dto: CorrectionRequest) {
+        await getConnection().transaction(async entityManager => {
+            const user: User = req.user;
+
+            let transaction: Transaction | undefined = await Transaction.createQueryBuilder('t')
+                .leftJoinAndSelect('t.user', 'user')
+                .leftJoinAndSelect('t.terminal', 'terminal')
+                .leftJoinAndSelect('t.tradingPoint', 'point')
+                .leftJoinAndSelect('t.payment', 'payment')
+                .leftJoinAndSelect('user.card', 'card')
+                .leftJoinAndSelect('user.ngo', 'ngo')
+                .where('t.ID = :ID', {ID: dto.transactionID})
+                .andWhere('t.isCorrection = false')
+                .andWhere('t.status = :status', {status: TransactionStatus.WAITING})
+                .getOne();
+
+            if (!transaction) {
+                throw new BadRequestException('transaction_does_not_exists')
+            }
+
+            if (transaction.user.id !== user.id) {
+                throw new BadRequestException('transaction_does_not_belong_to_user')
+            }
+
+            if (dto.correctionAccepted) {
+                transaction.status = TransactionStatus.ACCEPTED;
+
+                const payment: PartnerPayment = transaction.payment;
+                const point: TradingPoint = transaction.tradingPoint;
+                const virtualCard: VirtualCard = user.card;
+
+                // Add new tranction points
+
+                user.xp += transaction.userXp;
+                payment.price += Number(transaction.provision + transaction.poolValue);
+                virtualCard.updatePool(transaction.poolValue);
+                user.updateCollectedMoney(transaction.poolValue);
+
+
+                if (user.ngo) {
+                    let card = user.ngo.card;
+                    if (!card) {
+                        this.logger.error(`Physical Card is not assigned to Ngo ${user.ngo.id}`);
+                        throw new BadRequestException('internal_server_error');
+                    }
+                    card.collectedMoney += transaction.poolValue;
+                    await entityManager.save(card)
+                } else {
+                    user.ngoTempMoney += transaction.poolValue;
+                }
+
+                await entityManager.save(virtualCard);
+                await entityManager.save(payment);
+                await entityManager.save(point);
+                await entityManager.save(user);
+
+            } else {
+                transaction.status = TransactionStatus.REJECTED
+            }
+            await entityManager.save(transaction);
+
         })
     }
 

@@ -102,7 +102,7 @@ export class User extends TadeusEntity {
     static getUserForTransaction(code: string, prefix: number, phone: number) {
         return this.createQueryBuilder('user')
             .leftJoin('user.phone', 'phone')
-            .leftJoin('user.account', 'account')
+            .leftJoinAndSelect('user.account', 'account')
             .leftJoin('account.role', 'role')
             .leftJoin('phone.prefix', 'prefix')
             .leftJoinAndSelect('user.card', 'virtual-card')

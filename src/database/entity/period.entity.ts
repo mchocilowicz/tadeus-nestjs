@@ -1,8 +1,8 @@
-import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
-import { TadeusEntity } from "./base.entity";
-import { PartnerPayment } from "./partner-payment.entity";
-import { Donation } from "./donation.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import {Column, Entity, JoinColumn, OneToMany, OneToOne} from "typeorm";
+import {TadeusEntity} from "./base.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+import {Donation} from "./donation.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: 'tds'})
 export class Period extends TadeusEntity {
@@ -22,10 +22,8 @@ export class Period extends TadeusEntity {
     @JoinColumn()
     relation?: Period;
 
-    // Donation
     @OneToMany(type => Donation, donation => donation.period)
     donations?: Donation[];
-    // Transaction
 
     @OneToMany(type => PartnerPayment, payment => payment.period)
     payments?: PartnerPayment[];

@@ -1,12 +1,13 @@
-import { Column, Entity, ManyToOne } from "typeorm";
-import { TradingPoint } from "./trading-point.entity";
-import { User } from "./user.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
+import {TradingPoint} from "./trading-point.entity";
+import {User} from "./user.entity";
 
-import { Terminal } from "./terminal.entity";
-import { TadeusEntity } from "./base.entity";
-import { PartnerPayment } from "./partner-payment.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
-import { Donation } from "./donation.entity";
+import {Terminal} from "./terminal.entity";
+import {TadeusEntity} from "./base.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {Donation} from "./donation.entity";
+import {TransactionStatus} from "../../common/enum/status.enum";
 
 const moment = require('moment');
 
@@ -48,6 +49,9 @@ export class Transaction extends TadeusEntity {
     @Column({transformer: new ColumnNumericTransformer()})
     tradingPointXp: number = 0;
 
+    @Column({type: 'text', default: TransactionStatus.WAITING})
+    status: TransactionStatus = TransactionStatus.WAITING;
+
     @Column()
     isCorrection: boolean = false;
 
@@ -65,6 +69,10 @@ export class Transaction extends TadeusEntity {
 
     @ManyToOne(type => Donation, donation => donation.transactions)
     donation: Donation;
+
+    @OneToOne(type => Transaction)
+    @JoinColumn()
+    correction?: Transaction;
 
     readonly class: string = 'TRANSACTION';
 

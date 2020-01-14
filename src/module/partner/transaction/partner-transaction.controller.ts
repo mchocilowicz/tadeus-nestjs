@@ -1,4 +1,16 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post, Query, Req, UseGuards } from "@nestjs/common";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Get,
+    Logger,
+    NotFoundException,
+    Param,
+    Post,
+    Query,
+    Req,
+    UseGuards
+} from "@nestjs/common";
 import { CalculationService } from "../../../common/service/calculation.service";
 import { CodeService } from "../../../common/service/code.service";
 import { Roles } from "../../../common/decorators/roles.decorator";
@@ -23,6 +35,7 @@ import { Donation } from "../../../database/entity/donation.entity";
 import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
 import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
 import { FirebaseAdminService } from "../../../common/service/firebase-admin.service";
+import {TransactionStatus} from "../../../common/enum/status.enum";
 
 const moment = require('moment');
 
@@ -65,30 +78,94 @@ export class PartnerTransactionController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TransactionResponse})
     @ApiBody({type: CorrectionRequest})
-    async createCorrection(@Req() req: any, @Body() request: CorrectionRequest) {
+    async createCorrection(@Req() req: any, @Body() dto: CorrectionRequest) {
         let terminal: Terminal = req.user;
-        let p = request.price;
+        let p = dto.price;
 
         const t: Transaction | undefined = await Transaction.createQueryBuilder('t')
             .leftJoinAndSelect('t.user', 'user')
             .leftJoinAndSelect('t.terminal', 'terminal')
             .leftJoinAndSelect('t.tradingPoint', 'point')
             .leftJoinAndSelect('user.account', 'account')
-            .where('t.id = :id', {id: request.transactionId})
+            .where('t.id = :id', {id: dto.transactionId})
             .getOne();
 
         if (!t) {
             throw new BadRequestException('transaction_does_not_exists')
         }
 
-        if (t.isCorrection) {
+        if (t.status === TransactionStatus.CORRECTED) {
             throw new BadRequestException('transaction_corrected')
         }
 
-        if (!t.user.account.firebaseToken) {
-            this.logger.error('Phone Firebase token does not exists');
-            throw new BadRequestException('internal_server_error');
-        }
+        return await getConnection().transaction(async entityManager => {
+
+            const config: Configuration | undefined = await Configuration.getMain();
+            const period: Period | undefined = await Period.findCurrentPartnerPeriod();
+
+            if (!config || !period) {
+                this.logger.error('Configuration or Current Period is not available');
+                throw new BadRequestException('internal_server_error');
+            }
+
+            let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period});
+
+            let tradingPoint: TradingPoint = terminal.tradingPoint;
+
+            if (!payment) {
+                payment = new PartnerPayment(this.codeService.generatePartnerPaymentID(), tradingPoint, period);
+                payment = await entityManager.save(payment)
+            }
+
+            let user: User = t.user;
+
+            let donation: Donation | undefined = await Donation.getCurrentDonationForUser(user, period);
+            if (!donation) {
+                donation = new Donation(
+                    this.codeService.generateDonationID(),
+                    DonationEnum.NGO,
+                    PoolEnum.DONATION,
+                    user,
+                    period
+                );
+                donation = await entityManager.save(donation);
+            }
+
+
+            let transaction: Transaction = new Transaction(
+                terminal,
+                user,
+                tradingPoint,
+                this.codeService.generateTransactionID(),
+                dto.price,
+                payment,
+                tradingPoint.vat,
+                tradingPoint.fee,
+                tradingPoint.donationPercentage,
+                donation
+            );
+
+            const userXp = await this.calService.calculateXpForUser(user.id, user.xp, transaction);
+            const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, transaction);
+
+            transaction.updateXpValues(userXp, tradingPointXp);
+            tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
+
+            let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
+            let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
+
+
+            transaction.updatePaymentValues(provision, pool);
+            transaction.setUserPool(pool / 2, pool / 2);
+
+            if (!user.account.firebaseToken) {
+                this.logger.error('Phone Firebase token does not exists');
+                throw new BadRequestException('internal_server_error');
+            }
+            transaction.isCorrection = true;
+            transaction.correction = t;
+
+            await entityManager.save(transaction);
 
         this.firebaseService.getAdmin().messaging().send({
             token: t.user.account.firebaseToken,
@@ -108,19 +185,20 @@ export class PartnerTransactionController {
             .then(() => this.logger.log("Notification send"))
             .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
 
-        if (terminal.isMain) {
-            return {
-                oldPrice: t.price,
-                price: p,
-                a: t.poolValue,
-                // b: this.calService.calculateCost(p,)
+            if (terminal.isMain) {
+                return {
+                    oldPrice: t.price,
+                    price: p,
+                    a: t.poolValue,
+                    // b: this.calService.calculateCost(p,)
+                }
+            } else {
+                return {
+                    oldPrice: t.price,
+                    price: p,
+                }
             }
-        } else {
-            return {
-                oldPrice: t.price,
-                price: p,
-            }
-        }
+        })
     }
 
     @Post()
@@ -158,7 +236,7 @@ export class PartnerTransactionController {
 
                 let user: User | undefined = await User.getUserForTransaction(dto.clientCode, dto.phonePrefix, dto.phone);
 
-                if (!user || !user.card) {
+                if (!user) {
                     throw new BadRequestException('user_does_not_exists')
                 }
 
@@ -194,51 +272,51 @@ export class PartnerTransactionController {
                 transaction.updateXpValues(userXp, tradingPointXp);
                 tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
 
-
-                const virtualCard: VirtualCard = user.card;
-
-                user.xp += userXp;
-
                 let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
                 let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
 
-                transaction.updatePaymentValues(provision, pool);
-                payment.price += Number(provision + pool);
 
-                virtualCard.updatePool(pool);
-                transaction.setUserPool(virtualCard.personalPool, virtualCard.donationPool);
-                user.updateCollectedMoney(pool);
+                transaction.updatePaymentValues(provision, pool);
+                transaction.setUserPool(pool / 2, pool / 2);
+
+                if (!user.account.firebaseToken) {
+                    this.logger.error('Phone Firebase token does not exists');
+                    throw new BadRequestException('internal_server_error');
+                }
 
                 await entityManager.save(transaction);
 
-                if (user.ngo) {
-                    let card = user.ngo.card;
-                    if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${ user.ngo.id }`);
-                        throw new BadRequestException('internal_server_error');
+                this.firebaseService.getAdmin().messaging().send({
+                    token: user.account.firebaseToken,
+                    // @ts-ignore
+                    data: {
+                        transactionID: transaction.ID,
+                        tradingPointName: tradingPoint.name,
+                        transactionDate: new Date(),
+                        newAmount: dto.price,
+                        terminalID: terminal.ID
+                    },
+                    notification: {
+                        title: 'Tadeus',
+                        body: 'Nowa transakcja do akceptacji',
                     }
-                    card.collectedMoney += pool;
-                    await entityManager.save(card)
-                } else {
-                    user.ngoTempMoney += pool;
-                }
-
-                await entityManager.save(virtualCard);
-                await entityManager.save(payment);
-                await entityManager.save(tradingPoint);
-                await entityManager.save(user);
+                })
+                    .then(() => this.logger.log("Notification send"))
+                    .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
 
 
                 if (terminal.isMain) {
                     return {
                         cardNumber: user.card.code,
                         price: dto.price,
-                        donation: transaction.paymentValue
+                        donation: transaction.paymentValue,
+                        transactionID: transaction.ID
                     }
                 } else {
                     return {
                         cardNumber: user.card.code,
                         price: dto.price,
+                        transactionID: transaction.ID
                     }
                 }
 
@@ -246,6 +324,17 @@ export class PartnerTransactionController {
         } catch (e) {
             handleException(e, 'transaction', this.logger)
         }
+    }
+
+    @Get(':id/status')
+    @Roles(RoleEnum.TERMINAL)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    async getTransactionStatus(@Param('id') id: string) {
+        const t: Transaction | undefined = await Transaction.findOne({ID: id});
+        if (!t) {
+            throw new NotFoundException('transaction_does_not_exists')
+        }
+        return t.status
     }
 
     @Get()

@@ -11,3 +11,10 @@ export enum Step {
     ACTIVE = 'ACTIVE',
     SIGN_IN = 'SIGN_IN'
 }
+
+export enum TransactionStatus {
+    REJECTED = 'REJECTED',
+    ACCEPTED = 'ACCEPTED',
+    CORRECTED = 'CORRECTED',
+    WAITING = 'WAITING'
+}
