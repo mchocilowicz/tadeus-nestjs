@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import {ApiProperty} from "@nestjs/swagger";
 
 export class CorrectionRequest {
     @ApiProperty()
@@ -6,14 +6,14 @@ export class CorrectionRequest {
     @ApiProperty()
     terminalID: string;
     @ApiProperty()
-    correctionAccepted: boolean;
+    userDecision: boolean;
     @ApiProperty()
-    price: number;
+    isCorrection: boolean;
 
-    constructor(id: string, decision: boolean, price: number, terminal: string) {
+    constructor(id: string, decision: boolean, price: number, terminal: string, isCorrection: boolean) {
         this.transactionID = id;
-        this.correctionAccepted = decision;
-        this.price = price;
+        this.userDecision = decision;
+        this.isCorrection = isCorrection;
         this.terminalID = terminal;
     }
 }

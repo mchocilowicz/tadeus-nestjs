@@ -176,7 +176,7 @@ export class PartnerTransactionController {
                     prevAmount: `${t.price}`,
                     newAmount: `${dto.price}`,
                     terminalID: t.terminal.ID,
-                    correction: "true"
+                    isCorrection: "true"
                 },
                 notification: {
                     title: 'Tadeus',
@@ -295,7 +295,7 @@ export class PartnerTransactionController {
                         transactionDate: moment().format(Const.DATE_FORMAT),
                         newAmount: `${dto.price}`,
                         terminalID: terminal.ID,
-                        correction: "false"
+                        isCorrection: "false"
                     },
                     notification: {
                         title: 'Tadeus',
