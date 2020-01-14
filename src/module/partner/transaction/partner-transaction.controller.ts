@@ -3,6 +3,7 @@ import {
     Body,
     Controller,
     Get,
+    InternalServerErrorException,
     Logger,
     NotFoundException,
     Param,
@@ -11,30 +12,30 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import {CalculationService} from "../../../common/service/calculation.service";
-import {CodeService} from "../../../common/service/code.service";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../database/entity/transaction.entity";
-import {TransactionResponse} from "../../../models/common/response/transaction.response";
-import {getConnection} from "typeorm";
-import {CorrectionRequest, TransactionRequest} from "../../../models/partner/request/transaction.request";
-import {handleException} from "../../../common/util/functions";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {User} from "../../../database/entity/user.entity";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
-import {Period} from "../../../database/entity/period.entity";
-import {Donation} from "../../../database/entity/donation.entity";
-import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
-import {PartnerTransactionResponse} from "../../../models/partner/response/partner-transaction.response";
-import {FirebaseAdminService} from "../../../common/service/firebase-admin.service";
-import {TransactionStatus} from "../../../common/enum/status.enum";
+import { CalculationService } from "../../../common/service/calculation.service";
+import { CodeService } from "../../../common/service/code.service";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../database/entity/transaction.entity";
+import { TransactionResponse } from "../../../models/common/response/transaction.response";
+import { getConnection } from "typeorm";
+import { CorrectionRequest, TransactionRequest } from "../../../models/partner/request/transaction.request";
+import { handleException } from "../../../common/util/functions";
+import { TradingPoint } from "../../../database/entity/trading-point.entity";
+import { User } from "../../../database/entity/user.entity";
+import { Terminal } from "../../../database/entity/terminal.entity";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
+import { Period } from "../../../database/entity/period.entity";
+import { Donation } from "../../../database/entity/donation.entity";
+import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
+import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
+import { FirebaseAdminService } from "../../../common/service/firebase-admin.service";
+import { TransactionStatus } from "../../../common/enum/status.enum";
 
 const moment = require('moment');
 
@@ -173,8 +174,8 @@ export class PartnerTransactionController {
                     transactionID: t.ID,
                     tradingPointName: t.tradingPoint.name,
                     transactionDate: moment(t.createdAt).format(Const.DATE_FORMAT),
-                    prevAmount: `${t.price}`,
-                    newAmount: `${dto.price}`,
+                    prevAmount: `${ t.price }`,
+                    newAmount: `${ dto.price }`,
                     terminalID: t.terminal.ID,
                     isCorrection: "true"
                 },
@@ -188,15 +189,19 @@ export class PartnerTransactionController {
 
             if (terminal.isMain) {
                 return {
+                    status: transaction.status,
                     oldPrice: t.price,
                     price: p,
-                    a: t.poolValue,
-                    // b: this.calService.calculateCost(p,)
+                    correction: pool - t.poolValue,
+                    donation: pool,
+                    transactionID: transaction.ID
                 }
             } else {
                 return {
+                    status: transaction.status,
                     oldPrice: t.price,
                     price: p,
+                    transactionID: transaction.ID
                 }
             }
         })
@@ -293,7 +298,7 @@ export class PartnerTransactionController {
                         transactionID: transaction.ID,
                         tradingPointName: tradingPoint.name,
                         transactionDate: moment().format(Const.DATE_FORMAT),
-                        newAmount: `${dto.price}`,
+                        newAmount: `${ dto.price }`,
                         terminalID: terminal.ID,
                         isCorrection: "false"
                     },
@@ -310,7 +315,7 @@ export class PartnerTransactionController {
                     return {
                         cardNumber: user.card.code,
                         price: dto.price,
-                        donation: transaction.paymentValue,
+                        donation: pool,
                         transactionID: transaction.ID
                     }
                 } else {
@@ -327,15 +332,36 @@ export class PartnerTransactionController {
         }
     }
 
-    @Get(':id/status')
+    @Get(':ID/status')
     @Roles(RoleEnum.TERMINAL)
     @UseGuards(JwtAuthGuard, RolesGuard)
-    async getTransactionStatus(@Param('id') id: string) {
-        const t: Transaction | undefined = await Transaction.findOne({ID: id});
+    async getTransactionStatus(@Req() req: any, @Param('ID') id: string) {
+        const terminal: Terminal = req.user;
+        const t: Transaction | undefined = await Transaction.findOne({ID: id}, {relations: ['correction']});
+
         if (!t) {
             throw new NotFoundException('transaction_does_not_exists')
         }
-        return t.status
+        if (!t.isCorrection || !t.correction) {
+            this.logger.error('This transaction is not a correction');
+            throw new InternalServerErrorException();
+        }
+
+        if (terminal.isMain) {
+            return {
+                status: t.status,
+                oldPrice: t.correction.price,
+                price: t.price,
+                correction: t.poolValue - t.correction.poolValue,
+                donation: t.poolValue
+            }
+        } else {
+            return {
+                status: t.status,
+                oldPrice: t.correction.price,
+                price: t.price,
+            }
+        }
     }
 
     @Get()
