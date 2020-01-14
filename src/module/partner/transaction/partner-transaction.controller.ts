@@ -61,7 +61,8 @@ export class PartnerTransactionController {
                 transactionDate: "1",
                 prevAmount: "1",
                 newAmount: "1",
-                terminalID: "1"
+                terminalID: "1",
+                correction: "false"
             },
             notification: {
                 title: 'Tadeus',
@@ -174,7 +175,8 @@ export class PartnerTransactionController {
                     transactionDate: moment(t.createdAt).format(Const.DATE_FORMAT),
                     prevAmount: `${t.price}`,
                     newAmount: `${dto.price}`,
-                    terminalID: t.terminal.ID
+                    terminalID: t.terminal.ID,
+                    correction: "true"
                 },
                 notification: {
                     title: 'Tadeus',
@@ -292,7 +294,8 @@ export class PartnerTransactionController {
                         tradingPointName: tradingPoint.name,
                         transactionDate: moment().format(Const.DATE_FORMAT),
                         newAmount: `${dto.price}`,
-                        terminalID: terminal.ID
+                        terminalID: terminal.ID,
+                        correction: "false"
                     },
                     notification: {
                         title: 'Tadeus',
