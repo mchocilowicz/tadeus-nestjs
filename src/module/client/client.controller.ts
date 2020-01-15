@@ -188,7 +188,8 @@ export class ClientController {
                 .leftJoinAndSelect('user.card', 'card')
                 .leftJoinAndSelect('user.ngo', 'ngo')
                 .where('t.ID = :ID', {ID: dto.transactionID})
-                .andWhere('t.isCorrection = true')
+                .andWhere('terminal.ID = :terminal', {terminal: dto.terminalID})
+                .andWhere('t.status = :status', {status: TransactionStatus.WAITING})
                 .andWhere('correction IS NOT NULL')
                 .getOne();
 
