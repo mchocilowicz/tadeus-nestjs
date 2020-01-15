@@ -30,6 +30,7 @@ import { Period } from "../../database/entity/period.entity";
 import { PartnerPayment } from "../../database/entity/partner-payment.entity";
 import { PartnerVerifyQuery } from "../../models/partner/partner-verify.query";
 import { PartnerVerifyResponse } from "../../models/partner/response/partner-verify.response";
+import { TransactionStatus } from "../../common/enum/status.enum";
 
 const moment = require('moment');
 
@@ -104,7 +105,8 @@ export class PartnerController {
         let sqlQuery = Transaction.createQueryBuilder('transaction')
             .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
             .leftJoinAndSelect('transaction.terminal', 'terminal')
-            .where('tradingPoint.id = :id', {id: point.id});
+            .where('tradingPoint.id = :id', {id: point.id})
+            .andWhere('transaction.status = :status', {status: TransactionStatus.ACCEPTED});
 
         if (query && query.terminal) {
             sqlQuery = sqlQuery.andWhere('terminal.ID = :terminal', {terminal: query.terminal})
