@@ -36,6 +36,7 @@ import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
 import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
 import { FirebaseAdminService } from "../../../common/service/firebase-admin.service";
 import { TransactionStatus } from "../../../common/enum/status.enum";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 
 const moment = require('moment');
 
@@ -63,7 +64,8 @@ export class PartnerTransactionController {
                 prevAmount: "1",
                 newAmount: "1",
                 terminalID: "1",
-                correction: "false"
+                correction: "false",
+                pool: '0'
             },
             notification: {
                 title: 'Tadeus',
@@ -99,7 +101,7 @@ export class PartnerTransactionController {
             throw new BadRequestException('transaction_corrected')
         }
 
-        return await getConnection().transaction(async entityManager => {
+        const data: any = await getConnection().transaction(async entityManager => {
 
             const config: Configuration | undefined = await Configuration.getMain();
             const period: Period | undefined = await Period.findCurrentPartnerPeriod();
@@ -168,43 +170,56 @@ export class PartnerTransactionController {
 
             await entityManager.save(transaction);
 
-            this.firebaseService.getAdmin().messaging().send({
-                token: user.account.firebaseToken,
-                data: {
-                    transactionID: t.ID,
-                    tradingPointName: t.tradingPoint.name,
-                    transactionDate: moment(t.createdAt).format(Const.DATE_FORMAT),
-                    prevAmount: `${ t.price }`,
-                    newAmount: `${ dto.price }`,
-                    terminalID: t.terminal.ID,
-                    isCorrection: "true"
-                },
-                notification: {
-                    title: 'Tadeus',
-                    body: 'Korekta transakcji do akceptacji',
-                }
-            })
-                .then(() => this.logger.log("Notification send"))
-                .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+            const data = {
+                transactionID: t.ID,
+                tradingPointName: t.tradingPoint.name,
+                transactionDate: moment(t.createdAt).format(Const.DATE_FORMAT),
+                prevAmount: `${ t.price }`,
+                newAmount: `${ dto.price }`,
+                terminalID: t.terminal.ID,
+                isCorrection: "true",
+                pool: '0'
+            };
 
             if (terminal.isMain) {
                 return {
-                    status: transaction.status,
-                    oldPrice: t.price,
-                    price: p,
-                    correction: pool - t.poolValue,
-                    donation: pool,
-                    transactionID: transaction.ID
+                    token: user.account.firebaseToken,
+                    data: data,
+                    api: {
+                        status: transaction.status,
+                        oldPrice: t.price,
+                        price: p,
+                        correction: pool - t.poolValue,
+                        donation: pool,
+                        transactionID: transaction.ID
+                    }
                 }
             } else {
                 return {
-                    status: transaction.status,
-                    oldPrice: t.price,
-                    price: p,
-                    transactionID: transaction.ID
+                    token: user.account.firebaseToken,
+                    api: {
+                        status: transaction.status,
+                        oldPrice: t.price,
+                        price: p,
+                        transactionID: transaction.ID
+                    },
+                    data: data
                 }
             }
+        });
+
+        this.firebaseService.getAdmin().messaging().send({
+            token: data.token,
+            data: data.data,
+            notification: {
+                title: 'Tadeus',
+                body: 'Korekta transakcji do akceptacji',
+            }
         })
+            .then(() => this.logger.log("Notification send"))
+            .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+
+        return data.api;
     }
 
     @Post()
@@ -214,7 +229,7 @@ export class PartnerTransactionController {
     @ApiBody({type: TransactionRequest})
     async saveTransaction(@Req() req: any, @Body() dto: TransactionRequest) {
         try {
-            return await getConnection().transaction(async entityManager => {
+            const result = await getConnection().transaction(async entityManager => {
                 let terminal: Terminal = req.user;
 
                 const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
@@ -289,44 +304,80 @@ export class PartnerTransactionController {
                     this.logger.error('Phone Firebase token does not exists');
                     throw new BadRequestException('internal_server_error');
                 }
+                transaction.status = TransactionStatus.ACCEPTED;
 
+                const point: TradingPoint = transaction.tradingPoint;
+                const virtualCard: VirtualCard = user.card;
+
+                user.xp += transaction.userXp;
+                payment.price += Number(transaction.provision + transaction.poolValue);
+                virtualCard.updatePool(transaction.poolValue);
+                user.updateCollectedMoney(transaction.poolValue);
+
+                if (user.ngo) {
+                    let card = user.ngo.card;
+                    if (!card) {
+                        this.logger.error(`Physical Card is not assigned to Ngo ${ user.ngo.id }`);
+                        throw new BadRequestException('internal_server_error');
+                    }
+                    card.collectedMoney += transaction.poolValue;
+                    await entityManager.save(card)
+                } else {
+                    user.ngoTempMoney += transaction.poolValue;
+                }
+
+                await entityManager.save(virtualCard);
+                await entityManager.save(payment);
+                await entityManager.save(point);
+                await entityManager.save(user);
                 await entityManager.save(transaction);
 
-                this.firebaseService.getAdmin().messaging().send({
-                    token: user.account.firebaseToken,
-                    data: {
-                        transactionID: transaction.ID,
-                        tradingPointName: tradingPoint.name,
-                        transactionDate: moment().format(Const.DATE_FORMAT),
-                        newAmount: `${ dto.price }`,
-                        terminalID: terminal.ID,
-                        isCorrection: "false"
-                    },
-                    notification: {
-                        title: 'Tadeus',
-                        body: 'Nowa transakcja do akceptacji',
-                    }
-                })
-                    .then(() => this.logger.log("Notification send"))
-                    .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
-
+                const data = {
+                    transactionID: transaction.ID,
+                    tradingPointName: tradingPoint.name,
+                    transactionDate: moment().format(Const.DATE_TIME_FORMAT),
+                    newAmount: `${ dto.price }`,
+                    terminalID: terminal.ID,
+                    isCorrection: "false",
+                    pool: `${ transaction.poolValue }`
+                };
 
                 if (terminal.isMain) {
                     return {
-                        cardNumber: user.card.code,
-                        price: dto.price,
-                        donation: pool,
-                        transactionID: transaction.ID
+                        token: user.account.firebaseToken,
+                        api: {
+                            cardNumber: user.card.code,
+                            price: dto.price,
+                            donation: pool,
+                            transactionID: transaction.ID
+                        },
+                        data: data
                     }
                 } else {
                     return {
-                        cardNumber: user.card.code,
-                        price: dto.price,
-                        transactionID: transaction.ID
+                        token: user.account.firebaseToken,
+                        api: {
+                            cardNumber: user.card.code,
+                            price: dto.price,
+                            transactionID: transaction.ID
+                        },
+                        data: data
                     }
                 }
-
             });
+
+            this.firebaseService.getAdmin().messaging().send({
+                token: result.token,
+                data: result.data,
+                notification: {
+                    title: 'Tadeus',
+                    body: 'Nowa transakcja',
+                }
+            })
+                .then(() => this.logger.log("Notification send"))
+                .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+
+            return result.api;
         } catch (e) {
             handleException(e, 'transaction', this.logger)
         }
