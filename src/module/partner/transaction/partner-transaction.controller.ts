@@ -91,6 +91,7 @@ export class PartnerTransactionController {
             .leftJoinAndSelect('t.tradingPoint', 'point')
             .leftJoinAndSelect('user.account', 'account')
             .where('t.id = :id', {id: dto.transactionId})
+            .andWhere('t.status = :status', {status: TransactionStatus.ACCEPTED})
             .getOne();
 
         if (!t) {

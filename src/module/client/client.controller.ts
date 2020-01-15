@@ -185,12 +185,10 @@ export class ClientController {
                 .leftJoinAndSelect('t.tradingPoint', 'point')
                 .leftJoinAndSelect('t.correction', 'correction')
                 .leftJoinAndSelect('t.payment', 'payment')
-                .leftJoinAndSelect('user.card', 'card')
-                .leftJoinAndSelect('user.ngo', 'ngo')
                 .where('t.ID = :ID', {ID: dto.transactionID})
                 .andWhere('terminal.ID = :terminal', {terminal: dto.terminalID})
                 .andWhere('t.status = :status', {status: TransactionStatus.WAITING})
-                .andWhere('correction IS NOT NULL')
+                .andWhere('t.isCorrection = true')
                 .getOne();
 
             if (!transaction) {
@@ -212,9 +210,8 @@ export class ClientController {
 
                 t.status = TransactionStatus.CORRECTED;
 
-                const card: VirtualCard = user.card;
-                const payment: PartnerPayment = t.payment;
-                const point: TradingPoint = t.tradingPoint;
+                const payment: PartnerPayment = transaction.payment;
+                const point: TradingPoint = transaction.tradingPoint;
                 const virtualCard: VirtualCard = user.card;
 
 
@@ -238,7 +235,7 @@ export class ClientController {
                     user.ngoTempMoney += (-t.poolValue + transaction.poolValue);
                 }
 
-                await entityManager.save(card);
+                await entityManager.save(virtualCard);
                 await entityManager.save(payment);
                 await entityManager.save(point);
                 await entityManager.save(user);
