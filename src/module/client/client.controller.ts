@@ -188,7 +188,6 @@ export class ClientController {
                 .where('t.ID = :ID', {ID: dto.transactionID})
                 .andWhere('terminal.ID = :terminal', {terminal: dto.terminalID})
                 .andWhere('t.status = :status', {status: TransactionStatus.WAITING})
-                .andWhere('t.isCorrection = true')
                 .getOne();
 
             if (!transaction) {
