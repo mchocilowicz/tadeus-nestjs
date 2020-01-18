@@ -85,7 +85,7 @@ export class PartnerTransactionController {
         let terminal: Terminal = req.user;
         let p = dto.price;
 
-        const t: Transaction | undefined = await Transaction.createQueryBuilder('t')
+        const oldTransaction: Transaction | undefined = await Transaction.createQueryBuilder('t')
             .leftJoinAndSelect('t.user', 'user')
             .leftJoinAndSelect('t.terminal', 'terminal')
             .leftJoinAndSelect('t.tradingPoint', 'point')
@@ -94,11 +94,11 @@ export class PartnerTransactionController {
             .andWhere('t.status = :status', {status: TransactionStatus.ACCEPTED})
             .getOne();
 
-        if (!t) {
+        if (!oldTransaction) {
             throw new BadRequestException('transaction_does_not_exists')
         }
 
-        if (t.status === TransactionStatus.CORRECTED) {
+        if (oldTransaction.status === TransactionStatus.CORRECTED) {
             throw new BadRequestException('transaction_corrected')
         }
 
@@ -121,7 +121,7 @@ export class PartnerTransactionController {
                 payment = await entityManager.save(payment)
             }
 
-            let user: User = t.user;
+            let user: User = oldTransaction.user;
 
             let donation: Donation | undefined = await Donation.getCurrentDonationForUser(user, period);
             if (!donation) {
@@ -167,17 +167,17 @@ export class PartnerTransactionController {
                 throw new BadRequestException('internal_server_error');
             }
             transaction.isCorrection = true;
-            transaction.correction = t;
+            transaction.correction = oldTransaction;
 
             await entityManager.save(transaction);
 
             const data = {
-                transactionID: t.ID,
-                tradingPointName: t.tradingPoint.name,
-                transactionDate: moment(t.createdAt).format(Const.DATE_FORMAT),
-                prevAmount: `${ t.price }`,
+                transactionID: transaction.ID,
+                tradingPointName: tradingPoint.name,
+                transactionDate: moment().format(Const.DATE_TIME_FORMAT),
+                prevAmount: `${ oldTransaction.price }`,
                 newAmount: `${ dto.price }`,
-                terminalID: t.terminal.ID,
+                terminalID: terminal.ID,
                 isCorrection: "true",
                 pool: '0'
             };
@@ -188,9 +188,9 @@ export class PartnerTransactionController {
                     data: data,
                     api: {
                         status: transaction.status,
-                        oldPrice: t.price,
+                        oldPrice: oldTransaction.price,
                         price: p,
-                        correction: pool - t.poolValue,
+                        correction: pool - oldTransaction.poolValue,
                         donation: pool,
                         transactionID: transaction.ID
                     }
@@ -200,7 +200,7 @@ export class PartnerTransactionController {
                     token: user.account.firebaseToken,
                     api: {
                         status: transaction.status,
-                        oldPrice: t.price,
+                        oldPrice: oldTransaction.price,
                         price: p,
                         transactionID: transaction.ID
                     },
