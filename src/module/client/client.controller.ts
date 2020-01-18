@@ -40,6 +40,8 @@ import { FirebaseTokenRequest } from "../../models/client/request/firebase-token
 import { Account } from "../../database/entity/account.entity";
 import { CorrectionRequest } from "../../models/client/request/correction.request";
 import { TransactionStatus } from "../../common/enum/status.enum";
+import { Ngo } from "../../database/entity/ngo.entity";
+import { PhysicalCard } from "../../database/entity/physical-card.entity";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -185,6 +187,8 @@ export class ClientController {
                 .leftJoinAndSelect('t.tradingPoint', 'point')
                 .leftJoinAndSelect('t.correction', 'correction')
                 .leftJoinAndSelect('t.payment', 'payment')
+                .leftJoinAndSelect('user.ngo', 'ngo')
+                .leftJoinAndSelect('ngo.card', 'card')
                 .where('t.ID = :ID', {ID: dto.transactionID})
                 .andWhere('terminal.ID = :terminal', {terminal: dto.terminalID})
                 .andWhere('t.status = :status', {status: TransactionStatus.WAITING})
@@ -222,11 +226,12 @@ export class ClientController {
                 payment.price += (-t.paymentValue + Number(transaction.provision + transaction.poolValue));
                 virtualCard.updatePool(-t.poolValue + transaction.poolValue);
 
+                const ngo: Ngo | undefined = transaction.user.ngo;
 
-                if (user.ngo) {
-                    let card = user.ngo.card;
+                if (ngo) {
+                    let card: PhysicalCard = ngo.card;
                     if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${ user.ngo.id }`);
+                        this.logger.error(`Physical Card is not assigned to Ngo ${ ngo.id }`);
                         throw new BadRequestException('internal_server_error');
                     }
                     card.collectedMoney += (-t.poolValue + transaction.poolValue);
