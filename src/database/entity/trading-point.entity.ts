@@ -1,59 +1,59 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TradingPointType} from "./trading-point-type.entity";
-import {Transaction} from "./transaction.entity";
-import {PartnerPayment} from "./partner-payment.entity";
-import {Terminal} from "./terminal.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {Address} from "./address.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {Opinion} from "./opinion.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TradingPointType } from "./trading-point-type.entity";
+import { Transaction } from "./transaction.entity";
+import { PartnerPayment } from "./partner-payment.entity";
+import { Terminal } from "./terminal.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { Address } from "./address.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { Opinion } from "./opinion.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER'})
 export class TradingPoint extends TadeusEntity {
-    @Column()
+    @Column({name: 'ID'})
     ID: string;
 
-    @Column()
+    @Column({name: 'NAME'})
     name: string;
 
-    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'DONATION_PERCENTAGE', type: "decimal", transformer: new ColumnNumericTransformer()})
     donationPercentage: number = 2;
 
-    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'VAT', type: "decimal", transformer: new ColumnNumericTransformer()})
     vat: number = 23;
 
-    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'FEE', type: "decimal", transformer: new ColumnNumericTransformer()})
     fee: number = 0.66;
 
-    @Column({type: "decimal", transformer: new ColumnNumericTransformer(), default: 0})
+    @Column({name: 'DEFAULT_PRICE', type: "decimal", transformer: new ColumnNumericTransformer(), default: 0})
     price: number = 0;
 
-    @Column()
+    @Column({name: 'EMAIL'})
     email: string;
 
-    @Column({nullable: true})
+    @Column({name: 'IMAGE', nullable: true})
     image: string = 'icon.jpg';
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({name: 'XP', transformer: new ColumnNumericTransformer()})
     xp: number = 0;
 
-    @Column({default: false})
+    @Column({name: 'ACTIVE', default: false})
     active: boolean = false;
 
-    @Column({nullable: true})
+    @Column({name: 'CLOSED_AT', nullable: true})
     closedAt?: Date;
 
     @ManyToOne(type => TradingPointType)
-    @JoinColumn()
+    @JoinColumn({name: 'PARTNER_TYPE_SKID'})
     type: TradingPointType;
 
     @ManyToOne(type => Phone)
-    @JoinColumn()
+    @JoinColumn({name: 'PHONE_SKID'})
     phone: Phone;
 
     @ManyToOne(type => Address)
-    @JoinColumn()
+    @JoinColumn({name: 'ADDRESS_SKID'})
     address: Address;
 
     @OneToMany(type => Terminal, terminal => terminal.tradingPoint)

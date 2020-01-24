@@ -2,19 +2,19 @@ import { Column, Entity, Generated } from "typeorm";
 import { TadeusEntity } from "./base.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'VIRTUAL_CARD'})
 export class VirtualCard extends TadeusEntity {
-    @Column()
+    @Column({name: "ID"})
     ID: string;
 
-    @Column()
+    @Column({name: "CODE"})
     @Generated("uuid")
     code?: string;
 
-    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: "DONATION_POOL", type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     donationPool: number = 0;
 
-    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: "PERSONAL_POOL", type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     personalPool: number = 0;
 
     @Column({name: "STATUS"})

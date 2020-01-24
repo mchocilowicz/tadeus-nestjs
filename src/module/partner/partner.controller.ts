@@ -70,7 +70,7 @@ export class PartnerController {
         const account: Account = terminal.account;
 
         if (!terminal || !account) {
-            this.logger.error(`Terminal or Accounts does not exists for ${terminal.id}`);
+            this.logger.error(`Terminal or Accounts does not exists for ${ terminal.id }`);
             throw new BadRequestException('internal_server_error')
         }
 

@@ -7,11 +7,11 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'NGO_TYPE'})
 export class NgoType extends TadeusEntity {
 
-    @Column()
+    @Column({name: 'NAME'})
     @ApiProperty()
     name: string;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({name: 'CODE', transformer: new ColumnNumericTransformer()})
     @Generated("increment")
     code: number = 0;
 

@@ -1,25 +1,25 @@
-import {Column, Entity, JoinColumn, OneToMany, OneToOne} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {PartnerPayment} from "./partner-payment.entity";
-import {Donation} from "./donation.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { PartnerPayment } from "./partner-payment.entity";
+import { Donation } from "./donation.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PERIOD'})
 export class Period extends TadeusEntity {
-    @Column()
+    @Column({name: 'FROM'})
     from: Date;
 
-    @Column()
+    @Column({name: 'TO'})
     to: Date;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({name: 'INTERVAL', transformer: new ColumnNumericTransformer()})
     interval: number;
 
-    @Column()
+    @Column({name: 'TYPE'})
     type: string;
 
     @OneToOne(type => Period)
-    @JoinColumn()
+    @JoinColumn({name: 'PERIOD_SKID'})
     relation?: Period;
 
     @OneToMany(type => Donation, donation => donation.period)

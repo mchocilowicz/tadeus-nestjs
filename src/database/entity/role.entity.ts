@@ -5,7 +5,7 @@ import { TadeusEntity } from "./base.entity";
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ROLE'})
 export class Role extends TadeusEntity {
 
-    @Column({unique: true})
+    @Column({name: 'VALUE', unique: true})
     value: string;
 
     @OneToMany(account => Account, account => account.role)

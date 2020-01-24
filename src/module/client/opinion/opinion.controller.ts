@@ -29,7 +29,7 @@ export class OpinionController {
     @ApiResponse({status: 200})
     @ApiBody({type: NotificationRequest})
     async createOpinion(@Req() req: any, @Body() dto: NotificationRequest) {
-        let opinion = new Opinion(dto.email, dto.value, req.user);
+        let opinion = new Opinion(dto.value, dto.email, req.user);
         await opinion.save();
     }
 

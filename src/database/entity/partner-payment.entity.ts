@@ -7,30 +7,30 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_PAYMENT'})
 export class PartnerPayment extends TadeusEntity {
-    @Column()
+    @Column({name: 'ID'})
     ID: string;
 
-    @Column({nullable: true})
+    @Column({name: 'PAYMENT_NUMBER', nullable: true})
     paymentNumber?: string;
 
-    @Column({default: false})
+    @Column({name: 'IS_PAID', default: false})
     isPaid: boolean = false;
 
-    @Column({nullable: true, type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PRICE', nullable: true, type: 'decimal', transformer: new ColumnNumericTransformer()})
     price: number = 0;
 
-    @Column({nullable: true})
+    @Column({name: 'PAYED_AT', nullable: true})
     partnerPaymentAt?: Date;
 
     @ManyToOne(type => TradingPoint)
-    @JoinColumn()
+    @JoinColumn({name: 'PARTNER_SKID'})
     tradingPoint: TradingPoint;
 
     @OneToMany(type => Transaction, transactions => transactions.payment)
     transactions?: Transaction[];
 
     @ManyToOne(type => Period)
-    @JoinColumn()
+    @JoinColumn({name: 'PERIOD_SKID'})
     period: Period;
 
     constructor(ID: string, tradingPoint: TradingPoint, period: Period) {

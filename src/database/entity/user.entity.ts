@@ -14,39 +14,33 @@ import { Status, TransactionStatus } from "../../common/enum/status.enum";
 
 const moment = require('moment');
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'USER'})
 export class User extends TadeusEntity {
-    @Column({default: false})
+    @Column({name: 'REGISTERED', default: false})
     registered: boolean = false;
 
-    @Column({default: false})
+    @Column({name: 'IS_ANONYMOUS', default: false})
     isAnonymous: boolean = false;
 
-    @Column({default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'XP', default: 0, transformer: new ColumnNumericTransformer()})
     xp: number = 0;
 
-    @Column({nullable: true})
+    @Column({name: 'NAME', nullable: true})
     name?: string;
 
-    @Column({nullable: true})
+    @Column({name: 'EMAIL', nullable: true})
     email?: string;
 
-    @Column({nullable: true})
+    @Column({name: 'LAST_NAME', nullable: true})
     lastName?: string;
 
-    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'ACCOUNT_NUMBER', nullable: true, transformer: new ColumnNumericTransformer()})
     bankAccount?: number;
 
-    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'COLLECTED_MONEY', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     collectedMoney: number = 0;
 
-    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
-    ngoTempMoney: number = 0;
-
-    @Column({default: 0, transformer: new ColumnNumericTransformer()})
-    ngoSelectionCount: number = 0;
-
-    @Column({nullable: true})
+    @Column({name: 'PREVIOUS_NAME', nullable: true})
     prevName?: string;
 
     @Column({name: 'NGO_SELECTED_AT', nullable: true})

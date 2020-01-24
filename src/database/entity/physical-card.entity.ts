@@ -4,14 +4,14 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PHYSICAL_CARD'})
 export class PhysicalCard extends TadeusEntity {
-    @Column()
+    @Column({name: 'ID'})
     ID: string;
 
-    @Column()
+    @Column({name: 'CODE'})
     @Generated("uuid")
     code?: string;
 
-    @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'COLLECTED_MONEY', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     collectedMoney: number = 0;
 
     constructor(ID: string) {

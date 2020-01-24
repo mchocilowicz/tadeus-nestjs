@@ -3,13 +3,13 @@ import { User } from "./user.entity";
 import { TadeusEntity } from "./base.entity";
 import { TradingPoint } from "./trading-point.entity";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'OPINION'})
 export class Opinion extends TadeusEntity {
-    @Column()
+    @Column({name: 'VALUE'})
     value: string;
 
-    @Column()
-    email: string;
+    @Column({name: 'EMAIL'})
+    email?: string;
 
     @ManyToOne(type => User, user => user.opinions)
     @JoinColumn({name: 'USER_SKID'})
@@ -19,7 +19,7 @@ export class Opinion extends TadeusEntity {
     @JoinColumn({name: 'PARTNER_SKID'})
     tradingPoint?: TradingPoint;
 
-    constructor(email: string, value: string, user?: User, tradingPoint?: TradingPoint) {
+    constructor(value: string, email?: string, user?: User, tradingPoint?: TradingPoint) {
         super();
         this.email = email;
         this.value = value;

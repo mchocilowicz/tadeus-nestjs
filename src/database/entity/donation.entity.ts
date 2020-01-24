@@ -6,29 +6,20 @@ import { TadeusEntity } from "./base.entity";
 import { Period } from "./period.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'DONATION'})
 export class Donation extends TadeusEntity {
 
-    @Column()
+    @Column({name: 'ID'})
     ID: string;
 
-    @Column({nullable: true})
-    invoiceNumber?: string;
-
-    @Column({type: 'text'})
+    @Column({name: 'TYPE', type: 'text'})
     type: DonationEnum;
 
-    @Column({type: 'text'})
+    @Column({name: 'POOL', type: 'text'})
     pool: PoolEnum;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
     price: number = 0;
-
-    @Column({default: false})
-    isPaid: boolean = false;
-
-    @Column({nullable: true})
-    payedAt?: Date;
 
     @ManyToOne(type => Ngo, ngo => ngo.donations)
     @JoinColumn({name: 'NGO_SKID'})

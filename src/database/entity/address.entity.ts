@@ -7,28 +7,29 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ADDRESS'})
 export class Address extends TadeusEntity {
-    @Column()
+    @Column({name: 'STREET'})
     street: string;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({name: 'NUMBER', transformer: new ColumnNumericTransformer()})
     number: number;
 
-    @Column()
+    @Column({name: 'POST_CODE'})
     postCode: string;
 
-    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'LONGITUDE', type: "decimal", transformer: new ColumnNumericTransformer()})
     longitude: number;
 
-    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'LATITUDE', type: "decimal", transformer: new ColumnNumericTransformer()})
     latitude: number;
 
-    @Column({type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'DISTANCE', type: "decimal", transformer: new ColumnNumericTransformer()})
     distance: number = 0;
 
     @Column("geometry", {
         nullable: true,
         spatialFeatureType: "Point",
-        srid: 4326
+        srid: 4326,
+        name: 'COORDINATE'
     })
     coordinate?: object;
 
@@ -39,7 +40,7 @@ export class Address extends TadeusEntity {
     tradingPointList?: TradingPoint[];
 
     @ManyToOne(type => City)
-    @JoinColumn()
+    @JoinColumn({name: 'CITY_SKID'})
     city: City;
 
     constructor(street: string, number: number, postCode: string, city: City, longitude: number, latitude: number) {

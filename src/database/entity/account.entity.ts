@@ -1,29 +1,29 @@
-import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
-import {Role} from "./role.entity";
-import {Status} from "../../common/enum/status.enum";
-import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Role } from "./role.entity";
+import { Status } from "../../common/enum/status.enum";
+import { TadeusEntity } from "./base.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ACCOUNT'})
 export class Account extends TadeusEntity {
 
-    @Column()
+    @Column({name: 'ID'})
     ID: string;
 
-    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'CODE', nullable: true, transformer: new ColumnNumericTransformer()})
     code?: number;
 
-    @Column({nullable: true})
+    @Column({name: 'TOKEN', nullable: true})
     token?: string;
 
-    @Column({nullable: true})
+    @Column({name: 'FIREBASE_TOKEN', nullable: true})
     firebaseToken?: string;
 
-    @Column({type: 'text', default: Status.ACTIVE})
+    @Column({name: 'STATUS', type: 'text', default: Status.ACTIVE})
     status: Status = Status.ACTIVE;
 
     @ManyToOne(type => Role, {nullable: false})
-    @JoinColumn()
+    @JoinColumn({name: 'ROLE_SKID'})
     role: Role;
 
     constructor(id: string, role: Role) {

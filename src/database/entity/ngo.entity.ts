@@ -9,7 +9,7 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 import { User } from "./user.entity";
 import { Transaction } from "./transaction.entity";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'NGO'})
 export class Ngo extends TadeusEntity {
 
     @Column()

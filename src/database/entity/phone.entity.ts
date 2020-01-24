@@ -11,7 +11,7 @@ import { Admin } from "./admin.entity";
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PHONE'})
 @Unique(['value'])
 export class Phone extends TadeusEntity {
-    @Column({unique: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'VALUE', unique: true, transformer: new ColumnNumericTransformer()})
     value: number;
 
     @ManyToOne(type => PhonePrefix, prefix => prefix.phone)

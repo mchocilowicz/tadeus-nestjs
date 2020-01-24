@@ -4,7 +4,7 @@ import { Address } from "./address.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'CITY'})
 export class City extends TadeusEntity {
-    @Column()
+    @Column({name: 'NAME'})
     name: string;
 
     @OneToMany(address => Address, address => address.city)

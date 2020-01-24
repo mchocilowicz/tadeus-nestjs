@@ -6,11 +6,11 @@ import { Account } from "./account.entity";
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ADMIN'})
 export class Admin extends TadeusEntity {
     @ManyToOne(type => Phone)
-    @JoinColumn()
+    @JoinColumn({name: 'PHONE_SKID'})
     phone: Phone;
 
     @OneToOne(type => Account)
-    @JoinColumn()
+    @JoinColumn({name: 'ACCOUNT_SKID'})
     account: Account;
 
     constructor(phone: Phone, account: Account) {

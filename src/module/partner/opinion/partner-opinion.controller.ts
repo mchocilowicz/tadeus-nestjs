@@ -33,7 +33,7 @@ export class PartnerOpinionController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBody({type: NotificationRequest})
     async createOpinion(@Req() req: any, @Body() dto: NotificationRequest) {
-        let opinion = new Opinion(dto.email, dto.value, undefined, req.user.tradingPoint);
+        let opinion = new Opinion(dto.value, dto.email, undefined, req.user.tradingPoint);
         await opinion.save();
     }
 

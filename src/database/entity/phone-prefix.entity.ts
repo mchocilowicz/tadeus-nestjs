@@ -6,13 +6,13 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PHONE_PREFIX'})
 @Unique(['value'])
 export class PhonePrefix extends TadeusEntity {
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({name: 'VALUE', transformer: new ColumnNumericTransformer()})
     value: number;
 
-    @Column()
+    @Column({name: 'CODE'})
     code: string;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({name: 'MAX_LENGTH', transformer: new ColumnNumericTransformer()})
     maxLength: number;
 
     @OneToMany(type => Phone, phone => phone.prefix)

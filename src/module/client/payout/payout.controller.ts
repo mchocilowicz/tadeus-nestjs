@@ -9,7 +9,7 @@ import { User } from "../../../database/entity/user.entity";
 import { Phone } from "../../../database/entity/phone.entity";
 import { getConnection } from "typeorm";
 import { PayoutRequest } from "../../../models/client/request/payout.request";
-import { UserPayout } from "../../../database/entity/user-payment.entity";
+import { UserPayout } from "../../../database/entity/user-payout.entity";
 
 @Controller()
 @ApiTags('payout')

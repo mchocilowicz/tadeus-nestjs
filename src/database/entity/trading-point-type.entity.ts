@@ -5,10 +5,11 @@ import { TadeusEntity } from "./base.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_TYPE'})
 export class TradingPointType extends TadeusEntity {
-    @Column()
+    @Column({name: 'NAME'})
     @ApiProperty()
     name: string;
 
+    @Column({name: 'CODE'})
     @Generated("increment")
     code: number = 0;
 

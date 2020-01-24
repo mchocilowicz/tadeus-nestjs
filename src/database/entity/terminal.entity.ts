@@ -1,38 +1,38 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
-import {Status, Step} from "../../common/enum/status.enum";
-import {TradingPoint} from "./trading-point.entity";
-import {Transaction} from "./transaction.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {Account} from "./account.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { Status, Step } from "../../common/enum/status.enum";
+import { TradingPoint } from "./trading-point.entity";
+import { Transaction } from "./transaction.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { Account } from "./account.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'TERMINAL'})
 export class Terminal extends TadeusEntity {
-    @Column({type: 'text', nullable: true})
+    @Column({name: 'STATUS', type: 'text', nullable: true})
     step: Step = Step.SIGN_IN;
 
-    @Column()
+    @Column({name: 'ID'})
     ID: string;
 
-    @Column({default: false})
+    @Column({name: 'IS_MAIN', default: false})
     isMain: boolean = false;
 
-    @Column({nullable: true})
+    @Column({name: 'NAME', nullable: true})
     name?: string;
 
     @ManyToOne(type => Phone)
-    @JoinColumn()
+    @JoinColumn({name: 'PHONE_SKID'})
     phone?: Phone;
 
     @ManyToOne(type => TradingPoint)
-    @JoinColumn()
+    @JoinColumn({name: 'PARTNER_SKID'})
     tradingPoint: TradingPoint;
 
     @OneToMany(type => Transaction, transactions => transactions.terminal)
     transactions?: Transaction[];
 
     @OneToOne(type => Account)
-    @JoinColumn()
+    @JoinColumn({name: 'ACCOUNT_SKID'})
     account: Account;
 
     constructor(ID: string, phone: Phone, point: TradingPoint, account: Account, name?: string) {

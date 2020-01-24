@@ -5,16 +5,16 @@ import { ColumnNumericTransformer } from "../../common/util/number-column.transf
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'SETTINGS'})
 export class Configuration extends TadeusEntity {
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'MIN_NGO_TRANSFER', type: 'decimal', transformer: new ColumnNumericTransformer()})
     minNgoTransfer: number = 0;
 
-    @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'MIN_PERSONAL_POOL', type: 'decimal', transformer: new ColumnNumericTransformer()})
     minPersonalPool: number = 0;
 
-    @Column({transformer: new ColumnNumericTransformer()})
+    @Column({name: 'USER_EXPIRATION', transformer: new ColumnNumericTransformer()})
     userExpirationAfterDays: number = 365;
 
-    @Column()
+    @Column({name: 'TYPE'})
     type: string = 'MAIN';
 
     static getMain(): Promise<Configuration | undefined> {
