@@ -3,7 +3,7 @@ import { TadeusEntity } from "./base.entity";
 import { Phone } from "./phone.entity";
 import { Account } from "./account.entity";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ADMIN'})
 export class Admin extends TadeusEntity {
     @ManyToOne(type => Phone)
     @JoinColumn()

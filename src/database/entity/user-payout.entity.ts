@@ -3,7 +3,7 @@ import {TadeusEntity} from "./base.entity";
 import {User} from "./user.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'USER_PAYOUT'})
 export class UserPayout extends TadeusEntity {
     @Column()
     firstName: string;
@@ -20,6 +20,7 @@ export class UserPayout extends TadeusEntity {
     readonly class: string = 'PAYOUT';
 
     @ManyToOne(type => User, user => user.payouts)
+    @JoinColumn({name: 'USER_SKID'})
     user: User;
 
     constructor(firstName: string, lastName: string, account: string, user: User) {

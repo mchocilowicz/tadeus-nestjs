@@ -55,23 +55,31 @@ export class Transaction extends TadeusEntity {
     @Column()
     isCorrection: boolean = false;
 
+    @Column({name: 'IS_PAID'})
+    isPaid: boolean = false;
+
     @ManyToOne(type => TradingPoint, tradingPoint => tradingPoint.transactions)
+    @JoinColumn({name: 'PARTNER_SKID'})
     tradingPoint: TradingPoint;
 
     @ManyToOne(type => User, user => user.transactions)
+    @JoinColumn({name: 'USER_SKID'})
     user: User;
 
     @ManyToOne(type => Terminal, terminal => terminal.transactions)
+    @JoinColumn({name: 'TERMINAL_SKID'})
     terminal: Terminal;
 
     @ManyToOne(type => PartnerPayment, payment => payment.transactions)
-    payment: PartnerPayment;
+    @JoinColumn({name: 'PARTNER_PAYMENT_SKID'})
+    payment?: PartnerPayment;
 
-    @ManyToOne(type => Donation, donation => donation.transactions)
-    donation: Donation;
+    @ManyToOne(type => Ngo, ngo => ngo.transactions)
+    @JoinColumn({name: 'NGO_SKID'})
+    ngo: Ngo;
 
     @OneToOne(type => Transaction)
-    @JoinColumn()
+    @JoinColumn({name: 'CORRECTION_SKID'})
     correction?: Transaction;
 
     readonly class: string = 'TRANSACTION';
@@ -79,24 +87,22 @@ export class Transaction extends TadeusEntity {
     constructor(terminal: Terminal,
                 user: User,
                 tradingPoint: TradingPoint,
+                ngo: Ngo,
                 ID: string,
                 price: number,
-                payment: PartnerPayment,
                 vat: number,
                 fee: number,
-                donationPercentage: number,
-                donation: Donation) {
+                donationPercentage: number) {
         super();
         this.terminal = terminal;
         this.user = user;
         this.tradingPoint = tradingPoint;
+        this.ngo = ngo;
         this.ID = ID;
         this.price = price;
-        this.payment = payment;
         this.donationPercentage = donationPercentage;
         this.provisionPercentage = fee;
         this.vat = vat;
-        this.donation = donation;
     }
 
     static findByTradingPointMadeToday(tradingPointId: string) {

@@ -7,6 +7,7 @@ import {
     Logger,
     Param,
     Post,
+    Put,
     Req,
     Res,
     UseGuards
@@ -32,10 +33,9 @@ import { VirtualCard } from "../../database/entity/virtual-card.entity";
 import { TadeusEntity } from "../../database/entity/base.entity";
 import { groupDatesByComponent } from "../../common/util/functions";
 import { CalculationService } from "../../common/service/calculation.service";
-import { PartnerPayment } from "../../database/entity/partner-payment.entity";
 import { TradingPoint } from "../../database/entity/trading-point.entity";
 import { Period } from "../../database/entity/period.entity";
-import { UserPayout } from "../../database/entity/user-payment.entity";
+import { UserPayout } from "../../database/entity/user-payout.entity";
 import { FirebaseTokenRequest } from "../../models/client/request/firebase-token.request";
 import { Account } from "../../database/entity/account.entity";
 import { CorrectionRequest } from "../../models/client/request/correction.request";
@@ -187,12 +187,13 @@ export class ClientController {
                 .leftJoinAndSelect('t.tradingPoint', 'point')
                 .leftJoinAndSelect('t.correction', 'correction')
                 .leftJoinAndSelect('t.payment', 'payment')
-                .leftJoinAndSelect('user.ngo', 'ngo')
-                .leftJoinAndSelect('ngo.card', 'card')
+                .leftJoinAndSelect('t.ngo', 'ngo')
+                .leftJoinAndSelect('user.card', 'virtual_card')
                 .where('t.ID = :ID', {ID: dto.transactionID})
                 .andWhere('terminal.ID = :terminal', {terminal: dto.terminalID})
                 .andWhere('t.status = :status', {status: TransactionStatus.WAITING})
                 .andWhere('t.isCorrection = true')
+                .andWhere('virtual_card.status = :status', {status: 'ACTIVE'})
                 .getOne();
 
             if (!transaction) {
@@ -211,37 +212,26 @@ export class ClientController {
                 transaction.status = TransactionStatus.ACCEPTED;
 
                 const t: Transaction = transaction.correction;
-
                 t.status = TransactionStatus.CORRECTED;
 
-                const payment: PartnerPayment = transaction.payment;
                 const point: TradingPoint = transaction.tradingPoint;
                 const virtualCard: VirtualCard = user.card;
+                const ngo: Ngo = transaction.ngo;
+                const card: PhysicalCard = ngo.card;
 
-
-                user.xp += (-t.userXp + transaction.userXp);
-                user.updateCollectedMoney(-t.poolValue + transaction.poolValue);
-                point.xp += (-t.tradingPointXp + transaction.tradingPointXp);
-
-                payment.price += (-t.paymentValue + Number(transaction.provision + transaction.poolValue));
-                virtualCard.updatePool(-t.poolValue + transaction.poolValue);
-
-                const ngo: Ngo | undefined = transaction.user.ngo;
-
-                if (ngo) {
-                    let card: PhysicalCard = ngo.card;
-                    if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${ ngo.id }`);
-                        throw new BadRequestException('internal_server_error');
-                    }
-                    card.collectedMoney += (-t.poolValue + transaction.poolValue);
-                    await entityManager.save(card)
+                if (transaction.price === 0) {
+                    user.xp -= t.userXp;
+                    user.updateCollectedMoney(-t.poolValue);
+                    point.xp -= t.tradingPointXp;
+                    virtualCard.updatePool(-t.poolValue);
+                    card.collectedMoney -= t.poolValue;
                 } else {
-                    user.ngoTempMoney += (-t.poolValue + transaction.poolValue);
+                    user.updateCollectedMoney(-t.poolValue + t.poolValue);
+                    virtualCard.updatePool(-t.poolValue + transaction.poolValue);
+                    card.collectedMoney += (-t.poolValue + transaction.poolValue);
                 }
-
+                await entityManager.save(card);
                 await entityManager.save(virtualCard);
-                await entityManager.save(payment);
                 await entityManager.save(point);
                 await entityManager.save(user);
                 await entityManager.save(t);
@@ -263,6 +253,18 @@ export class ClientController {
         const account: Account = user.account;
         account.firebaseToken = dto.token;
         await account.save();
+    }
+
+    @Put('activeCard')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.CLIENT)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200})
+    async activeVirtualCard(@Req() req: any) {
+        const user: User = req.user;
+        const card: VirtualCard = user.card;
+        card.status = "ACTIVE";
+        await card.save();
     }
 
     @Get('/img/:imageName')

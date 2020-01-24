@@ -29,14 +29,13 @@ import { TradingPoint } from "../../../database/entity/trading-point.entity";
 import { User } from "../../../database/entity/user.entity";
 import { Terminal } from "../../../database/entity/terminal.entity";
 import { Configuration } from "../../../database/entity/configuration.entity";
-import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
 import { Period } from "../../../database/entity/period.entity";
-import { Donation } from "../../../database/entity/donation.entity";
-import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
 import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
 import { FirebaseAdminService } from "../../../common/service/firebase-admin.service";
 import { TransactionStatus } from "../../../common/enum/status.enum";
 import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import { Ngo } from "../../../database/entity/ngo.entity";
+import { PhysicalCard } from "../../../database/entity/physical-card.entity";
 
 const moment = require('moment');
 
@@ -89,6 +88,7 @@ export class PartnerTransactionController {
             .leftJoinAndSelect('t.user', 'user')
             .leftJoinAndSelect('t.terminal', 'terminal')
             .leftJoinAndSelect('t.tradingPoint', 'point')
+            .leftJoinAndSelect('t.ngo', 'ngo')
             .leftJoinAndSelect('user.account', 'account')
             .where('t.id = :id', {id: dto.transactionId})
             .andWhere('t.status = :status', {status: TransactionStatus.ACCEPTED})
@@ -112,49 +112,23 @@ export class PartnerTransactionController {
                 throw new BadRequestException('internal_server_error');
             }
 
-            let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period});
-
             let tradingPoint: TradingPoint = terminal.tradingPoint;
-
-            if (!payment) {
-                payment = new PartnerPayment(this.codeService.generatePartnerPaymentID(), tradingPoint, period);
-                payment = await entityManager.save(payment)
-            }
-
             let user: User = oldTransaction.user;
-
-            let donation: Donation | undefined = await Donation.getCurrentDonationForUser(user, period);
-            if (!donation) {
-                donation = new Donation(
-                    this.codeService.generateDonationID(),
-                    DonationEnum.NGO,
-                    PoolEnum.DONATION,
-                    user,
-                    period
-                );
-                donation = await entityManager.save(donation);
-            }
-
+            let ngo: Ngo = oldTransaction.ngo;
 
             let transaction: Transaction = new Transaction(
                 terminal,
                 user,
                 tradingPoint,
+                ngo,
                 this.codeService.generateTransactionID(),
                 dto.price,
-                payment,
                 tradingPoint.vat,
                 tradingPoint.fee,
-                tradingPoint.donationPercentage,
-                donation
+                tradingPoint.donationPercentage
             );
 
-            const userXp = await this.calService.calculateXpForUser(user.id, user.xp, transaction);
-            const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, transaction);
-
-            transaction.updateXpValues(userXp, tradingPointXp);
-            tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
-
+            transaction.updateXpValues(oldTransaction.userXp, oldTransaction.tradingPointXp);
             let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
             let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
 
@@ -246,89 +220,67 @@ export class PartnerTransactionController {
                     throw new BadRequestException('internal_server_error');
                 }
 
-                let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period});
-
                 let tradingPoint: TradingPoint = terminal.tradingPoint;
-
-                if (!payment) {
-                    payment = new PartnerPayment(this.codeService.generatePartnerPaymentID(), tradingPoint, period);
-                    payment = await entityManager.save(payment)
-                }
-
 
                 let user: User | undefined = await User.getUserForTransaction(dto.clientCode, dto.phonePrefix, dto.phone);
 
                 if (!user) {
                     throw new BadRequestException('user_does_not_exists')
                 }
+                const ngo: Ngo | undefined = user.ngo;
 
-                let donation: Donation | undefined = await Donation.getCurrentDonationForUser(user, period);
-                if (!donation) {
-                    donation = new Donation(
-                        this.codeService.generateDonationID(),
-                        DonationEnum.NGO,
-                        PoolEnum.DONATION,
-                        user,
-                        period
-                    );
-                    donation = await entityManager.save(donation);
+                if (!ngo) {
+                    throw new BadRequestException('ngo_not_selected')
                 }
-
 
                 let transaction: Transaction = new Transaction(
                     terminal,
                     user,
                     tradingPoint,
+                    ngo,
                     this.codeService.generateTransactionID(),
                     dto.price,
-                    payment,
                     tradingPoint.vat,
                     tradingPoint.fee,
                     tradingPoint.donationPercentage,
-                    donation
                 );
-
-                const userXp = await this.calService.calculateXpForUser(user.id, user.xp, transaction);
-                const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, transaction);
-
-                transaction.updateXpValues(userXp, tradingPointXp);
-                tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
-
-                let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
-                let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
-
-
-                transaction.updatePaymentValues(provision, pool);
-                transaction.setUserPool(pool / 2, pool / 2);
-
-                if (!user.account.firebaseToken) {
-                    this.logger.error('Phone Firebase token does not exists');
-                    throw new BadRequestException('internal_server_error');
-                }
-                transaction.status = TransactionStatus.ACCEPTED;
 
                 const point: TradingPoint = transaction.tradingPoint;
                 const virtualCard: VirtualCard = user.card;
 
+                if (virtualCard.status !== 'ACTIVE') {
+                    throw new BadRequestException('virtual_card_active');
+                }
+
+                const userXp = await this.calService.calculateXpForUser(user.id, user.xp, transaction);
+                const tradingPointXp = await this.calService.calculateXpForPartner(tradingPoint.id, transaction);
+                transaction.updateXpValues(userXp, tradingPointXp);
+
+                tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
+                let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
+
+
+                let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
+                transaction.updatePaymentValues(provision, pool);
+
+                transaction.setUserPool(pool / 2, pool / 2);
+                if (!user.account.firebaseToken) {
+                    this.logger.error('Phone Firebase token does not exists');
+                    throw new BadRequestException('internal_server_error');
+                }
+
+                transaction.status = TransactionStatus.ACCEPTED;
+
                 user.xp += transaction.userXp;
-                payment.price += Number(transaction.provision + transaction.poolValue);
                 virtualCard.updatePool(transaction.poolValue);
                 user.updateCollectedMoney(transaction.poolValue);
 
-                if (user.ngo) {
-                    let card = user.ngo.card;
-                    if (!card) {
-                        this.logger.error(`Physical Card is not assigned to Ngo ${ user.ngo.id }`);
-                        throw new BadRequestException('internal_server_error');
-                    }
-                    card.collectedMoney += transaction.poolValue;
-                    await entityManager.save(card)
-                } else {
-                    user.ngoTempMoney += transaction.poolValue;
-                }
+                let card: PhysicalCard = ngo.card;
+                card.collectedMoney += transaction.poolValue;
 
+
+                await entityManager.save(card);
                 await entityManager.save(virtualCard);
-                await entityManager.save(payment);
                 await entityManager.save(point);
                 await entityManager.save(user);
                 await entityManager.save(transaction);

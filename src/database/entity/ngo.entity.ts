@@ -7,6 +7,7 @@ import { TadeusEntity } from "./base.entity";
 import { Address } from "./address.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 import { User } from "./user.entity";
+import { Transaction } from "./transaction.entity";
 
 @Entity({schema: 'tds'})
 export class Ngo extends TadeusEntity {
@@ -51,26 +52,29 @@ export class Ngo extends TadeusEntity {
     lastDonation?: number;
 
     @ManyToOne(type => Phone)
-    @JoinColumn()
+    @JoinColumn({name: 'PHONE_SKID'})
     phone: Phone;
 
     @OneToOne(type => PhysicalCard)
-    @JoinColumn()
+    @JoinColumn({name: 'PHYSICAL_CARD_SKID'})
     card: PhysicalCard;
 
     @ManyToOne(type => Address)
-    @JoinColumn()
+    @JoinColumn({name: 'ADDRESS_SKID'})
     address: Address;
 
     @ManyToOne(type => NgoType)
-    @JoinColumn()
+    @JoinColumn({name: 'NGO_TYPE_SKID'})
     type: NgoType;
 
     @OneToMany(type => User, user => user.ngo)
-    user?: User[];
+    users?: User[];
 
     @OneToMany(type => Donation, donation => donation.ngo)
     donations?: Donation[];
+
+    @OneToMany(type => Transaction, transaction => transaction.ngo)
+    transactions?: Transaction[];
 
     constructor(ID: string,
                 email: string,

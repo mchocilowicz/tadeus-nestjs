@@ -9,7 +9,7 @@ import {Address} from "./address.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 import {Opinion} from "./opinion.entity";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER'})
 export class TradingPoint extends TadeusEntity {
     @Column()
     ID: string;

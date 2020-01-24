@@ -22,6 +22,8 @@ export class MainResponse {
     selfPayoutDate: Date;
     @ApiProperty()
     selfPayoutPossible: boolean;
+    @ApiProperty()
+    activeCard: boolean = false;
 
     constructor(user: User, card: VirtualCard, activity: number, payout: Date, possible: boolean) {
         this.ngo = user.ngo;
@@ -33,5 +35,6 @@ export class MainResponse {
         this.userActivity = activity;
         this.selfPayoutDate = payout;
         this.selfPayoutPossible = possible;
+        this.activeCard = card.status === 'ACTIVE';
     }
 }

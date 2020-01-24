@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { User } from "./user.entity";
 import { TadeusEntity } from "./base.entity";
 import { TradingPoint } from "./trading-point.entity";
@@ -12,9 +12,11 @@ export class Opinion extends TadeusEntity {
     email: string;
 
     @ManyToOne(type => User, user => user.opinions)
+    @JoinColumn({name: 'USER_SKID'})
     user?: User;
 
     @ManyToOne(type => TradingPoint, point => point.opinions)
+    @JoinColumn({name: 'PARTNER_SKID'})
     tradingPoint?: TradingPoint;
 
     constructor(email: string, value: string, user?: User, tradingPoint?: TradingPoint) {

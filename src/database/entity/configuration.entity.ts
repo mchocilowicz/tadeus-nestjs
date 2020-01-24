@@ -2,7 +2,7 @@ import { Column, Entity } from "typeorm";
 import { TadeusEntity } from "./base.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'SETTINGS'})
 export class Configuration extends TadeusEntity {
 
     @Column({type: 'decimal', transformer: new ColumnNumericTransformer()})

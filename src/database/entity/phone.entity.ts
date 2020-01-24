@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, Unique } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from "typeorm";
 import { PhonePrefix } from "./phone-prefix.entity";
 import { TradingPoint } from "./trading-point.entity";
 import { User } from "./user.entity";
@@ -8,13 +8,14 @@ import { TadeusEntity } from "./base.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 import { Admin } from "./admin.entity";
 
-@Entity({schema: 'tds'})
+@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PHONE'})
 @Unique(['value'])
 export class Phone extends TadeusEntity {
     @Column({unique: true, transformer: new ColumnNumericTransformer()})
     value: number;
 
     @ManyToOne(type => PhonePrefix, prefix => prefix.phone)
+    @JoinColumn({name: 'PHONE_PREFIX_SKID'})
     prefix: PhonePrefix;
 
     @OneToMany(type => TradingPoint, point => point.phone)

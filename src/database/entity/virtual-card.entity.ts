@@ -17,6 +17,9 @@ export class VirtualCard extends TadeusEntity {
     @Column({type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     personalPool: number = 0;
 
+    @Column({name: "STATUS"})
+    status: string = 'NOT_ACTIVE';
+
     constructor(ID: string) {
         super();
         this.ID = ID;

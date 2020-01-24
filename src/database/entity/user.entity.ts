@@ -6,7 +6,7 @@ import { VirtualCard } from "./virtual-card.entity";
 import { Opinion } from "./opinion.entity";
 import { Phone } from "./phone.entity";
 import { TadeusEntity } from "./base.entity";
-import { UserPayout } from "./user-payment.entity";
+import { UserPayout } from "./user-payout.entity";
 import { RoleEnum } from "../../common/enum/role.enum";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 import { Ngo } from "./ngo.entity";
@@ -49,20 +49,23 @@ export class User extends TadeusEntity {
     @Column({nullable: true})
     prevName?: string;
 
+    @Column({name: 'NGO_SELECTED_AT', nullable: true})
+    ngoSelectedAt?: Date;
+
     @ManyToOne(type => Ngo)
-    @JoinTable()
+    @JoinTable({name: 'NGO_SKID'})
     ngo?: Ngo;
 
     @OneToOne(type => VirtualCard)
-    @JoinColumn()
+    @JoinColumn({name: 'VIRTUAL_CARD_SKID'})
     card: VirtualCard;
 
     @ManyToOne(type => Phone)
-    @JoinColumn()
+    @JoinColumn({name: 'PHONE_SKID'})
     phone?: Phone;
 
     @OneToOne(type => Account)
-    @JoinColumn()
+    @JoinColumn({name: 'ACCOUNT_SKID'})
     account: Account;
 
     @OneToMany(type => Transaction, transactions => transactions.user)
