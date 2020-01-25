@@ -1,19 +1,22 @@
-import { BadRequestException, Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { User } from "../../../database/entity/user.entity";
-import { Donation } from "../../../database/entity/donation.entity";
-import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
-import { CodeService } from "../../../common/service/code.service";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { getConnection } from "typeorm";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { NgoDonationRequest } from "../../../models/client/request/donation.request";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { Period } from "../../../database/entity/period.entity";
+import {BadRequestException, Body, Controller, Get, Logger, Post, Req, UseGuards} from "@nestjs/common";
+import {ApiBearerAuth, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {User} from "../../../database/entity/user.entity";
+import {Donation} from "../../../database/entity/donation.entity";
+import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
+import {CodeService} from "../../../common/service/code.service";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {getConnection} from "typeorm";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {NgoDonationRequest} from "../../../models/client/request/donation.request";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {Period} from "../../../database/entity/period.entity";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+
+const moment = require("moment");
 
 @Controller()
 @ApiTags('donation')
@@ -37,16 +40,25 @@ export class DonationController {
             throw new BadRequestException('internal_server_error')
         }
 
+        let canDonate = false;
+
+        if (user.ngoSelectedAt) {
+            const date = moment(user.ngoSelectedAt).add(30, 'days').format(Const.DATE_FORMAT);
+            if (moment().format(Const.DATE_FORMAT) >= date) {
+                canDonate = true;
+            }
+        }
+
         if (user.ngo) {
             return {
-                canDonateSameNgo: user.ngoSelectionCount > 1,
+                canDonateSameNgo: canDonate,
                 ngoName: user.ngo.name,
                 ngoId: user.ngo.id
             }
         }
 
         return {
-            canDonateSameNgo: user.ngoSelectionCount > 1
+            canDonateSameNgo: canDonate
         }
     }
 
@@ -58,20 +70,21 @@ export class DonationController {
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async donationAnotherNgo(@Req() req: any, @Body() request: NgoDonationRequest) {
         const user: User = req.user;
-        // const virtualCard: VirtualCard | undefined = user.card;
+        const virtualCard: VirtualCard | undefined = user.card;
         const config: Configuration | undefined = await Configuration.getMain();
         const period: Period | undefined = await Period.findCurrentNgoPeriod();
 
         if (!config || !period) {
             this.logger.error('Configuration Table is not available');
-            throw new BadRequestException("internal_error")
+            throw new BadRequestException("internal_server_error")
         }
 
-        // if (!virtualCard) {
-        //     this.logger.error('Virtual Card Object is not available for User: ' + user.id);
-        //     throw new BadRequestException("internal_error")
-        // }
-        //
+        if (!virtualCard) {
+            this.logger.error('Virtual Card Object is not available for User: ' + user.id);
+            throw new BadRequestException("internal_server_error")
+        }
+
+
         // const totalPrice = request.ngoDonation + request.tadeusDonation;
         //
         // if (config.minNgoTransfer > totalPrice) {
@@ -83,33 +96,47 @@ export class DonationController {
         // }
 
         await getConnection().transaction(async entityManager => {
+            let cardChanged = false;
             if (request.ngoDonation > 0) {
-                let ngo: Ngo | undefined = await Ngo.findOne({id: request.ngoId});
+                const ngo: Ngo | undefined = await Ngo.findOne({id: request.ngoId});
 
                 if (!ngo) {
                     throw new BadRequestException('ngo_does_not_exists');
                 }
 
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, DonationEnum.NGO, PoolEnum.PERSONAL, user, period);
-                donation.ngo = ngo;
+                const donation: Donation = new Donation(ID, request.payUextOrderId, DonationEnum.NGO, PoolEnum.PERSONAL, user, period, ngo);
                 donation.price = request.ngoDonation;
-                donation.invoiceNumber = request.payUextOrderId;
-                // virtualCard.personalPool -= request.ngoDonation;
                 await entityManager.save(donation);
+                const card = ngo.card;
+                card.collectedMoney += request.ngoDonation;
+                await entityManager.save(card);
+                cardChanged = true;
             }
 
             if (request.tadeusDonation > 0) {
+                const ngo: Ngo | undefined = await Ngo.findOne({isTadeus: true});
+
+                if (!ngo) {
+                    throw new BadRequestException('tadeus_does_not_exists');
+                }
+
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, DonationEnum.TADEUS, PoolEnum.PERSONAL, user, period);
+                const donation: Donation = new Donation(ID, request.payUextOrderId, DonationEnum.TADEUS, PoolEnum.PERSONAL, user, period, ngo);
                 donation.price = request.tadeusDonation;
-                donation.ngo = await Ngo.findOne({isTadeus: true});
-                donation.invoiceNumber = request.payUextOrderId;
-                // virtualCard.personalPool -= request.tadeusDonation;
+
+                const card = ngo.card;
+                card.collectedMoney += request.tadeusDonation;
+
                 await entityManager.save(donation);
+                await entityManager.save(card);
+                cardChanged = true;
             }
 
-            // await entityManager.save(virtualCard);
+            if (cardChanged) {
+                virtualCard.personalPool -= request.tadeusDonation + request.ngoDonation;
+                await entityManager.save(virtualCard);
+            }
         });
 
     }

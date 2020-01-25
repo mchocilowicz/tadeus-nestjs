@@ -1,60 +1,37 @@
-import {Cron, NestSchedule} from "nest-schedule";
-import {Injectable, Logger} from "@nestjs/common";
+import {Injectable, Logger, NotFoundException} from "@nestjs/common";
 import {Period} from "../database/entity/period.entity";
+import {EntityManager, getConnection} from "typeorm";
+import {Configuration} from "../database/entity/configuration.entity";
+import {Const} from "../common/util/const";
+import {Cron} from "@nestjs/schedule";
 
 const moment = require('moment');
 
 @Injectable()
-export class ConfigurationScheduler extends NestSchedule {
+export class ConfigurationScheduler {
 
     private readonly logger = new Logger(ConfigurationScheduler.name);
 
-    @Cron('* * 6 * * *')
+    @Cron('0 0 3 ? * * *')
     async cronJob() {
-        let ngoPeriod: Period | undefined = await Period.findCurrentNgoPeriod();
+        const config: Configuration | undefined = await Configuration.getMain();
         let userPeriod: Period | undefined = await Period.findCurrentClientPeriod();
-        let partnerPeriod: Period | undefined = await Period.findCurrentPartnerPeriod();
-
         let currentDate = moment().format('YYYY-MM-DD');
 
-        if (userPeriod) {
-            if (moment(userPeriod.to).add(1, 'days').format('YYYY-MM-DD') === currentDate) {
-                const period = new Period(
-                    moment(),
-                    moment().add(userPeriod.interval, 'days'),
-                    userPeriod.interval,
-                    'CLIENT');
-                period.relation = userPeriod;
-                await period.save()
-            }
+        if (!config) {
+            throw new NotFoundException('configuration_not_exists')
         }
 
-        if (partnerPeriod) {
-            if (moment(partnerPeriod.to).add(1, 'days').format('YYYY-MM-DD') === currentDate) {
-                if (userPeriod) {
-                    const period = new Period(
-                        moment(),
-                        moment(userPeriod.to).add(partnerPeriod.interval, 'days'),
-                        partnerPeriod.interval,
-                        'PARTNER');
-                    period.relation = userPeriod;
-                    await period.save()
+        await getConnection().transaction(async (entityManager: EntityManager) => {
+            let period = new Period(moment(), moment().add(config.userPeriodInterval, 'days'), config.userPeriodInterval, 'CLIENT');
+            if (userPeriod) {
+                const newPeriod = moment(userPeriod.from).add(config.userPeriodInterval, 'days').format(Const.DATE_FORMAT);
+                if (newPeriod === currentDate) {
+                    await entityManager.save(period);
                 }
+            } else {
+                await entityManager.save(period);
             }
-        }
-
-        if (ngoPeriod) {
-            if (moment(ngoPeriod.to).add(1, 'days').format('YYYY-MM-DD') === currentDate) {
-                if (partnerPeriod) {
-                    const period = new Period(
-                        moment(),
-                        moment(partnerPeriod.to).add(ngoPeriod.interval, 'days'),
-                        ngoPeriod.interval,
-                        'NGO');
-                    period.relation = partnerPeriod;
-                    await period.save()
-                }
-            }
-        }
+        });
     }
 }

@@ -12,30 +12,30 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { CalculationService } from "../../../common/service/calculation.service";
-import { CodeService } from "../../../common/service/code.service";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { Transaction } from "../../../database/entity/transaction.entity";
-import { TransactionResponse } from "../../../models/common/response/transaction.response";
-import { getConnection } from "typeorm";
-import { CorrectionRequest, TransactionRequest } from "../../../models/partner/request/transaction.request";
-import { handleException } from "../../../common/util/functions";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { User } from "../../../database/entity/user.entity";
-import { Terminal } from "../../../database/entity/terminal.entity";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { Period } from "../../../database/entity/period.entity";
-import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
-import { FirebaseAdminService } from "../../../common/service/firebase-admin.service";
-import { TransactionStatus } from "../../../common/enum/status.enum";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { PhysicalCard } from "../../../database/entity/physical-card.entity";
+import {CalculationService} from "../../../common/service/calculation.service";
+import {CodeService} from "../../../common/service/code.service";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {Transaction} from "../../../database/entity/transaction.entity";
+import {TransactionResponse} from "../../../models/common/response/transaction.response";
+import {getConnection} from "typeorm";
+import {CorrectionRequest, TransactionRequest} from "../../../models/partner/request/transaction.request";
+import {handleException} from "../../../common/util/functions";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {User} from "../../../database/entity/user.entity";
+import {Terminal} from "../../../database/entity/terminal.entity";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {Period} from "../../../database/entity/period.entity";
+import {PartnerTransactionResponse} from "../../../models/partner/response/partner-transaction.response";
+import {FirebaseAdminService} from "../../../common/service/firebase-admin.service";
+import {TransactionStatus} from "../../../common/enum/status.enum";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {PhysicalCard} from "../../../database/entity/physical-card.entity";
 
 const moment = require('moment');
 
@@ -105,7 +105,7 @@ export class PartnerTransactionController {
         const data: any = await getConnection().transaction(async entityManager => {
 
             const config: Configuration | undefined = await Configuration.getMain();
-            const period: Period | undefined = await Period.findCurrentPartnerPeriod();
+            const period: Period | undefined = await Period.findCurrentClientPeriod();
 
             if (!config || !period) {
                 this.logger.error('Configuration or Current Period is not available');
@@ -121,6 +121,7 @@ export class PartnerTransactionController {
                 user,
                 tradingPoint,
                 ngo,
+                period,
                 this.codeService.generateTransactionID(),
                 dto.price,
                 tradingPoint.vat,
@@ -208,7 +209,7 @@ export class PartnerTransactionController {
                 let terminal: Terminal = req.user;
 
                 const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
-                const period: Period | undefined = await Period.findCurrentPartnerPeriod();
+                const period: Period | undefined = await Period.findCurrentClientPeriod();
 
                 if (!config || !period) {
                     this.logger.error('Configuration or Current Period is not available');
@@ -238,6 +239,7 @@ export class PartnerTransactionController {
                     user,
                     tradingPoint,
                     ngo,
+                    period,
                     this.codeService.generateTransactionID(),
                     dto.price,
                     tradingPoint.vat,

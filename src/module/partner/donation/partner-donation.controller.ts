@@ -1,17 +1,17 @@
-import { BadRequestException, Body, Controller, Get, Put, Req, UseGuards } from "@nestjs/common";
-import { Terminal } from "../../../database/entity/terminal.entity";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { Period } from "../../../database/entity/period.entity";
-import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
-import { CodeService } from "../../../common/service/code.service";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { PartnerPaymentResponse } from "../../../models/partner/response/partner-payment.response";
-import { Const } from "../../../common/util/const";
-import { DonationRequest } from "../../../models/partner/request/donation.request";
+import {BadRequestException, Body, Controller, Get, Put, Req, UseGuards} from "@nestjs/common";
+import {Terminal} from "../../../database/entity/terminal.entity";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {Period} from "../../../database/entity/period.entity";
+import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
+import {CodeService} from "../../../common/service/code.service";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {PartnerPaymentResponse} from "../../../models/partner/response/partner-payment.response";
+import {Const} from "../../../common/util/const";
+import {DonationRequest} from "../../../models/partner/request/donation.request";
 
 @Controller()
 @ApiTags('donation')
@@ -35,6 +35,7 @@ export class PartnerDonationController {
         if (!period) {
             throw new BadRequestException('')
         }
+        // TODO: change date
 
         let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period, tradingPoint: point});
         return new PartnerPaymentResponse(period.to, payment)
@@ -54,9 +55,11 @@ export class PartnerDonationController {
             throw new BadRequestException('partner_payment_payed')
         }
 
-        payment.isPaid = true;
-        payment.paymentNumber = dto.payUextOrderId;
-        payment.partnerPaymentAt = new Date();
+        if (payment.paymentDetails) {
+            payment.paymentDetails += "," + dto.payUextOrderId;
+        } else {
+            payment.paymentDetails = dto.payUextOrderId;
+        }
         await payment.save();
     }
 

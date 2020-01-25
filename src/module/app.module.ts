@@ -10,7 +10,6 @@ import {PartnerTerminalModule} from "./partner/terminal/partner-terminal.module"
 import {NgoModule} from "./client/ngo/ngo.module";
 import {RegisterModule} from "./client/register/register.module";
 import {PlaceModule} from "./client/place/place.module";
-import {ScheduleModule} from "nest-schedule";
 import {DonationModule} from "./client/donation/donation.module";
 import {DashboardNgoModule} from "./dashboard/ngo/dashboard-ngo.module";
 import {TradingPointModule} from "./dashboard/trading-point/trading-point.module";
@@ -24,6 +23,11 @@ import {PartnerSettingsModule} from "./partner/settings/partner-settings.module"
 import {PartnerDonationModule} from "./partner/donation/partner-donation.module";
 import {PartnerOpinionModule} from "./partner/opinion/partner-opinion.module";
 import {ConfigurationModule} from "./dashboard/configuration/configuration.module";
+import {SettlementModule} from "./dashboard/settlement/settlement.module";
+import {ScheduleModule} from '@nestjs/schedule';
+import {EventEmitter} from 'events';
+import {NestEmitterModule} from "nest-emitter";
+import {PartnerPaymentEvent} from "../events/partner-payment.event";
 
 const routes: Routes = [
     {
@@ -111,6 +115,10 @@ const routes: Routes = [
                 path: '/ngo',
                 module: DashboardNgoModule
             },
+            {
+                path: '/settlement',
+                module: SettlementModule
+            }
             //         {
             //             path: '/trading-point-type',
             //             module: TradingPointTypeModule
@@ -125,7 +133,8 @@ const routes: Routes = [
 
 @Module({
     imports: [
-        ScheduleModule.register(),
+        NestEmitterModule.forRoot(new EventEmitter()),
+        ScheduleModule.forRoot(),
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRoot(),
         //Client Module
@@ -156,7 +165,8 @@ const routes: Routes = [
         ConfigurationModule,
         DashboardNgoModule,
         // NgoTypeModule,
-        StatsModule
+        StatsModule,
+        SettlementModule,
     ],
     controllers: [],
     providers: [
@@ -172,7 +182,9 @@ const routes: Routes = [
             provide: APP_INTERCEPTOR,
             useClass: TadeusTransformInterceptor
         },
+        // PartnerPaymentScheduler
         // ConfigurationScheduler,
+        PartnerPaymentEvent
     ],
 })
 export class AppModule {

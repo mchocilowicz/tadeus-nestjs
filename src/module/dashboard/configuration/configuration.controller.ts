@@ -1,9 +1,9 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { ApiTags } from "@nestjs/swagger";
-import { ConfigurationRequest, PeriodRequest } from "../../../models/dashboard/request/configuration.request";
-import { Period } from "../../../database/entity/period.entity";
-import { getConnection } from "typeorm";
+import {Body, Controller, Get, Post} from "@nestjs/common";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {ApiTags} from "@nestjs/swagger";
+import {ConfigurationRequest, PeriodRequest} from "../../../models/dashboard/request/configuration.request";
+import {Period} from "../../../database/entity/period.entity";
+import {getConnection} from "typeorm";
 
 const moment = require('moment');
 
@@ -33,9 +33,9 @@ export class ConfigurationController {
 
             let savedConfig = await entityManager.save(config);
             clientPeriod = await entityManager.save(clientPeriod);
-            partnerPeriod.relation = clientPeriod;
+            // partnerPeriod.relation = clientPeriod;
             partnerPeriod = await entityManager.save(partnerPeriod);
-            ngoPeriod.relation = partnerPeriod;
+            // ngoPeriod.relation = partnerPeriod;
             ngoPeriod = await entityManager.save(ngoPeriod);
 
             return this.mapToResponse(savedConfig, ngoPeriod, partnerPeriod, clientPeriod)

@@ -1,6 +1,6 @@
-import { Column, Entity } from "typeorm";
-import { TadeusEntity } from "./base.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import {Column, Entity} from "typeorm";
+import {TadeusEntity} from "./base.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'SETTINGS'})
 export class Configuration extends TadeusEntity {
@@ -13,6 +13,9 @@ export class Configuration extends TadeusEntity {
 
     @Column({name: 'USER_EXPIRATION', transformer: new ColumnNumericTransformer()})
     userExpirationAfterDays: number = 365;
+
+    @Column({name: 'USER_PERIOD_INTERVAL', transformer: new ColumnNumericTransformer()})
+    userPeriodInterval: number = 30;
 
     @Column({name: 'TYPE'})
     type: string = 'MAIN';

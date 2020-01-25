@@ -1,15 +1,15 @@
-import { Cron, NestSchedule } from "nest-schedule";
-import { Injectable } from "@nestjs/common";
-import { Configuration } from "../database/entity/configuration.entity";
-import { User } from "../database/entity/user.entity";
-import { Status } from "../common/enum/status.enum";
-import { RoleEnum } from "../common/enum/role.enum";
-import { Account } from "../database/entity/account.entity";
+import {Injectable} from "@nestjs/common";
+import {Configuration} from "../database/entity/configuration.entity";
+import {User} from "../database/entity/user.entity";
+import {Status} from "../common/enum/status.enum";
+import {RoleEnum} from "../common/enum/role.enum";
+import {Account} from "../database/entity/account.entity";
+import {Cron} from "@nestjs/schedule";
 
 const moment = require('moment');
 
 @Injectable()
-export class UserAccountExpirationScheduler extends NestSchedule {
+export class UserAccountExpirationScheduler {
     @Cron('0 0 4 ? * * *')
     async cronJob() {
         console.log('executing UserAccountExpirationScheduler Job');

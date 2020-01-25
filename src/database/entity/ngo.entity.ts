@@ -1,54 +1,54 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
-import { NgoType } from "./ngo-type.entity";
-import { Donation } from "./donation.entity";
-import { PhysicalCard } from "./physical-card.entity";
-import { Phone } from "./phone.entity";
-import { TadeusEntity } from "./base.entity";
-import { Address } from "./address.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
-import { User } from "./user.entity";
-import { Transaction } from "./transaction.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
+import {NgoType} from "./ngo-type.entity";
+import {Donation} from "./donation.entity";
+import {PhysicalCard} from "./physical-card.entity";
+import {Phone} from "./phone.entity";
+import {TadeusEntity} from "./base.entity";
+import {Address} from "./address.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {User} from "./user.entity";
+import {Transaction} from "./transaction.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'NGO'})
 export class Ngo extends TadeusEntity {
 
-    @Column()
+    @Column({name: 'ID'})
     ID: string;
 
-    @Column()
+    @Column({name: 'BANK_ACCOUNT'})
     bankNumber: string;
 
-    @Column()
+    @Column({name: 'EMAIL'})
     email: string;
 
-    @Column()
+    @Column({name: 'VERIFIED'})
     verified: boolean = false;
 
-    @Column({nullable: true})
+    @Column({nullable: true, name: 'VERIFIED_AT'})
     verifiedAt?: Date;
 
-    @Column()
+    @Column({name: 'NAME'})
     name: string;
 
-    @Column()
+    @Column({name: 'LONG_NAME'})
     longName: string;
 
-    @Column({length: 550})
+    @Column({length: 550, name: 'DESCRIPTION'})
     description: string;
 
-    @Column({nullable: true})
+    @Column({nullable: true, name: 'IMAGE'})
     image: string = 'icon.jpg';
 
-    @Column({nullable: true})
+    @Column({nullable: true, name: 'THUMBNAIL'})
     thumbnail: string = 'thumbnail.jpg';
 
-    @Column()
+    @Column({name: 'IS_TADEUS'})
     isTadeus: boolean = false;
 
-    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'TOTAL_DONATION', nullable: true, transformer: new ColumnNumericTransformer()})
     totalDonation?: number;
 
-    @Column({nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'LAST_DONATION', nullable: true, transformer: new ColumnNumericTransformer()})
     lastDonation?: number;
 
     @ManyToOne(type => Phone)

@@ -1,10 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
-import { Ngo } from "./ngo.entity";
-import { User } from "./user.entity";
-import { DonationEnum, PoolEnum } from "../../common/enum/donation.enum";
-import { TadeusEntity } from "./base.entity";
-import { Period } from "./period.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
+import {Ngo} from "./ngo.entity";
+import {User} from "./user.entity";
+import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
+import {TadeusEntity} from "./base.entity";
+import {Period} from "./period.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'DONATION'})
 export class Donation extends TadeusEntity {
@@ -17,6 +17,9 @@ export class Donation extends TadeusEntity {
 
     @Column({name: 'POOL', type: 'text'})
     pool: PoolEnum;
+
+    @Column({name: 'PAYMENT_NUMBER'})
+    paymentNumber: string;
 
     @Column({name: 'PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
     price: number = 0;
@@ -33,7 +36,7 @@ export class Donation extends TadeusEntity {
     @JoinColumn({name: 'PERIOD_SKID'})
     period: Period;
 
-    constructor(ID: string, type: DonationEnum, pool: PoolEnum, user: User, period: Period, ngo: Ngo) {
+    constructor(ID: string, paymentNumber: string, type: DonationEnum, pool: PoolEnum, user: User, period: Period, ngo: Ngo) {
         super();
         this.ID = ID;
         this.type = type;
@@ -41,6 +44,7 @@ export class Donation extends TadeusEntity {
         this.user = user;
         this.period = period;
         this.ngo = ngo;
+        this.paymentNumber = paymentNumber;
     }
 
     static getCurrentDonationForUser(user: User, period: Period): Promise<Donation | undefined> {
