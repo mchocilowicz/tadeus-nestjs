@@ -1,9 +1,9 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TradingPoint} from "./trading-point.entity";
-import {TadeusEntity} from "./base.entity";
-import {Transaction} from "./transaction.entity";
-import {Period} from "./period.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TradingPoint } from "./trading-point.entity";
+import { TadeusEntity } from "./base.entity";
+import { Transaction } from "./transaction.entity";
+import { Period } from "./period.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_PAYMENT'})
 export class PartnerPayment extends TadeusEntity {
@@ -39,6 +39,9 @@ export class PartnerPayment extends TadeusEntity {
 
     @Column({name: 'PROVISION_PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
     provisionPrice: number;
+
+    @Column({name: 'SEND_MESSAGE_AT', nullable: true})
+    sendMessageAt?: Date;
 
     @Column({name: 'PAYMENT_AT', nullable: true})
     paymentAt?: Date;

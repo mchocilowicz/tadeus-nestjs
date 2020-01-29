@@ -1,14 +1,15 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
-import {TradingPoint} from "./trading-point.entity";
-import {User} from "./user.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { TradingPoint } from "./trading-point.entity";
+import { User } from "./user.entity";
 
-import {Terminal} from "./terminal.entity";
-import {TadeusEntity} from "./base.entity";
-import {PartnerPayment} from "./partner-payment.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {TransactionStatus} from "../../common/enum/status.enum";
-import {Ngo} from "./ngo.entity";
-import {Period} from "./period.entity";
+import { Terminal } from "./terminal.entity";
+import { TadeusEntity } from "./base.entity";
+import { PartnerPayment } from "./partner-payment.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { TransactionStatus } from "../../common/enum/status.enum";
+import { Ngo } from "./ngo.entity";
+import { Period } from "./period.entity";
+import { NgoPayout } from "./ngo-payout.entity";
 
 const moment = require('moment');
 
@@ -50,6 +51,9 @@ export class Transaction extends TadeusEntity {
     @Column({name: 'PARTNER_XP', transformer: new ColumnNumericTransformer()})
     tradingPointXp: number = 0;
 
+    @Column({name: 'NGO_DONATION', transformer: new ColumnNumericTransformer()})
+    ngoDonation: number = 0;
+
     @Column({name: 'STATUS', type: 'text', default: TransactionStatus.WAITING})
     status: TransactionStatus = TransactionStatus.WAITING;
 
@@ -74,6 +78,10 @@ export class Transaction extends TadeusEntity {
     @ManyToOne(type => PartnerPayment, payment => payment.transactions)
     @JoinColumn({name: 'PARTNER_PAYMENT_SKID'})
     payment?: PartnerPayment;
+
+    @ManyToOne(type => NgoPayout, payout => payout.transactions)
+    @JoinColumn({name: 'NGO_PAYOUTT_SKID'})
+    payout?: NgoPayout;
 
     @ManyToOne(type => Period, period => period.transactions)
     @JoinColumn({name: 'PERIOD_SKID'})

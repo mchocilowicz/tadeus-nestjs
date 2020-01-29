@@ -23,12 +23,14 @@ export class EmailService {
         });
     }
 
-    async sendEmail(to: string, message: string, subject: string) {
+    async sendEmail(emailObject: any) {
         await this.transporter.sendMail({
             from: process.env.TDS_EMAIL_USER,
-            to: to,
-            subject: subject,
-            text: message
+            to: emailObject.email,
+            subject: "Tadeus – podsumowanie współpracy i wpłata",
+            html: `
+                
+            `
         });
     }
 }
