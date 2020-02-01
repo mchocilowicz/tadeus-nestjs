@@ -1,15 +1,15 @@
-import { BadRequestException, Body, Controller, Logger, Post, Req, UseGuards } from "@nestjs/common";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { User } from "../../../database/entity/user.entity";
-import { Phone } from "../../../database/entity/phone.entity";
-import { getConnection } from "typeorm";
-import { PayoutRequest } from "../../../models/client/request/payout.request";
-import { UserPayout } from "../../../database/entity/user-payout.entity";
+import {BadRequestException, Body, Controller, Logger, Post, Req, UseGuards} from "@nestjs/common";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {User} from "../../../database/entity/user.entity";
+import {Phone} from "../../../database/entity/phone.entity";
+import {getConnection} from "typeorm";
+import {PayoutRequest} from "../../../models/client/request/payout.request";
+import {UserPayout} from "../../../database/entity/user-payout.entity";
 
 @Controller()
 @ApiTags('payout')
@@ -29,7 +29,7 @@ export class PayoutController {
         const phone: Phone | undefined = user.phone;
 
         if (!phone) {
-            this.logger.error(`User ${ user.id } does not have assigned Phone`);
+            this.logger.error(`User ${user.id} does not have assigned Phone`);
             throw new BadRequestException('internal_server_error')
         }
 

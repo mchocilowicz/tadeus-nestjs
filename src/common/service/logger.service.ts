@@ -1,5 +1,5 @@
 import * as winston from 'winston';
-import { Logger, LoggerOptions, transports } from 'winston';
+import {Logger, LoggerOptions, transports} from 'winston';
 import * as chalk from 'chalk';
 import * as PrettyError from 'pretty-error'; // it's really handy to make your life easier
 
@@ -53,7 +53,7 @@ export class LoggerService {
     error(message: string, trace?: any): void {
         const currentDate = new Date();
         // i think the trace should be JSON Stringified
-        this.logger.error(`${ message } -> (${ trace || 'trace not provided !' })`, {
+        this.logger.error(`${message} -> (${trace || 'trace not provided !'})`, {
             timestamp: currentDate.toISOString(),
             context: this.context,
         });
@@ -78,24 +78,24 @@ export class LoggerService {
         let result = '';
         const color = chalk.default;
         const currentDate = new Date();
-        const time = `${ currentDate.getHours() }:${ currentDate.getMinutes() }:${ currentDate.getSeconds() }`;
+        const time = `${currentDate.getHours()}:${currentDate.getMinutes()}:${currentDate.getSeconds()}`;
 
         switch (level) {
             case 'info':
-                result = `[${ color.blue('INFO') }] ${ color.dim.yellow.bold.underline(time) } [${ color.green(
+                result = `[${color.blue('INFO')}] ${color.dim.yellow.bold.underline(time)} [${color.green(
                     this.context,
-                ) }] ${ message }`;
+                )}] ${message}`;
                 break;
             case 'error':
-                result = `[${ color.red('ERR') }] ${ color.dim.yellow.bold.underline(time) } [${ color.green(
+                result = `[${color.red('ERR')}] ${color.dim.yellow.bold.underline(time)} [${color.green(
                     this.context,
-                ) }] ${ message }`;
+                )}] ${message}`;
                 if (error && process.env.NODE_ENV === 'dev') this.prettyError.render(error, true);
                 break;
             case 'warn':
-                result = `[${ color.yellow('WARN') }] ${ color.dim.yellow.bold.underline(time) } [${ color.green(
+                result = `[${color.yellow('WARN')}] ${color.dim.yellow.bold.underline(time)} [${color.green(
                     this.context,
-                ) }] ${ message }`;
+                )}] ${message}`;
                 break;
             default:
                 break;

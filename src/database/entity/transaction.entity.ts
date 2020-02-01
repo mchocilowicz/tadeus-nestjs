@@ -1,15 +1,17 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
-import { TradingPoint } from "./trading-point.entity";
-import { User } from "./user.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
+import {TradingPoint} from "./trading-point.entity";
+import {User} from "./user.entity";
 
-import { Terminal } from "./terminal.entity";
-import { TadeusEntity } from "./base.entity";
-import { PartnerPayment } from "./partner-payment.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
-import { TransactionStatus } from "../../common/enum/status.enum";
-import { Ngo } from "./ngo.entity";
-import { Period } from "./period.entity";
-import { NgoPayout } from "./ngo-payout.entity";
+import {Terminal} from "./terminal.entity";
+import {TadeusEntity} from "./base.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {TransactionStatus} from "../../common/enum/status.enum";
+import {Ngo} from "./ngo.entity";
+import {NgoPayout} from "./ngo-payout.entity";
+import {PartnerPeriod} from "./partner-period.entity";
+import {UserPeriod} from "./user-period.entity";
+import {NgoPeriod} from "./ngo-period.entity";
 
 const moment = require('moment');
 
@@ -83,9 +85,17 @@ export class Transaction extends TadeusEntity {
     @JoinColumn({name: 'NGO_PAYOUTT_SKID'})
     payout?: NgoPayout;
 
-    @ManyToOne(type => Period, period => period.transactions)
-    @JoinColumn({name: 'PERIOD_SKID'})
-    period: Period;
+    @ManyToOne(type => PartnerPeriod, period => period.transactions)
+    @JoinColumn({name: 'PARTNER_PERIOD_SKID'})
+    partnerPeriod?: PartnerPeriod;
+
+    @ManyToOne(type => NgoPeriod, period => period.transactions)
+    @JoinColumn({name: 'NGO_PERIOD_SKID'})
+    ngoPeriod?: NgoPeriod;
+
+    @ManyToOne(type => UserPeriod, period => period.transactions)
+    @JoinColumn({name: 'USER_PERIOD_SKID'})
+    userPeriod: UserPeriod;
 
     @ManyToOne(type => Ngo, ngo => ngo.transactions)
     @JoinColumn({name: 'NGO_SKID'})
@@ -101,7 +111,7 @@ export class Transaction extends TadeusEntity {
                 user: User,
                 tradingPoint: TradingPoint,
                 ngo: Ngo,
-                period: Period,
+                period: UserPeriod,
                 ID: string,
                 price: number,
                 vat: number,
@@ -117,7 +127,7 @@ export class Transaction extends TadeusEntity {
         this.donationPercentage = donationPercentage;
         this.provisionPercentage = fee;
         this.vat = vat;
-        this.period = period;
+        this.userPeriod = period;
     }
 
     static findByTradingPointMadeToday(tradingPointId: string) {

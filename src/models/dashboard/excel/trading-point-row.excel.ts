@@ -1,5 +1,5 @@
-import { IsNotEmpty } from "class-validator";
-import { BasicRowExcel } from "./basic-row.excel";
+import {IsNotEmpty} from "class-validator";
+import {BasicRowExcel} from "./basic-row.excel";
 
 export class TradingPointExcelRow extends BasicRowExcel {
     @IsNotEmpty({

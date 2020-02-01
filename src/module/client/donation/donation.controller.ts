@@ -13,8 +13,8 @@ import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
-import {Period} from "../../../database/entity/period.entity";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {UserPeriod} from "../../../database/entity/user-period.entity";
 
 const moment = require("moment");
 
@@ -72,7 +72,7 @@ export class DonationController {
         const user: User = req.user;
         const virtualCard: VirtualCard | undefined = user.card;
         const config: Configuration | undefined = await Configuration.getMain();
-        const period: Period | undefined = await Period.findCurrentNgoPeriod();
+        const period: UserPeriod | undefined = await UserPeriod.findActivePeriod();
 
         if (!config || !period) {
             this.logger.error('Configuration Table is not available');

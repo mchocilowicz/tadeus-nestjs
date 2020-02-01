@@ -12,24 +12,24 @@ import {
     UploadedFile,
     UseInterceptors
 } from "@nestjs/common";
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { NgoRequest } from "../../../models/common/request/ngo.request";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { EntityManager, getConnection, QueryFailedError } from "typeorm";
-import { extractErrors, handleException } from "../../../common/util/functions";
-import { NgoType } from "../../../database/entity/ngo-type.entity";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { NgoRowExcel } from "../../../models/dashboard/excel/ngo-row.excel";
-import { validate } from "class-validator";
-import { ExcelException } from "../../../common/exceptions/excel.exception";
-import { City } from "../../../database/entity/city.entity";
-import { CodeService } from "../../../common/service/code.service";
-import { PhysicalCard } from "../../../database/entity/physical-card.entity";
-import { diskStorage } from "multer";
-import { Phone } from "../../../database/entity/phone.entity";
-import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
-import { Address } from "../../../database/entity/address.entity";
+import {ApiBody, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {NgoRequest} from "../../../models/common/request/ngo.request";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {EntityManager, getConnection, QueryFailedError} from "typeorm";
+import {extractErrors, handleException} from "../../../common/util/functions";
+import {NgoType} from "../../../database/entity/ngo-type.entity";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {NgoRowExcel} from "../../../models/dashboard/excel/ngo-row.excel";
+import {validate} from "class-validator";
+import {ExcelException} from "../../../common/exceptions/excel.exception";
+import {City} from "../../../database/entity/city.entity";
+import {CodeService} from "../../../common/service/code.service";
+import {PhysicalCard} from "../../../database/entity/physical-card.entity";
+import {diskStorage} from "multer";
+import {Phone} from "../../../database/entity/phone.entity";
+import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import {Address} from "../../../database/entity/address.entity";
 
 const moment = require("moment");
 
@@ -96,7 +96,7 @@ export class DashboardNgoController {
             filename: (req, file, cb) => {
                 const newFileName = moment().format("YYYYMMDDHHmmss");
 
-                return cb(null, `${ newFileName }_${ file.originalname }`)
+                return cb(null, `${newFileName}_${file.originalname}`)
             }
         })
     }))

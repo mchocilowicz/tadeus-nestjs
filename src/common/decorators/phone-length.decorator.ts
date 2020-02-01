@@ -1,5 +1,5 @@
-import { registerDecorator, ValidationArguments, ValidationOptions } from "class-validator";
-import { PhonePrefix } from "../../database/entity/phone-prefix.entity";
+import {registerDecorator, ValidationArguments, ValidationOptions} from "class-validator";
+import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
 
 export function PhoneLength(property: string, validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {

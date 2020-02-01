@@ -1,5 +1,5 @@
-import { Module } from "@nestjs/common";
-import { PartnerSettingsController } from "./partner-settings.controller";
+import {Module} from "@nestjs/common";
+import {PartnerSettingsController} from "./partner-settings.controller";
 
 @Module({
     imports: [],

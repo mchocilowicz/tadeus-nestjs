@@ -1,5 +1,5 @@
-import { Module } from "@nestjs/common";
-import { PayoutController } from "./payout.controller";
+import {Module} from "@nestjs/common";
+import {PayoutController} from "./payout.controller";
 
 @Module({
     imports: [],

@@ -1,6 +1,6 @@
-import { ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger } from "@nestjs/common";
-import { TadeusValidationException } from "../exceptions/TadeusValidation.exception";
-import { ExcelException } from "../exceptions/excel.exception";
+import {ArgumentsHost, Catch, ExceptionFilter, HttpException, HttpStatus, Logger} from "@nestjs/common";
+import {TadeusValidationException} from "../exceptions/TadeusValidation.exception";
+import {ExcelException} from "../exceptions/excel.exception";
 
 @Catch()
 export class TadeusExceptionFilter implements ExceptionFilter {
@@ -15,7 +15,7 @@ export class TadeusExceptionFilter implements ExceptionFilter {
             ? exception.getStatus()
             : HttpStatus.INTERNAL_SERVER_ERROR;
 
-        const logMessage = `${ new Date() }: ${ status }: ${ request.method } - ${ request.url } :body = ${ JSON.stringify(request.body) } :params = ${ JSON.stringify(request.query) } : exception = ${ JSON.stringify(exception) }`;
+        const logMessage = `${new Date()}: ${status}: ${request.method} - ${request.url} :body = ${JSON.stringify(request.body)} :params = ${JSON.stringify(request.query)} : exception = ${JSON.stringify(exception)}`;
         this.logger.error(logMessage);
 
         let responseObject;

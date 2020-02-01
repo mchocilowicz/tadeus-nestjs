@@ -5,7 +5,7 @@ import {
     ValidatorConstraint,
     ValidatorConstraintInterface
 } from "class-validator";
-import { PhonePrefix } from "../../database/entity/phone-prefix.entity";
+import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
 
 @ValidatorConstraint({async: true})
 export class PhonePrefixExistsConstraint implements ValidatorConstraintInterface {

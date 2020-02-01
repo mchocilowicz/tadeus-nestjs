@@ -1,5 +1,5 @@
-import { Const } from "../util/const";
-import { Injectable } from "@nestjs/common";
+import {Const} from "../util/const";
+import {Injectable} from "@nestjs/common";
 
 const uuidv4 = require('uuid/v4');
 const moment = require('moment');
@@ -8,7 +8,7 @@ const crypto = require('crypto');
 @Injectable()
 export class CodeService {
     generateTradingPointNumber(typeCode: number): string {
-        const result = [`B${ typeCode }`, Const.CONTROL_NUMBER, this.generateNumber()];
+        const result = [`B${typeCode}`, Const.CONTROL_NUMBER, this.generateNumber()];
         return result.join('-');
     }
 
@@ -43,7 +43,7 @@ export class CodeService {
     }
 
     generateNgoNumber(ngoTypeCode: number, ngoCode: string): string {
-        const result = [`B${ ngoTypeCode }`, Const.CONTROL_NUMBER, ngoCode];
+        const result = [`B${ngoTypeCode}`, Const.CONTROL_NUMBER, ngoCode];
         return result.join('-');
     }
 

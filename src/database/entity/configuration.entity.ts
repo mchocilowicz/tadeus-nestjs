@@ -12,10 +12,22 @@ export class Configuration extends TadeusEntity {
     minPersonalPool: number = 0;
 
     @Column({name: 'USER_EXPIRATION', transformer: new ColumnNumericTransformer()})
-    userExpirationAfterDays: number = 365;
+    userExpiration: number = 0;
 
-    @Column({name: 'USER_PERIOD_INTERVAL', transformer: new ColumnNumericTransformer()})
-    userPeriodInterval: number = 30;
+    @Column({name: 'USER_CLOSE_INTERVAL', transformer: new ColumnNumericTransformer()})
+    userCloseInterval: number = 0;
+
+    @Column({name: 'PARTNER_EMAIL_INTERVAL', transformer: new ColumnNumericTransformer()})
+    partnerEmailInterval: number = 0;
+
+    @Column({name: 'PARTNER_CLOSE_INTERVAL', transformer: new ColumnNumericTransformer()})
+    partnerCloseInterval: number = 0;
+
+    @Column({name: 'NGO_GENERATE_INTERVAL', transformer: new ColumnNumericTransformer()})
+    ngoGenerateInterval: number = 0;
+
+    @Column({name: 'NGO_CLOSE_INTERVAL', transformer: new ColumnNumericTransformer()})
+    ngoCloseInterval: number = 0;
 
     @Column({name: 'TYPE'})
     type: string = 'MAIN';

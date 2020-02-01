@@ -1,6 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { Donation } from "../../../database/entity/donation.entity";
-import { TadeusEntity } from "../../../database/entity/base.entity";
+import {ApiProperty} from "@nestjs/swagger";
+import {Donation} from "../../../database/entity/donation.entity";
+import {TadeusEntity} from "../../../database/entity/base.entity";
 
 export class ClientHistoryResponse {
     @ApiProperty()

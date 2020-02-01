@@ -1,5 +1,5 @@
-import { IsAlpha, IsEmail, IsNotEmpty, IsNumberString } from "class-validator";
-import { BasicRowExcel } from "./basic-row.excel";
+import {IsAlpha, IsEmail, IsNotEmpty, IsNumberString} from "class-validator";
+import {BasicRowExcel} from "./basic-row.excel";
 
 export class NgoRowExcel extends BasicRowExcel {
 

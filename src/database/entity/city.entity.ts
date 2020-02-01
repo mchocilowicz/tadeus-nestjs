@@ -1,6 +1,6 @@
-import { Column, Entity, OneToMany } from "typeorm";
-import { TadeusEntity } from "./base.entity";
-import { Address } from "./address.entity";
+import {Column, Entity, OneToMany} from "typeorm";
+import {TadeusEntity} from "./base.entity";
+import {Address} from "./address.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'CITY'})
 export class City extends TadeusEntity {

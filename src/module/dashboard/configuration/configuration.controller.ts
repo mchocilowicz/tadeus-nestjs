@@ -1,9 +1,9 @@
 import {Body, Controller, Get, Post} from "@nestjs/common";
 import {Configuration} from "../../../database/entity/configuration.entity";
 import {ApiTags} from "@nestjs/swagger";
-import {ConfigurationRequest, PeriodRequest} from "../../../models/dashboard/request/configuration.request";
-import {Period} from "../../../database/entity/period.entity";
+import {ConfigurationRequest} from "../../../models/dashboard/request/configuration.request";
 import {getConnection} from "typeorm";
+import {UserPeriod} from "../../../database/entity/user-period.entity";
 
 const moment = require('moment');
 
@@ -21,62 +21,33 @@ export class ConfigurationController {
 
             config.minNgoTransfer = dto.minNgoTransfer;
             config.minPersonalPool = dto.minPersonalPool;
-            config.userExpirationAfterDays = dto.userExpiration;
+            config.userExpiration = dto.userExpiration;
+            config.ngoCloseInterval = dto.ngoCloseInterval;
+            config.ngoGenerateInterval = dto.ngoGenerateInterval;
+            config.userCloseInterval = dto.userCloseInterval;
+            config.partnerEmailInterval = dto.partnerEmailInterval;
+            config.partnerCloseInterval = dto.partnerCloseInterval;
 
-            let ngoPeriod = await Period.findCurrentNgoPeriod();
-            let partnerPeriod = await Period.findCurrentPartnerPeriod();
-            let clientPeriod = await Period.findCurrentClientPeriod();
+            let period: UserPeriod | undefined = await UserPeriod.findActivePeriod();
+            if (!period) {
+                period = new UserPeriod(moment(), moment().add(dto.userExpiration, 'days'))
+                await entityManager.save(period);
+            }
 
-            ngoPeriod = this.updatePeriod(dto.ngoPeriod, 'NGO', ngoPeriod);
-            partnerPeriod = this.updatePeriod(dto.partnerPeriod, 'PARTNER', partnerPeriod);
-            clientPeriod = this.updatePeriod(dto.clientPeriod, 'CLIENT', clientPeriod);
 
-            let savedConfig = await entityManager.save(config);
-            clientPeriod = await entityManager.save(clientPeriod);
-            // partnerPeriod.relation = clientPeriod;
-            partnerPeriod = await entityManager.save(partnerPeriod);
-            // ngoPeriod.relation = partnerPeriod;
-            ngoPeriod = await entityManager.save(ngoPeriod);
-
-            return this.mapToResponse(savedConfig, ngoPeriod, partnerPeriod, clientPeriod)
+            await entityManager.save(config);
+            return new ConfigurationRequest(config)
         })
     }
 
     @Get()
     async getConfiguration() {
         let config = await Configuration.getMain();
-        let ngoPeriod = await Period.findCurrentNgoPeriod();
-        let partnerPeriod = await Period.findCurrentPartnerPeriod();
-        let clientPeriod = await Period.findCurrentClientPeriod();
 
-        if (config && ngoPeriod && partnerPeriod && clientPeriod) {
-            return this.mapToResponse(config, ngoPeriod, partnerPeriod, clientPeriod)
+        if (config) {
+            return new ConfigurationRequest(config)
         }
+
         return null;
     }
-
-    private updatePeriod(request: PeriodRequest, type: string, period?: Period) {
-        if (period) {
-            period.from = request.from;
-            period.interval = request.interval;
-            return period;
-        } else {
-            return new Period(request.from, moment(request.from).add(request.interval, 'days'), request.interval, type)
-        }
-    }
-
-    private mapToResponse(config: Configuration, ngo: Period, partner: Period, client: Period) {
-        let ngoRequest = new PeriodRequest(ngo.from, ngo.interval);
-        let partnerRequest = new PeriodRequest(partner.from, partner.interval);
-        let clientRequest = new PeriodRequest(client.from, client.interval);
-
-        return new ConfigurationRequest(
-            config.minNgoTransfer,
-            config.minPersonalPool,
-            config.userExpirationAfterDays,
-            ngoRequest,
-            clientRequest,
-            partnerRequest);
-    }
-
 }

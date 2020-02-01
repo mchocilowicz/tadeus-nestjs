@@ -1,15 +1,15 @@
-import { Controller, Get, Logger, Query, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { Const } from "../../../common/util/const";
-import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
-import { CityResponse } from "../../../models/common/response/city.response";
-import { PlaceQuery } from "../../../models/client/place.query";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { City } from "../../../database/entity/city.entity";
+import {Controller, Get, Logger, Query, UseGuards} from "@nestjs/common";
+import {ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {Const} from "../../../common/util/const";
+import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
+import {CityResponse} from "../../../models/common/response/city.response";
+import {PlaceQuery} from "../../../models/client/place.query";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {City} from "../../../database/entity/city.entity";
 
 @Controller()
 @ApiTags('place')
@@ -37,21 +37,21 @@ export class PlaceController {
             const lo = Number(query['longitude']);
             const la = Number(query['latitude']);
 
-            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${ lo } ${ la })'::geometry,3857)) * cosd(42.3521)`;
+            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
             const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
             sqlQuery = sqlQuery.addSelect(a, 'address_distance');
-            sqlQuery = sqlQuery.andWhere(`${ a } > 0`)
+            sqlQuery = sqlQuery.andWhere(`${a} > 0`)
                 .orderBy(c).limit(10);
         }
 
         Object.keys(query).forEach((key: string) => {
             if (key !== 'longitude' && key !== 'latitude') {
                 // @ts-ignore
-                sqlQuery = sqlQuery.andWhere(`${ key }.id = :id`, {id: query[key]})
+                sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
             }
         });
         return await sqlQuery

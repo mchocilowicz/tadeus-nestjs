@@ -27,7 +27,6 @@ import {SettlementModule} from "./dashboard/settlement/settlement.module";
 import {ScheduleModule} from '@nestjs/schedule';
 import {EventEmitter} from 'events';
 import {NestEmitterModule} from "nest-emitter";
-import {PartnerPaymentEvent} from "../events/partner-payment.event";
 
 const routes: Routes = [
     {
@@ -184,7 +183,6 @@ const routes: Routes = [
         },
         // PartnerPaymentScheduler
         // ConfigurationScheduler,
-        PartnerPaymentEvent
     ],
 })
 export class AppModule {

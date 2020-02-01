@@ -1,14 +1,14 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { Const } from "../../../common/util/const";
-import { NotificationRequest } from "../../../models/client/request/notification.request";
-import { Opinion } from "../../../database/entity/opinion.entity";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { Terminal } from "../../../database/entity/terminal.entity";
+import {Body, Controller, Get, Post, Req, UseGuards} from "@nestjs/common";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {Const} from "../../../common/util/const";
+import {NotificationRequest} from "../../../models/client/request/notification.request";
+import {Opinion} from "../../../database/entity/opinion.entity";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {Terminal} from "../../../database/entity/terminal.entity";
 
 @Controller()
 @ApiBearerAuth()

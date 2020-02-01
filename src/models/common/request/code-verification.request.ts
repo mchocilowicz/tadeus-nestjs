@@ -1,6 +1,6 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNumber, Max, Min } from "class-validator";
-import { PhoneRequest } from "./phone.request";
+import {ApiProperty} from "@nestjs/swagger";
+import {IsNumber, Max, Min} from "class-validator";
+import {PhoneRequest} from "./phone.request";
 
 export class CodeVerificationRequest extends PhoneRequest {
     @ApiProperty({required: true})

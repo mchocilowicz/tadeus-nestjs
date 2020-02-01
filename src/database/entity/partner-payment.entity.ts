@@ -1,9 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { TradingPoint } from "./trading-point.entity";
-import { TadeusEntity } from "./base.entity";
-import { Transaction } from "./transaction.entity";
-import { Period } from "./period.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
+import {TradingPoint} from "./trading-point.entity";
+import {TadeusEntity} from "./base.entity";
+import {Transaction} from "./transaction.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {PartnerPeriod} from "./partner-period.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_PAYMENT'})
 export class PartnerPayment extends TadeusEntity {
@@ -56,19 +56,29 @@ export class PartnerPayment extends TadeusEntity {
     @OneToMany(type => Transaction, transactions => transactions.payment)
     transactions?: Transaction[];
 
-    @ManyToOne(type => Period)
-    @JoinColumn({name: 'PERIOD_SKID'})
-    period: Period;
+    @ManyToOne(type => PartnerPeriod)
+    @JoinColumn({name: 'PARTNER_PERIOD_SKID'})
+    partnerPeriod: PartnerPeriod;
 
-    constructor(ID: string, price: number, sellPrice: number, donationPrice: number, provisionPrice: number, transactionsCount: number, tradingPoint: TradingPoint, period: Period) {
+    constructor(ID: string, price: number, sellPrice: number, donationPrice: number, provisionPrice: number, transactionsCount: number, tradingPoint: TradingPoint, period: PartnerPeriod) {
         super();
         this.price = price;
         this.ID = ID;
         this.transactionsCount = transactionsCount;
         this.tradingPoint = tradingPoint;
-        this.period = period;
+        this.partnerPeriod = period;
         this.sellPrice = sellPrice;
         this.donationPrice = donationPrice;
         this.provisionPrice = provisionPrice;
+    }
+
+    static findAllNotPaidPayments(tradingPointId: string): Promise<PartnerPayment[]> {
+        return this.createQueryBuilder("p")
+            .leftJoinAndSelect("p.tradingPoint", "point")
+            .where("p.isPaid = false")
+            .andWhere("p.paymentAt is not null")
+            .andWhere("point.id = :id", {id: tradingPointId})
+            .orderBy("p.createdAt", "DESC")
+            .getMany();
     }
 }

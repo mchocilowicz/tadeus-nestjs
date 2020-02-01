@@ -14,25 +14,25 @@ import {
     UploadedFile,
     UseInterceptors
 } from "@nestjs/common";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { createQueryBuilder, EntityManager, getConnection, QueryFailedError } from "typeorm";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { City } from "../../../database/entity/city.entity";
-import { TradingPointType } from "../../../database/entity/trading-point-type.entity";
-import { ApiConsumes, ApiTags } from "@nestjs/swagger";
-import { validate } from "class-validator";
-import { extractErrors } from "../../../common/util/functions";
-import { ExcelException } from "../../../common/exceptions/excel.exception";
-import { CodeService } from "../../../common/service/code.service";
-import { Terminal } from "../../../database/entity/terminal.entity";
-import { diskStorage } from "multer";
-import { TradingPointExcelRow } from "../../../models/dashboard/excel/trading-point-row.excel";
-import { Phone } from "../../../database/entity/phone.entity";
-import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
-import { Account } from "../../../database/entity/account.entity";
-import { Role } from "../../../database/entity/role.entity";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { Address } from "../../../database/entity/address.entity";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {createQueryBuilder, EntityManager, getConnection, QueryFailedError} from "typeorm";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {City} from "../../../database/entity/city.entity";
+import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
+import {ApiConsumes, ApiTags} from "@nestjs/swagger";
+import {validate} from "class-validator";
+import {extractErrors} from "../../../common/util/functions";
+import {ExcelException} from "../../../common/exceptions/excel.exception";
+import {CodeService} from "../../../common/service/code.service";
+import {Terminal} from "../../../database/entity/terminal.entity";
+import {diskStorage} from "multer";
+import {TradingPointExcelRow} from "../../../models/dashboard/excel/trading-point-row.excel";
+import {Phone} from "../../../database/entity/phone.entity";
+import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import {Account} from "../../../database/entity/account.entity";
+import {Role} from "../../../database/entity/role.entity";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {Address} from "../../../database/entity/address.entity";
 
 const moment = require("moment");
 
@@ -98,7 +98,7 @@ export class TradingPointController {
             filename: (req, file, cb) => {
                 const newFileName = moment().format("YYYYMMDDHHmmss");
 
-                return cb(null, `${ newFileName }_${ file.originalname }`)
+                return cb(null, `${newFileName}_${file.originalname}`)
             }
         })
     }))

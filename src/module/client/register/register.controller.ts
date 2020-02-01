@@ -1,10 +1,10 @@
-import { ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { RegisterService } from "./register.service";
-import { Body, Controller, HttpCode, Post, Put } from "@nestjs/common";
-import { Const } from "../../../common/util/const";
-import { CodeVerificationRequest } from "../../../models/common/request/code-verification.request";
-import { UserInformationRequest } from "../../../models/common/request/user-Information.request";
-import { LoginService } from "../../common/login.service";
+import {ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {RegisterService} from "./register.service";
+import {Body, Controller, HttpCode, Post, Put} from "@nestjs/common";
+import {Const} from "../../../common/util/const";
+import {CodeVerificationRequest} from "../../../models/common/request/code-verification.request";
+import {UserInformationRequest} from "../../../models/common/request/user-Information.request";
+import {LoginService} from "../../common/login.service";
 
 @Controller()
 @ApiTags('register')

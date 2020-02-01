@@ -1,31 +1,19 @@
-import {
-    BadRequestException,
-    Body,
-    Controller,
-    Get,
-    HttpCode,
-    Logger,
-    Put,
-    Query,
-    Req,
-    UseGuards
-} from "@nestjs/common";
-import { getConnection } from "typeorm";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { Const } from "../../../common/util/const";
-import { NgoType } from "../../../database/entity/ngo-type.entity";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { CityResponse } from "../../../models/common/response/city.response";
-import { City } from "../../../database/entity/city.entity";
-import { SelectedNgoRequest } from "../../../models/client/request/selected-ngo.request";
-import { NgoQuery } from "../../../models/client/ngo.query";
-import { User } from "../../../database/entity/user.entity";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
-import { Period } from "../../../database/entity/period.entity";
+import {BadRequestException, Body, Controller, Get, HttpCode, Logger, Put, Query, Req, UseGuards} from "@nestjs/common";
+import {getConnection} from "typeorm";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {Const} from "../../../common/util/const";
+import {NgoType} from "../../../database/entity/ngo-type.entity";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {CityResponse} from "../../../models/common/response/city.response";
+import {City} from "../../../database/entity/city.entity";
+import {SelectedNgoRequest} from "../../../models/client/request/selected-ngo.request";
+import {NgoQuery} from "../../../models/client/ngo.query";
+import {User} from "../../../database/entity/user.entity";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 
 const moment = require('moment');
 
@@ -46,15 +34,9 @@ export class NgoController {
         const user: User = req.user;
         const ngo: Ngo | undefined = await Ngo.findOne({id: dto.id, verified: true, isTadeus: false});
         const virtualCard: VirtualCard = user.card;
-        const period: Period | undefined = await Period.findCurrentNgoPeriod();
 
         if (!ngo) {
             throw new BadRequestException("ngo_does_not_exists")
-        }
-
-        if (!user || !period) {
-            this.logger.error(`User or Current Period for user ${ user.id } does not exists.`);
-            throw new BadRequestException("internal_server_error")
         }
 
         if (!user.ngo) {
@@ -100,14 +82,14 @@ export class NgoController {
             const lo = Number(query['longitude']);
             const la = Number(query['latitude']);
 
-            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${ lo } ${ la })'::geometry,3857)) * cosd(42.3521)`;
+            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
             const c: any = {};
             c[a] = {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
             sqlQuery = sqlQuery.addSelect(a, 'address_distance');
-            sqlQuery = sqlQuery.andWhere(`${ a } > 0`)
+            sqlQuery = sqlQuery.andWhere(`${a} > 0`)
                 .orderBy(c)
                 .limit(10);
         }
@@ -116,7 +98,7 @@ export class NgoController {
             // @ts-ignore
             if (query[key] && key !== 'longitude' && key !== 'latitude') {
                 // @ts-ignore
-                sqlQuery = sqlQuery.andWhere(`${ key }.id = :id`, {id: query[key]})
+                sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
             }
         });
 

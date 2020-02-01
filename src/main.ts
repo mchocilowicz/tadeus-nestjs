@@ -1,6 +1,6 @@
-import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import {NestFactory} from '@nestjs/core';
+import {NestExpressApplication} from '@nestjs/platform-express';
+import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
 import * as rateLimit from 'express-rate-limit';
 import * as helmet from 'helmet';
 import * as compression from 'compression';

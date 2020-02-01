@@ -1,4 +1,4 @@
-import { User } from "../../../database/entity/user.entity";
+import {User} from "../../../database/entity/user.entity";
 
 export class UserViewResponse {
     id: string;

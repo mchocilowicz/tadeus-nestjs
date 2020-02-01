@@ -10,27 +10,26 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { PhoneRequest } from "../../models/common/request/phone.request";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { LoginService } from "../common/login.service";
-import { User } from "../../database/entity/user.entity";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { PartnerDetailsResponse } from "../../models/common/response/partner-details.response";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { CodeService } from "../../common/service/code.service";
-import { Terminal } from "../../database/entity/terminal.entity";
-import { Account } from "../../database/entity/account.entity";
-import { Period } from "../../database/entity/period.entity";
-import { PartnerPayment } from "../../database/entity/partner-payment.entity";
-import { PartnerVerifyQuery } from "../../models/partner/partner-verify.query";
-import { PartnerVerifyResponse } from "../../models/partner/response/partner-verify.response";
-import { TransactionStatus } from "../../common/enum/status.enum";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Const} from "../../common/util/const";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {PhoneRequest} from "../../models/common/request/phone.request";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {LoginService} from "../common/login.service";
+import {User} from "../../database/entity/user.entity";
+import {Roles} from "../../common/decorators/roles.decorator";
+import {JwtAuthGuard} from "../../common/guards/jwt.guard";
+import {RolesGuard} from "../../common/guards/roles.guard";
+import {PartnerDetailsResponse} from "../../models/common/response/partner-details.response";
+import {TradingPoint} from "../../database/entity/trading-point.entity";
+import {Transaction} from "../../database/entity/transaction.entity";
+import {CodeService} from "../../common/service/code.service";
+import {Terminal} from "../../database/entity/terminal.entity";
+import {Account} from "../../database/entity/account.entity";
+import {PartnerPayment} from "../../database/entity/partner-payment.entity";
+import {PartnerVerifyQuery} from "../../models/partner/partner-verify.query";
+import {PartnerVerifyResponse} from "../../models/partner/response/partner-verify.response";
+import {TransactionStatus} from "../../common/enum/status.enum";
 
 const moment = require('moment');
 
@@ -70,7 +69,7 @@ export class PartnerController {
         const account: Account = terminal.account;
 
         if (!terminal || !account) {
-            this.logger.error(`Terminal or Accounts does not exists for ${ terminal.id }`);
+            this.logger.error(`Terminal or Accounts does not exists for ${terminal.id}`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -80,16 +79,16 @@ export class PartnerController {
             throw new NotFoundException('trading_point_does_not_exists')
         }
 
-        let period = await Period.findCurrentPartnerPeriod();
+        let payments: PartnerPayment[] = await PartnerPayment.findAllNotPaidPayments(partner.id);
 
-        if (!period) {
-            throw new BadRequestException('')
+        let hasPayments: boolean = payments.length > 0;
+        const paymentPrice: number = payments.reduce((p, c) => p + c.price, 0);
+        let paymentAt = undefined;
+        if (hasPayments) {
+            paymentAt = payments[0].paymentAt
         }
 
-        let payment: PartnerPayment | undefined = await PartnerPayment.findOne({period: period, tradingPoint: partner});
-        let code = this.codeService.createCode(0, 99999) + '-' + this.codeService.createCode(0, 9999) + "-" + this.codeService.createCode(0, 99);
-
-        return new PartnerDetailsResponse(account.ID, partner, code, period.to, payment)
+        return new PartnerDetailsResponse(account.ID, partner, hasPayments, paymentPrice, paymentAt)
     }
 
     @Get('history')

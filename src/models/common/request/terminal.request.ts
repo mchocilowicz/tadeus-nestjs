@@ -1,6 +1,6 @@
-import { PhoneRequest } from "./phone.request";
-import { ApiProperty } from "@nestjs/swagger";
-import { IsAlphanumeric, IsNotEmpty } from "class-validator";
+import {PhoneRequest} from "./phone.request";
+import {ApiProperty} from "@nestjs/swagger";
+import {IsAlphanumeric, IsNotEmpty} from "class-validator";
 
 export class TerminalRequest extends PhoneRequest {
 

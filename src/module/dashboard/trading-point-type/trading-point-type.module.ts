@@ -1,5 +1,5 @@
-import { Module } from "@nestjs/common";
-import { TradingPointTypeController } from "./trading-point-type.controller";
+import {Module} from "@nestjs/common";
+import {TradingPointTypeController} from "./trading-point-type.controller";
 
 @Module({
     controllers: [TradingPointTypeController],

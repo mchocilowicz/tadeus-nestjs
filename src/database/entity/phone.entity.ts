@@ -1,12 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique } from "typeorm";
-import { PhonePrefix } from "./phone-prefix.entity";
-import { TradingPoint } from "./trading-point.entity";
-import { User } from "./user.entity";
-import { Terminal } from "./terminal.entity";
-import { Ngo } from "./ngo.entity";
-import { TadeusEntity } from "./base.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
-import { Admin } from "./admin.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, Unique} from "typeorm";
+import {PhonePrefix} from "./phone-prefix.entity";
+import {TradingPoint} from "./trading-point.entity";
+import {User} from "./user.entity";
+import {Terminal} from "./terminal.entity";
+import {Ngo} from "./ngo.entity";
+import {TadeusEntity} from "./base.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {Admin} from "./admin.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PHONE'})
 @Unique(['value'])

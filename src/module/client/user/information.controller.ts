@@ -1,15 +1,15 @@
-import { BadRequestException, Body, Controller, Get, Logger, Put, Req, UseGuards } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
-import { Const } from "../../../common/util/const";
-import { UserDetailsRequest } from "../../../models/client/request/user-details.request";
-import { User } from "../../../database/entity/user.entity";
-import { Phone } from "../../../database/entity/phone.entity";
-import { getConnection } from "typeorm";
-import { UserDetailsResponse } from "../../../models/client/request/user-details.response";
+import {BadRequestException, Body, Controller, Get, Logger, Put, Req, UseGuards} from "@nestjs/common";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {Const} from "../../../common/util/const";
+import {UserDetailsRequest} from "../../../models/client/request/user-details.request";
+import {User} from "../../../database/entity/user.entity";
+import {Phone} from "../../../database/entity/phone.entity";
+import {getConnection} from "typeorm";
+import {UserDetailsResponse} from "../../../models/client/request/user-details.response";
 
 @Controller()
 @ApiBearerAuth()
@@ -29,7 +29,7 @@ export class InformationController {
         let phone: Phone | undefined = user.phone;
 
         if (!phone) {
-            this.logger.error(`User ${ user.id } does not have assigned Phone`);
+            this.logger.error(`User ${user.id} does not have assigned Phone`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -45,7 +45,7 @@ export class InformationController {
         const phone: Phone | undefined = user.phone;
 
         if (!phone) {
-            this.logger.error(`User ${ user.id } does not have assigned Phone`);
+            this.logger.error(`User ${user.id} does not have assigned Phone`);
             throw new BadRequestException('internal_server_error')
         }
 

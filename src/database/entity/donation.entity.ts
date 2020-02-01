@@ -3,8 +3,9 @@ import {Ngo} from "./ngo.entity";
 import {User} from "./user.entity";
 import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
 import {TadeusEntity} from "./base.entity";
-import {Period} from "./period.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {UserPeriod} from "./user-period.entity";
+import {NgoPeriod} from "./ngo-period.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'DONATION'})
 export class Donation extends TadeusEntity {
@@ -32,31 +33,22 @@ export class Donation extends TadeusEntity {
     @JoinColumn({name: 'USER_SKID'})
     user: User;
 
-    @ManyToOne(type => Period, period => period.donations)
-    @JoinColumn({name: 'PERIOD_SKID'})
-    period: Period;
+    @ManyToOne(type => UserPeriod, period => period.donations)
+    @JoinColumn({name: 'USER_PERIOD_SKID'})
+    userPeriod: UserPeriod;
 
-    constructor(ID: string, paymentNumber: string, type: DonationEnum, pool: PoolEnum, user: User, period: Period, ngo: Ngo) {
+    @ManyToOne(type => NgoPeriod, period => period.donations)
+    @JoinColumn({name: 'NGO_PERIOD_SKID'})
+    ngoPeriod?: NgoPeriod;
+
+    constructor(ID: string, paymentNumber: string, type: DonationEnum, pool: PoolEnum, user: User, period: UserPeriod, ngo: Ngo) {
         super();
         this.ID = ID;
         this.type = type;
         this.pool = pool;
         this.user = user;
-        this.period = period;
+        this.userPeriod = period;
         this.ngo = ngo;
         this.paymentNumber = paymentNumber;
-    }
-
-    static getCurrentDonationForUser(user: User, period: Period): Promise<Donation | undefined> {
-        return this.createQueryBuilder('donation')
-            .leftJoin('donation.user', 'user')
-            .leftJoin('donation.period', 'period')
-            .where('user.id = :id', {id: user.id})
-            .andWhere('period.id = :id', {id: period.id})
-            .andWhere('donation.type = :type', {type: DonationEnum.NGO})
-            .andWhere('donation.pool = :pool', {pool: 'DONATION'})
-            .orderBy('donation.createdAt', 'DESC')
-            .take(1)
-            .getOne();
     }
 }

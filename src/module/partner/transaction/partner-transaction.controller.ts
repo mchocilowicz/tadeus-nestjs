@@ -29,13 +29,13 @@ import {TradingPoint} from "../../../database/entity/trading-point.entity";
 import {User} from "../../../database/entity/user.entity";
 import {Terminal} from "../../../database/entity/terminal.entity";
 import {Configuration} from "../../../database/entity/configuration.entity";
-import {Period} from "../../../database/entity/period.entity";
 import {PartnerTransactionResponse} from "../../../models/partner/response/partner-transaction.response";
 import {FirebaseAdminService} from "../../../common/service/firebase-admin.service";
 import {TransactionStatus} from "../../../common/enum/status.enum";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {Ngo} from "../../../database/entity/ngo.entity";
 import {PhysicalCard} from "../../../database/entity/physical-card.entity";
+import {UserPeriod} from "../../../database/entity/user-period.entity";
 
 const moment = require('moment');
 
@@ -105,10 +105,10 @@ export class PartnerTransactionController {
         const data: any = await getConnection().transaction(async entityManager => {
 
             const config: Configuration | undefined = await Configuration.getMain();
-            const period: Period | undefined = await Period.findCurrentClientPeriod();
+            const period: UserPeriod | undefined = await UserPeriod.findActivePeriod();
 
             if (!config || !period) {
-                this.logger.error('Configuration or Current Period is not available');
+                this.logger.error('Configuration or active User Period is not available');
                 throw new BadRequestException('internal_server_error');
             }
 
@@ -136,6 +136,7 @@ export class PartnerTransactionController {
 
             transaction.updatePaymentValues(provision, pool);
             transaction.setUserPool(pool / 2, pool / 2);
+            transaction.ngoDonation = pool / 2;
 
             if (!user.account.firebaseToken) {
                 this.logger.error('Phone Firebase token does not exists');
@@ -150,8 +151,8 @@ export class PartnerTransactionController {
                 transactionID: transaction.ID,
                 tradingPointName: tradingPoint.name,
                 transactionDate: moment().format(Const.DATE_TIME_FORMAT),
-                prevAmount: `${ oldTransaction.price }`,
-                newAmount: `${ dto.price }`,
+                prevAmount: `${oldTransaction.price}`,
+                newAmount: `${dto.price}`,
                 terminalID: terminal.ID,
                 isCorrection: "true",
                 pool: '0'
@@ -209,7 +210,7 @@ export class PartnerTransactionController {
                 let terminal: Terminal = req.user;
 
                 const config: Configuration | undefined = await Configuration.findOne({type: 'MAIN'});
-                const period: Period | undefined = await Period.findCurrentClientPeriod();
+                const period: UserPeriod | undefined = await UserPeriod.findActivePeriod();
 
                 if (!config || !period) {
                     this.logger.error('Configuration or Current Period is not available');
@@ -272,6 +273,7 @@ export class PartnerTransactionController {
                 }
 
                 transaction.status = TransactionStatus.ACCEPTED;
+                transaction.ngoDonation = pool / 2;
 
                 user.xp += transaction.userXp;
                 virtualCard.updatePool(transaction.poolValue);
@@ -291,10 +293,10 @@ export class PartnerTransactionController {
                     transactionID: transaction.ID,
                     tradingPointName: tradingPoint.name,
                     transactionDate: moment().format(Const.DATE_TIME_FORMAT),
-                    newAmount: `${ dto.price }`,
+                    newAmount: `${dto.price}`,
                     terminalID: terminal.ID,
                     isCorrection: "false",
-                    pool: `${ transaction.poolValue }`
+                    pool: `${transaction.poolValue}`
                 };
 
                 if (terminal.isMain) {

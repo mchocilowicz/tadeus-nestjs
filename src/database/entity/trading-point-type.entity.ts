@@ -1,7 +1,7 @@
-import { Column, Entity, Generated, OneToMany } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
-import { TradingPoint } from "./trading-point.entity";
-import { TadeusEntity } from "./base.entity";
+import {Column, Entity, Generated, OneToMany} from "typeorm";
+import {ApiProperty} from "@nestjs/swagger";
+import {TradingPoint} from "./trading-point.entity";
+import {TadeusEntity} from "./base.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_TYPE'})
 export class TradingPointType extends TadeusEntity {

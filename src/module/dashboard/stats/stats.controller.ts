@@ -1,15 +1,15 @@
-import { Controller, Get } from "@nestjs/common";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { Const } from "../../../common/util/const";
-import { User } from "../../../database/entity/user.entity";
-import { DonationEnum } from "../../../common/enum/donation.enum";
-import { TradingPoint } from "../../../database/entity/trading-point.entity";
-import { Donation } from "../../../database/entity/donation.entity";
-import { TadeusEntity } from "../../../database/entity/base.entity";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
-import { Transaction } from "../../../database/entity/transaction.entity";
-import { groupDatesByComponent } from "../../../common/util/functions";
-import { StatsService } from "./stats.service";
+import {Controller, Get} from "@nestjs/common";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {Const} from "../../../common/util/const";
+import {User} from "../../../database/entity/user.entity";
+import {DonationEnum} from "../../../common/enum/donation.enum";
+import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {Donation} from "../../../database/entity/donation.entity";
+import {TadeusEntity} from "../../../database/entity/base.entity";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {Transaction} from "../../../database/entity/transaction.entity";
+import {groupDatesByComponent} from "../../../common/util/functions";
+import {StatsService} from "./stats.service";
 
 const moment = require("moment");
 const _ = require('lodash');

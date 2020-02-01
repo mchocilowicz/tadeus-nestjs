@@ -1,7 +1,7 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsNotEmpty, IsNumber } from "class-validator";
-import { PhonePrefixExists } from "../../../common/decorators/phone-prefix-exists.decorator";
-import { PhoneLength } from "../../../common/decorators/phone-length.decorator";
+import {ApiProperty} from "@nestjs/swagger";
+import {IsNotEmpty, IsNumber} from "class-validator";
+import {PhonePrefixExists} from "../../../common/decorators/phone-prefix-exists.decorator";
+import {PhoneLength} from "../../../common/decorators/phone-length.decorator";
 
 export class PhoneRequest {
     @ApiProperty({description: 'Phone number prefix', required: true})

@@ -1,15 +1,13 @@
-import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
-
 export class PartnerPaymentResponse {
-    paymentId: string = '';
     price: number = 0;
-    date: Date;
+    date?: Date;
+    code: string;
+    hasPayments: boolean = false;
 
-    constructor(date: Date, payment?: PartnerPayment) {
-        if (payment) {
-            this.paymentId = payment.id;
-            this.price = payment.price;
-        }
-        this.date = date;
+    constructor(price: number, code: string, hasPayments: boolean, paymentAt?: Date) {
+        this.date = paymentAt;
+        this.price = price;
+        this.code = code;
+        this.hasPayments = hasPayments;
     }
 }

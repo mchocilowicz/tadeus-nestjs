@@ -1,10 +1,10 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
-import { Status, Step } from "../../common/enum/status.enum";
-import { TradingPoint } from "./trading-point.entity";
-import { Transaction } from "./transaction.entity";
-import { Phone } from "./phone.entity";
-import { TadeusEntity } from "./base.entity";
-import { Account } from "./account.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
+import {Status, Step} from "../../common/enum/status.enum";
+import {TradingPoint} from "./trading-point.entity";
+import {Transaction} from "./transaction.entity";
+import {Phone} from "./phone.entity";
+import {TadeusEntity} from "./base.entity";
+import {Account} from "./account.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'TERMINAL'})
 export class Terminal extends TadeusEntity {

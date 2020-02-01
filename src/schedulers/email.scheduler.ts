@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
-import { PartnerPayment } from "../database/entity/partner-payment.entity";
-import { EmailService } from "../module/common/email.service";
-import { EntityManager, getConnection } from "typeorm";
+import {Injectable} from "@nestjs/common";
+import {Cron} from "@nestjs/schedule";
+import {PartnerPayment} from "../database/entity/partner-payment.entity";
+import {EmailService} from "../module/common/email.service";
+import {EntityManager, getConnection} from "typeorm";
 
 const moment = require('moment');
 
@@ -17,7 +17,7 @@ export class UserAccountExpirationScheduler {
         let payments = await PartnerPayment.createQueryBuilder("p")
             .leftJoinAndSelect('p.tradingPoint', 'point')
             .where("p.isPaid = false")
-            .andWhere(`to_date(cast(p.sendMessageAt as TEXT),'YYYY-MM-DD') = to_date('${ moment().format('YYYY-MM-DD') }','YYYY-MM-DD')`)
+            .andWhere(`to_date(cast(p.sendMessageAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
             .orderBy('p.createdAt', 'DESC')
             .getMany();
 
