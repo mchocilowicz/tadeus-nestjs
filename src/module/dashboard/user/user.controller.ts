@@ -1,15 +1,26 @@
-import {BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Put, Query} from "@nestjs/common";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {User} from "../../../database/entity/user.entity";
-import {ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {UserResponse} from "../../../models/dashboard/response/user.response";
-import {Status} from "../../../common/enum/status.enum";
-import {UserViewResponse} from "../../../models/dashboard/response/user-view.response";
-import {PhoneRequest} from "../../../models/common/request/phone.request";
-import {Phone} from "../../../database/entity/phone.entity";
-import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
-import {getConnection} from "typeorm";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    Put,
+    Query
+} from "@nestjs/common";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { User } from "../../../database/entity/user.entity";
+import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { UserResponse } from "../../../models/dashboard/response/user.response";
+import { Status } from "../../../common/enum/status.enum";
+import { UserViewResponse } from "../../../models/dashboard/response/user-view.response";
+import { PhoneRequest } from "../../../models/common/request/phone.request";
+import { Phone } from "../../../database/entity/phone.entity";
+import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
+import { getConnection } from "typeorm";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import { Opinion } from "../../../database/entity/opinion.entity";
 
 const moment = require('moment');
 
@@ -65,7 +76,15 @@ export class UserController {
 
         return users.map((user: User) => {
             return new UserResponse(user);
-        })
+        });
+    }
+
+    @Get('opinion')
+    async getUsersOpinion() {
+        return await Opinion.createQueryBuilder('o')
+            .leftJoin("o.users", 'user')
+            .where("user is not null")
+            .getMany();
     }
 
     @Get(':id')
