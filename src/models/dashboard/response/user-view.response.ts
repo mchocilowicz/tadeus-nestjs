@@ -1,9 +1,9 @@
-import {User} from "../../../database/entity/user.entity";
+import { User } from "../../../database/entity/user.entity";
 
 export class UserViewResponse {
     id: string;
     ID: string;
-    phonePrefix: number | null;
+    prefix: number | null;
     phone: number | null;
     donationPool: number;
     collectedMoney: number;
@@ -12,11 +12,13 @@ export class UserViewResponse {
     xp: number;
     currentNgo: string;
     lastNgo: string;
+    transactions?: UserTransactionResponse[];
+    status: string;
 
     constructor(user: User) {
         this.id = user.id;
         this.ID = user.account.ID;
-        this.phonePrefix = user.phone ? user.phone.prefix.value : null;
+        this.prefix = user.phone ? user.phone.prefix.value : null;
         this.phone = user.phone ? user.phone.value : null;
         this.donationPool = user.card.donationPool;
         this.collectedMoney = user.collectedMoney;
@@ -25,6 +27,10 @@ export class UserViewResponse {
         this.xp = user.xp;
         this.currentNgo = user.ngo ? user.ngo.name : "";
         this.lastNgo = "";
+        this.status = user.account.status;
+        this.transactions = user.transactions?.map(t => {
+            return new UserTransactionResponse(t.isCorrection ? "CORRECTION" : "TRANSACTION", t.createdAt, t.price, t.userXp)
+        });
 
         if (user.donations) {
             let donation = user.donations.pop();
@@ -32,5 +38,19 @@ export class UserViewResponse {
                 this.lastNgo = donation ? donation.ngo.name : "";
             }
         }
+    }
+}
+
+export class UserTransactionResponse {
+    type: string;
+    createdAt: Date;
+    price: number;
+    xp: number;
+
+    constructor(type: string, createdAt: Date, price: number, xp: number) {
+        this.type = type;
+        this.createdAt = createdAt;
+        this.price = price;
+        this.xp = xp;
     }
 }

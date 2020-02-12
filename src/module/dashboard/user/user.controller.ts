@@ -34,9 +34,17 @@ export class UserController {
     @ApiQuery({name: 'updatedTo', type: Date, description: 'updated to', required: false})
     @ApiQuery({name: 'xpMin', type: Number, description: '', required: false})
     @ApiQuery({name: 'xpMax', type: Number, description: '', required: false})
-    @ApiQuery({name: 'phonePrefix', type: Number, description: '', required: false})
-    @ApiQuery({name: 'phoneNumber', type: Number, description: '', required: false})
-    async getAllUsers(@Query() query: any) {
+    @ApiQuery({name: 'prefix', type: Number, description: '', required: false})
+    @ApiQuery({name: 'phone', type: Number, description: '', required: false})
+    async getAllUsers(@Query() query: {
+        updatedFrom: Date
+        updatedTo: Date
+        xpMin: number
+        xpMax: number
+        prefix: number
+        phone: number
+        status: string
+    }) {
         let sqlQuery = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('user.phone', 'phone')
@@ -44,7 +52,7 @@ export class UserController {
             .leftJoinAndSelect('account.role', 'role')
             .where('role.value = :role', {role: RoleEnum.CLIENT});
 
-        if (query.xpMin && query.xpMax && query.xpMin < query.xpMax) {
+        if (query.xpMin && query.xpMax && Number(query.xpMin) > Number(query.xpMax)) {
             throw new BadRequestException('query_xp_mismatch')
         }
 
@@ -53,23 +61,23 @@ export class UserController {
         }
 
         if (query.xpMin) {
-            sqlQuery = sqlQuery.andWhere('user.xp >= :xp', {xp: query.xpMin});
+            sqlQuery = sqlQuery.andWhere('user.xp >= :xpMin', {xpMin: Number(query.xpMin)});
         }
         if (query.xpMax) {
-            sqlQuery = sqlQuery.andWhere('user.xp <= :xp', {xp: query.xpMax});
+            sqlQuery = sqlQuery.andWhere('user.xp <= :xpMax', {xpMax: Number(query.xpMax)});
         }
-        if (query.phonePrefix && query.phoneNumber) {
-            sqlQuery = sqlQuery.andWhere('phone.value = :phone', {phone: query.phoneNumber})
-                .andWhere('prefix.value = :prefix', {prefix: query.phonePrefix});
+        if (query.prefix && query.phone) {
+            sqlQuery = sqlQuery.andWhere('phone.value = :phone', {phone: query.phone})
+                .andWhere('prefix.value = :prefix', {prefix: query.prefix});
         }
         if (query.status) {
             sqlQuery = sqlQuery.andWhere('account.status = :status', {status: query.status});
         }
         if (query.updatedFrom) {
-            sqlQuery = sqlQuery.andWhere('user.updatedAt >= :from', {from: moment(query.updatedFrom).format('YYYY/MM/DD')});
+            sqlQuery = sqlQuery.andWhere('user.updatedAt >= :from', {from: moment(query.updatedFrom).toISOString()});
         }
         if (query.updatedTo) {
-            sqlQuery = sqlQuery.andWhere('user.updatedAt <= :to', {from: moment(query.updatedTo).format('YYYY/MM/DD')});
+            sqlQuery = sqlQuery.andWhere('user.updatedAt <= :to', {to: moment(query.updatedTo).toISOString()});
         }
 
         const users: User[] = await sqlQuery.getMany();
@@ -79,16 +87,29 @@ export class UserController {
         });
     }
 
-    @Get('opinion')
-    async getUsersOpinion() {
-        return await Opinion.createQueryBuilder('o')
-            .leftJoin("o.users", 'user')
-            .where("user is not null")
-            .getMany();
+    @Get('status')
+    async getUserStatus() {
+        return Object.keys(Status)
     }
 
-    @Get(':id')
-    async getUserById(@Param('id') id: string) {
+    @Get('opinion')
+    async getUsersOpinion() {
+        return await Opinion.createQueryBuilder("o")
+            .leftJoinAndSelect("o.user", 'user')
+            .leftJoinAndSelect("user.phone", "phone")
+            .leftJoinAndSelect("phone.prefix", "prefix")
+            .where("user is not null")
+            .select("o.value", "value")
+            .addSelect("o.email", "email")
+            .addSelect("prefix.value", "prefix")
+            .addSelect("phone.value", "phone")
+            .addSelect("user.name", "name")
+            .addSelect("o.createdAt", "createdAt")
+            .getRawMany();
+    }
+
+    @Get(':ID')
+    async getUserById(@Param('ID') id: string) {
         let user: User | undefined = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('user.phone', 'phone')
@@ -100,12 +121,13 @@ export class UserController {
             .leftJoinAndSelect('phone.prefix', 'prefix')
             .leftJoinAndSelect('account.role', 'role')
             .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('user.id = :id', {id: id})
+            .andWhere('account.ID = :ID', {ID: id})
             .getOne();
 
         if (!user) {
             throw new NotFoundException('user_not_exists')
         }
+
         return new UserViewResponse(user);
     }
 

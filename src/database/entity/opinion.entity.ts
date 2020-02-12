@@ -1,14 +1,14 @@
-import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
-import {User} from "./user.entity";
-import {TadeusEntity} from "./base.entity";
-import {TradingPoint} from "./trading-point.entity";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { User } from "./user.entity";
+import { TadeusEntity } from "./base.entity";
+import { TradingPoint } from "./trading-point.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'OPINION'})
 export class Opinion extends TadeusEntity {
     @Column({name: 'VALUE'})
     value: string;
 
-    @Column({name: 'EMAIL'})
+    @Column({name: 'EMAIL', nullable: true})
     email?: string;
 
     @ManyToOne(type => User, user => user.opinions)

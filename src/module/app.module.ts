@@ -28,6 +28,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EventEmitter } from 'events';
 import { NestEmitterModule } from "nest-emitter";
 import { UserModule } from "./dashboard/user/user.module";
+import { NgoTypeModule } from "./dashboard/ngo-type/ngo-type.module";
 
 const routes: Routes = [
     {
@@ -117,15 +118,15 @@ const routes: Routes = [
             {
                 path: '/settlement',
                 module: SettlementModule
-            }
+            },
             //         {
             //             path: '/trading-point-type',
             //             module: TradingPointTypeModule
             //         },
-            //         {
-            //             path: '/ngo-type',
-            //             module: NgoTypeModule
-            //         }
+            {
+                path: '/ngo-type',
+                module: NgoTypeModule
+            }
         ]
     }
 ];
@@ -163,7 +164,7 @@ const routes: Routes = [
         // TradingPointTypeModule,
         ConfigurationModule,
         DashboardNgoModule,
-        // NgoTypeModule,
+        NgoTypeModule,
         StatsModule,
         SettlementModule,
     ],

@@ -1,20 +1,20 @@
-import {BadRequestException, Body, Controller, Get, Logger, Post, Req, UseGuards} from "@nestjs/common";
-import {ApiBearerAuth, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {User} from "../../../database/entity/user.entity";
-import {Donation} from "../../../database/entity/donation.entity";
-import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
-import {CodeService} from "../../../common/service/code.service";
-import {Ngo} from "../../../database/entity/ngo.entity";
-import {getConnection} from "typeorm";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {NgoDonationRequest} from "../../../models/client/request/donation.request";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
-import {UserPeriod} from "../../../database/entity/user-period.entity";
+import { BadRequestException, Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { User } from "../../../database/entity/user.entity";
+import { Donation } from "../../../database/entity/donation.entity";
+import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
+import { CodeService } from "../../../common/service/code.service";
+import { Ngo } from "../../../database/entity/ngo.entity";
+import { getConnection } from "typeorm";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { NgoDonationRequest } from "../../../models/client/request/donation.request";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { VirtualCard } from "../../../database/entity/virtual-card.entity";
+import { UserPeriod } from "../../../database/entity/user-period.entity";
 
 const moment = require("moment");
 
@@ -105,7 +105,7 @@ export class DonationController {
                 }
 
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, request.payUextOrderId, DonationEnum.NGO, PoolEnum.PERSONAL, user, period, ngo);
+                const donation: Donation = new Donation(ID, DonationEnum.NGO, PoolEnum.PERSONAL, user, period, ngo, request.payUextOrderId);
                 donation.price = request.ngoDonation;
                 await entityManager.save(donation);
                 const card = ngo.card;
@@ -122,7 +122,7 @@ export class DonationController {
                 }
 
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, request.payUextOrderId, DonationEnum.TADEUS, PoolEnum.PERSONAL, user, period, ngo);
+                const donation: Donation = new Donation(ID, DonationEnum.TADEUS, PoolEnum.PERSONAL, user, period, ngo, request.payUextOrderId);
                 donation.price = request.tadeusDonation;
 
                 const card = ngo.card;
