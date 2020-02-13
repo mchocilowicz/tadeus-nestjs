@@ -15,12 +15,11 @@ import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { UserResponse } from "../../../models/dashboard/response/user.response";
 import { Status } from "../../../common/enum/status.enum";
 import { UserViewResponse } from "../../../models/dashboard/response/user-view.response";
-import { PhoneRequest } from "../../../models/common/request/phone.request";
 import { Phone } from "../../../database/entity/phone.entity";
-import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
-import { getConnection } from "typeorm";
+import { EntityManager, getConnection } from "typeorm";
 import { VirtualCard } from "../../../database/entity/virtual-card.entity";
 import { Opinion } from "../../../database/entity/opinion.entity";
+import { Account } from "../../../database/entity/account.entity";
 
 const moment = require('moment');
 
@@ -131,49 +130,14 @@ export class UserController {
         return new UserViewResponse(user);
     }
 
-    @Put(':id/phone')
-    async updateUserPhone(@Param('id') id: string, @Body() dto: PhoneRequest) {
-        let user = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('user.phone', 'phone')
-            .leftJoinAndSelect('phone.prefix', 'prefix')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('user.id = :id', {id: id})
-            .getOne();
-
-        let phone = await Phone.findClientNumber(dto.phonePrefix, dto.phone);
-        if (phone) {
-            throw new BadRequestException('phone_already_exists')
-        }
-
-        const prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
-        if (!prefix) {
-            throw new NotFoundException('prefix_does_not_exists')
-        }
-
-        return await getConnection().transaction(async entityManager => {
-            if (!user) {
-                throw new NotFoundException('user_not_exists')
-            }
-
-            let newPhone = new Phone(dto.phone, prefix);
-            newPhone = await entityManager.save(newPhone);
-            user.phone = newPhone;
-            await entityManager.save(user);
-
-            return newPhone;
-        })
-    }
-
-    @Put(':id/transfer/:target')
-    async transferUserMoney(@Param('id') id: string, @Param('target') target: string) {
+    @Put(':ID/transfer')
+    async transferUserMoney(@Param('ID') ID: string, @Body() dto: any) {
         let user = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('account.role', 'role')
             .leftJoinAndSelect('user.card', 'card')
             .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('user.id = :id', {id: id})
+            .andWhere('account.ID = :ID', {ID: ID})
             .getOne();
 
         let targetUser = await User.createQueryBuilder('user')
@@ -181,7 +145,7 @@ export class UserController {
             .leftJoinAndSelect('account.role', 'role')
             .leftJoinAndSelect('user.card', 'card')
             .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.ID = :ID', {ID: target})
+            .andWhere('account.ID = :ID', {ID: dto.targetID})
             .getOne();
 
         if (!user || !targetUser) {
@@ -202,30 +166,42 @@ export class UserController {
         })
     }
 
-    @Put(':id/status/:status')
-    async updateUserStatus(@Param('id') id: string, @Param('status') status: Status) {
+    @Put(':ID')
+    async updateUserStatus(@Param('ID') ID: string, @Body() dto: any) {
         let user = await User.createQueryBuilder('user')
+            .leftJoinAndSelect("user.phone", 'phone')
             .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('account.role', 'role')
             .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('user.id = :id', {id: id})
+            .andWhere('account.ID = :ID', {ID: ID})
             .getOne();
 
-        if (!user) {
-            throw new NotFoundException('user_does_not_exists')
-        }
 
-        const s = Object.keys(Status).find(s => s === status);
-        if (!s) {
-            throw new NotFoundException('status_does_not_exists')
-        }
+        getConnection().transaction(async (entityManager: EntityManager) => {
+            if (!user) {
+                throw new NotFoundException('user_does_not_exists')
+            }
 
-        let account = user.account;
-        account.status = status;
-        await account.save();
+            let account: Account = user.account;
+            const newStatus = Object.keys(Status).find(s => s === dto.status);
+
+            if (!newStatus) {
+                throw new NotFoundException('status_does_not_exists')
+            }
+            if (account.status.toUpperCase() !== newStatus) {
+                account.status = (<any>Status)[newStatus];
+                await entityManager.save(account);
+            }
+
+            if (user.phone && dto.phone && dto.prefix) {
+                let phone: Phone = user.phone;
+                phone.value = dto.phone;
+                await entityManager.save(phone)
+            }
+        })
     }
 
-    @Delete(':id')
+    @Delete(':ID')
     async deleteUser(@Param('id') id: string) {
         let user = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
@@ -243,7 +219,7 @@ export class UserController {
 
         let card = user.card;
         if (card.donationPool > 0 || card.personalPool > 0) {
-            throw new BadRequestException('transfer_required')
+            throw new BadRequestException('user_transfer_required')
         }
 
         let account = user.account;

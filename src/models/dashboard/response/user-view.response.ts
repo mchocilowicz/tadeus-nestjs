@@ -3,6 +3,7 @@ import { User } from "../../../database/entity/user.entity";
 export class UserViewResponse {
     id: string;
     ID: string;
+    name?: string;
     prefix: number | null;
     phone: number | null;
     donationPool: number;
@@ -28,6 +29,7 @@ export class UserViewResponse {
         this.currentNgo = user.ngo ? user.ngo.name : "";
         this.lastNgo = "";
         this.status = user.account.status;
+        this.name = user.name;
         this.transactions = user.transactions?.map(t => {
             return new UserTransactionResponse(t.isCorrection ? "CORRECTION" : "TRANSACTION", t.createdAt, t.price, t.userXp)
         });
