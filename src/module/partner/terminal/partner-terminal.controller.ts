@@ -131,19 +131,11 @@ export class PartnerTerminalController {
 
         await getConnection().transaction(async entityManager => {
             if (terminal) {
-                let transactions = terminal.transactions ? terminal.transactions : [];
-
-                if (transactions.length > 0) {
-                    terminal.name = '';
-                    terminal.phone = undefined;
-                    terminal.account.status = Status.DELETED;
-                    await entityManager.save(terminal);
-                    await entityManager.save(terminal.account);
-                } else {
-                    await entityManager.remove(terminal);
-                    await entityManager.remove(terminal.account)
-                }
-
+                terminal.name = '';
+                terminal.phone = undefined;
+                terminal.account.status = Status.DELETED;
+                await entityManager.save(terminal);
+                await entityManager.save(terminal.account);
             }
         })
     }
@@ -154,24 +146,33 @@ export class PartnerTerminalController {
             throw new NotFoundException('trading_point_does_not_exists')
         }
 
-        let counts = await Terminal.count({tradingPoint: tradingPoint});
-        let role = await Role.findOne({value: RoleEnum.TERMINAL});
-        if (!role) {
-            throw new NotFoundException('Role TERMINAL does not exists in DB');
+        let existingTerminal = await Terminal.findOne({
+            tradingPoint: tradingPoint,
+            phone: phone
+        }, {relations: ['account']});
+        if (existingTerminal) {
+            existingTerminal.account.status = Status.ACTIVE;
+            existingTerminal.name = name;
+            await entityManager.save(existingTerminal);
+        } else {
+            let counts = await Terminal.count({tradingPoint: tradingPoint});
+            let role = await Role.findOne({value: RoleEnum.TERMINAL});
+            if (!role) {
+                throw new NotFoundException('Role TERMINAL does not exists in DB');
+            }
+            const id = [tradingPoint.ID, this.codeService.generateTerminalNumber(counts)].join('-');
+
+            let terminalAccount = new Account(id, role);
+
+            let terminal = new Terminal(
+                id,
+                phone,
+                tradingPoint,
+                await entityManager.save(terminalAccount),
+                name
+            );
+            terminal.isMain = false;
+            await entityManager.save(terminal);
         }
-        const id = [tradingPoint.ID, this.codeService.generateTerminalNumber(counts)].join('-');
-
-        let terminalAccount = new Account(id, role);
-
-        let terminal = new Terminal(
-            id,
-            phone,
-            tradingPoint,
-            await entityManager.save(terminalAccount),
-            name
-        );
-        terminal.isMain = false;
-        await entityManager.save(terminal);
-
     }
 }

@@ -8,28 +8,29 @@ import {
     Param,
     Post,
     Put,
+    Query,
     Res,
     UploadedFile,
     UseInterceptors
 } from "@nestjs/common";
-import { ApiBody, ApiConsumes, ApiHeader, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../../common/util/const";
-import { NgoRequest } from "../../../models/common/request/ngo.request";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { EntityManager, getConnection, QueryFailedError } from "typeorm";
-import { extractErrors, handleException } from "../../../common/util/functions";
-import { NgoType } from "../../../database/entity/ngo-type.entity";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { NgoRowExcel } from "../../../models/dashboard/excel/ngo-row.excel";
-import { validate } from "class-validator";
-import { ExcelException } from "../../../common/exceptions/excel.exception";
-import { City } from "../../../database/entity/city.entity";
-import { CodeService } from "../../../common/service/code.service";
-import { PhysicalCard } from "../../../database/entity/physical-card.entity";
-import { diskStorage } from "multer";
-import { Phone } from "../../../database/entity/phone.entity";
-import { PhonePrefix } from "../../../database/entity/phone-prefix.entity";
-import { Address } from "../../../database/entity/address.entity";
+import {ApiBody, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
+import {Const} from "../../../common/util/const";
+import {NgoRequest} from "../../../models/common/request/ngo.request";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {EntityManager, getConnection, QueryFailedError} from "typeorm";
+import {extractErrors, handleException} from "../../../common/util/functions";
+import {NgoType} from "../../../database/entity/ngo-type.entity";
+import {FileInterceptor} from "@nestjs/platform-express";
+import {NgoRowExcel} from "../../../models/dashboard/excel/ngo-row.excel";
+import {validate} from "class-validator";
+import {ExcelException} from "../../../common/exceptions/excel.exception";
+import {City} from "../../../database/entity/city.entity";
+import {CodeService} from "../../../common/service/code.service";
+import {PhysicalCard} from "../../../database/entity/physical-card.entity";
+import {diskStorage} from "multer";
+import {Phone} from "../../../database/entity/phone.entity";
+import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import {Address} from "../../../database/entity/address.entity";
 
 const moment = require("moment");
 
@@ -43,8 +44,85 @@ export class DashboardNgoController {
 
     @Get()
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-    getNgoList() {
-        return Ngo.find({relations: ['address', 'type']})
+    getNgoList(@Query() query: any) {
+        let sql = Ngo.createQueryBuilder('n')
+            .leftJoinAndSelect('n.address', 'address')
+            .leftJoinAndSelect('address.city', 'city')
+            .leftJoinAndSelect('n.type', 'type')
+            .leftJoinAndSelect('n.phone', 'phone')
+            .leftJoinAndSelect('phone.prefix', 'prefix');
+
+        if (query.name) {
+            sql = sql.andWhere('n.name like "%:name"', {name: query.name})
+        }
+        if (query.type) {
+            sql = sql.andWhere('type.id = :type', {type: query.type})
+        }
+        if (query.city) {
+            sql = sql.andWhere('city.id = :city', {city: query.city})
+        }
+
+        return sql
+            .select('n.ID', 'ID')
+            .addSelect('phone.value', 'phone')
+            .addSelect('n.email', 'email')
+            .addSelect('n.name', 'name')
+            .addSelect('n.verified', 'verified')
+            .addSelect('n.verifiedAt', 'verifiedAt')
+            .addSelect('type.name', 'type')
+            .addSelect('city.name', 'city')
+            .getRawMany();
+    }
+
+
+    @Get('/excel')
+    getImage(@Res() response: any) {
+        response.sendFile('ngo.xlsx', {root: 'public/excel'});
+    }
+
+    @Get(':ID')
+    async getNgoById(@Param('ID') ngoId: string) {
+        let ngo = await Ngo.createQueryBuilder('n')
+            .leftJoinAndSelect('n.address', 'address')
+            .leftJoinAndSelect('n.phone', 'phone')
+            .leftJoinAndSelect('n.card', 'card')
+            .leftJoinAndSelect('address.city', 'city')
+            .leftJoinAndSelect('n.type', 'type')
+            .leftJoinAndSelect('n.transactions', 'transaction')
+            .where('n.ID = :ID', {ID: ngoId})
+            .andWhere('n.isTadeus = false')
+            .getOne();
+
+        if (!ngo) {
+            throw new NotFoundException('ngo_does_not_exists')
+        }
+
+        return {
+            name: ngo.name,
+            bankNumber: ngo.bankNumber,
+            description: ngo.description,
+            verified: ngo.verified,
+            verifiedAt: ngo.verifiedAt,
+            createdAt: ngo.createdAt,
+            type: ngo.type.id,
+            collectedDonation: ngo.card.collectedMoney,
+            phone: ngo.phone.value,
+            address: {
+                street: ngo.address.street,
+                number: ngo.address.number,
+                postCode: ngo.address.postCode,
+                latitude: ngo.address.latitude,
+                longitude: ngo.address.longitude,
+                city: ngo.address.city.id
+            },
+            transactions: ngo.transactions?.map(t => {
+                return {
+                    date: t.createdAt,
+                    price: t.ngoDonation,
+                    ID: t.ID
+                }
+            })
+        }
     }
 
     @Post()
@@ -143,15 +221,6 @@ export class DashboardNgoController {
 
     }
 
-    @Get('/excel')
-    getImage(@Res() response: any) {
-        response.download('public/excel/ngo.xlsx', 'Ngo.xlsx');
-    }
-
-    @Get(':ngoId')
-    getNgoById(@Param('ngoId') ngoId: string) {
-        return Ngo.findOne({id: ngoId}, {relations: ['city', 'type', 'transactions', 'donations']})
-    }
 
     @Delete()
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)

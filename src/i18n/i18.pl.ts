@@ -1,6 +1,11 @@
 export default {
     // bledy walidacji
     'user_data_required': 'Imie oraz E-mail są wymagane',
+    'user_does_not_exists': 'Uzytkownik nie istnieje',
+    'user_transfer_required': 'Przed usunieciem konta nalezy przelac uzbierany wartosci pól do innego uzytkownika',
+    'status_does_not_exists': 'Podany status nie może zostac przypisany do uzytkownika',
+    'query_xp_mismatch': 'Minimalna wartosc Xp nie moze byc wieksza od maksymalnej wartosci',
+    'query_updated_at_mismatch': 'Dolna Data aktywnosci OD nie moze byc za dalsza niz Data aktynowsci DO',
     // bledy sql
     'user_exists': 'Użytkownik o podanym numerze juz istnieje.',
     'internal_server_error': "Proszę skontaktować się z działem Obsługi.",

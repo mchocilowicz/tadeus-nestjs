@@ -70,8 +70,6 @@ export class TradingPoint extends TadeusEntity {
 
     constructor(ID: string,
                 name: string,
-                longitude: number,
-                latitude: number,
                 email: string,
                 phone: Phone,
                 type: TradingPointType,

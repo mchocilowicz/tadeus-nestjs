@@ -1,4 +1,4 @@
-import {Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put} from "@nestjs/common";
+import {Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Res} from "@nestjs/common";
 import {ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../common/util/const";
 import {PhoneRequest} from "../../models/common/request/phone.request";
@@ -58,4 +58,9 @@ export class DashboardController {
         return TradingPointType.find();
     }
 
+    @Get('/img/:imageName')
+    @ApiResponse({status: 200, type: "File", description: "Image"})
+    getImage(@Param('imageName') imageName: string, @Res() res: any) {
+        res.sendFile(imageName, {root: 'public/image'});
+    }
 }

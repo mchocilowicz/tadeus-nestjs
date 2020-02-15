@@ -1,7 +1,10 @@
 export default {
     'user_data_required': 'Name and E-mail is required',
-
+    'user_does_not_exists': 'User does not exists',
     'user_exists': 'User with provided phone already exists.',
+    'user_transfer_required': 'Before delete please transfer pool values to another user',
+    'status_does_not_exists': 'Provided status can not be assigned to user',
+    'query_xp_mismatch': 'Minimum Xp can not be greater than maximum xp',
     'internal_server_error': "Please contact support.",
     'invalid_code': 'Provided code is invalid',
     'phone_dash_format': 'Phone number cannot contains "-"',

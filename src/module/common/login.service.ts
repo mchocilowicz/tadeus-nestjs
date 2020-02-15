@@ -80,10 +80,10 @@ export class LoginService {
     }
 
     async signInDashboard(dto: PhoneRequest): Promise<void> {
-        let admin: Admin | undefined = await Admin.createQueryBuilder('admin')
-            .leftJoinAndSelect('admin.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoin('admin.phone', 'phone')
+        let admin: Admin | undefined = await Admin.createQueryBuilder('a')
+            .leftJoinAndSelect('a.account', 'account')
+            .leftJoinAndSelect('a.role', 'role')
+            .leftJoin('a.phone', 'phone')
             .leftJoin('phone.prefix', 'prefix')
             .where(`phone.value = :phone`, {phone: dto.phone})
             .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
@@ -290,7 +290,7 @@ export class LoginService {
 
     private async signInEntity(entity: any, role: RoleEnum) {
         if (!entity) {
-            throw new NotFoundException('user_no_exists')
+            throw new NotFoundException('user_does_no_exists')
         }
 
         const account = entity.account;

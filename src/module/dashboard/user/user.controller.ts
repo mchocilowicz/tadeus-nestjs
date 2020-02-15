@@ -1,25 +1,15 @@
-import {
-    BadRequestException,
-    Body,
-    Controller,
-    Delete,
-    Get,
-    NotFoundException,
-    Param,
-    Put,
-    Query
-} from "@nestjs/common";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { User } from "../../../database/entity/user.entity";
-import { ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { UserResponse } from "../../../models/dashboard/response/user.response";
-import { Status } from "../../../common/enum/status.enum";
-import { UserViewResponse } from "../../../models/dashboard/response/user-view.response";
-import { Phone } from "../../../database/entity/phone.entity";
-import { EntityManager, getConnection } from "typeorm";
-import { VirtualCard } from "../../../database/entity/virtual-card.entity";
-import { Opinion } from "../../../database/entity/opinion.entity";
-import { Account } from "../../../database/entity/account.entity";
+import {BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Put, Query} from "@nestjs/common";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {User} from "../../../database/entity/user.entity";
+import {ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {UserResponse} from "../../../models/dashboard/response/user.response";
+import {Status} from "../../../common/enum/status.enum";
+import {UserViewResponse} from "../../../models/dashboard/response/user-view.response";
+import {Phone} from "../../../database/entity/phone.entity";
+import {EntityManager, getConnection} from "typeorm";
+import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {Opinion} from "../../../database/entity/opinion.entity";
+import {Account} from "../../../database/entity/account.entity";
 
 const moment = require('moment');
 
@@ -49,9 +39,10 @@ export class UserController {
             .leftJoinAndSelect('user.phone', 'phone')
             .leftJoinAndSelect('phone.prefix', 'prefix')
             .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :role', {role: RoleEnum.CLIENT});
+            .where('role.value = :role', {role: RoleEnum.CLIENT})
+            .andWhere('account.status != :status', {status: Status.DELETED});
 
-        if (query.xpMin && query.xpMax && Number(query.xpMin) > Number(query.xpMax)) {
+        if (query.xpMin && query.xpMax && (Number(query.xpMin) > Number(query.xpMax) || Number(query.xpMax) < Number(query.xpMin))) {
             throw new BadRequestException('query_xp_mismatch')
         }
 
@@ -95,9 +86,10 @@ export class UserController {
     async getUsersOpinion() {
         return await Opinion.createQueryBuilder("o")
             .leftJoinAndSelect("o.user", 'user')
+            .leftJoin("o.tradingPoint", 'point')
             .leftJoinAndSelect("user.phone", "phone")
             .leftJoinAndSelect("phone.prefix", "prefix")
-            .where("user is not null")
+            .where("point is null")
             .select("o.value", "value")
             .addSelect("o.email", "email")
             .addSelect("prefix.value", "prefix")
@@ -124,7 +116,7 @@ export class UserController {
             .getOne();
 
         if (!user) {
-            throw new NotFoundException('user_not_exists')
+            throw new NotFoundException('user_does_not_exists')
         }
 
         return new UserViewResponse(user);
@@ -202,7 +194,7 @@ export class UserController {
     }
 
     @Delete(':ID')
-    async deleteUser(@Param('id') id: string) {
+    async deleteUser(@Param('ID') id: string) {
         let user = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('user.card', 'card')
@@ -210,7 +202,7 @@ export class UserController {
             .leftJoinAndSelect('user.phone', 'phone')
             .leftJoinAndSelect('account.role', 'role')
             .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('user.id = :id', {id: id})
+            .andWhere('account.ID = :ID', {ID: id})
             .getOne();
 
         if (!user) {
