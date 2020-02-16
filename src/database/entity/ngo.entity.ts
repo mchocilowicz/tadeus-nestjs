@@ -16,7 +16,7 @@ export class Ngo extends TadeusEntity {
     ID: string;
 
     @Column({name: 'BANK_ACCOUNT'})
-    bankNumber: string;
+    bankNumber: number;
 
     @Column({name: 'EMAIL'})
     email: string;
@@ -78,7 +78,7 @@ export class Ngo extends TadeusEntity {
 
     constructor(ID: string,
                 email: string,
-                bankNumber: string,
+                bankNumber: number,
                 name: string,
                 longName: string,
                 description: string,

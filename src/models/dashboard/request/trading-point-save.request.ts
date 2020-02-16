@@ -1,3 +1,5 @@
+import {AddressSaveRequest} from "./address-save.request";
+
 export class TradingPointSaveRequest {
     ID?: string;
     type: string;
@@ -10,9 +12,9 @@ export class TradingPointSaveRequest {
     vat: number;
     fee: number;
     xp: number;
-    address: TradingPointAddressSaveRequest;
+    address: AddressSaveRequest;
 
-    constructor(ID: string, phone: number, type: string, name: string, donationPercentage: number, email: string, price: number, active: boolean, vat: number, fee: number, xp: number, address: TradingPointAddressSaveRequest) {
+    constructor(ID: string, phone: number, type: string, name: string, donationPercentage: number, email: string, price: number, active: boolean, vat: number, fee: number, xp: number, address: AddressSaveRequest) {
         this.ID = ID;
         this.type = type;
         this.phone = phone;
@@ -25,23 +27,5 @@ export class TradingPointSaveRequest {
         this.fee = fee;
         this.xp = xp;
         this.address = address;
-    }
-}
-
-export class TradingPointAddressSaveRequest {
-    street: string;
-    number: number;
-    postCode: string;
-    longitude: number;
-    latitude: number;
-    city: string;
-
-    constructor(street: string, number: number, postCode: string, longitude: number, latitude: number, city: string) {
-        this.street = street;
-        this.number = number;
-        this.postCode = postCode;
-        this.longitude = longitude;
-        this.latitude = latitude;
-        this.city = city;
     }
 }

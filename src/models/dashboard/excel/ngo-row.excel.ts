@@ -25,7 +25,7 @@ export class NgoRowExcel extends BasicRowExcel {
     @IsNumberString({
         message: 'excel_account_number_format'
     })
-    accountNumber: string;
+    accountNumber: number;
 
     @IsNotEmpty({
         message: "excel_data_required"

@@ -1,4 +1,5 @@
 import {
+    BadRequestException,
     Body,
     Controller,
     Delete,
@@ -15,7 +16,6 @@ import {
 } from "@nestjs/common";
 import {ApiBody, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
-import {NgoRequest} from "../../../models/common/request/ngo.request";
 import {Ngo} from "../../../database/entity/ngo.entity";
 import {EntityManager, getConnection, QueryFailedError} from "typeorm";
 import {extractErrors, handleException} from "../../../common/util/functions";
@@ -31,6 +31,7 @@ import {diskStorage} from "multer";
 import {Phone} from "../../../database/entity/phone.entity";
 import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
 import {Address} from "../../../database/entity/address.entity";
+import {NgoSaveRequest} from "../../../models/dashboard/request/ngo-save.request";
 
 const moment = require("moment");
 
@@ -99,6 +100,10 @@ export class DashboardNgoController {
 
         return {
             name: ngo.name,
+            longName: ngo.longName,
+            email: ngo.email,
+            image: ngo.image,
+            thumbnail: ngo.thumbnail,
             bankNumber: ngo.bankNumber,
             description: ngo.description,
             verified: ngo.verified,
@@ -127,12 +132,12 @@ export class DashboardNgoController {
 
     @Post()
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-    @ApiBody({type: NgoRequest})
-    async create(@Body() dto: NgoRequest) {
+    @ApiBody({type: NgoSaveRequest})
+    async create(@Body() dto: NgoSaveRequest) {
         await getConnection().transaction(async (entityManager: EntityManager) => {
-            let phone = await Phone.findNumber(dto.phonePrefix, dto.phone);
+            let phone = await Phone.findNumber(48, dto.phone);
             if (!phone) {
-                let prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
+                let prefix = await PhonePrefix.findOne({value: 48});
                 if (!prefix) {
                     throw new NotFoundException('internal_server_error')
                 }
@@ -140,10 +145,28 @@ export class DashboardNgoController {
                 phone = await entityManager.save(phone);
             }
 
+            const type = await NgoType.findOne({id: dto.type});
+            if (!type) {
+                throw new NotFoundException('ngo_type_does_not_exists');
+            }
+
+            const city = await City.findOne({id: dto.address.city});
+            if (!city) {
+                throw new NotFoundException('city_does_not_exists');
+            }
+
+
             try {
-                let ngoID = this.codeService.generateNgoNumber(dto.type.code, this.codeService.generateNumber());
+                let addressRequest = dto.address;
+                let ngoID = this.codeService.generateNgoNumber(type.code, this.codeService.generateNumber());
                 let card = new PhysicalCard(this.codeService.generatePhysicalCardNumber(ngoID));
-                let address = new Address(dto.street, dto.number, dto.postCode, dto.city, dto.longitude, dto.latitude);
+                let address = new Address(
+                    addressRequest.street,
+                    addressRequest.number,
+                    addressRequest.postCode,
+                    city,
+                    addressRequest.longitude,
+                    addressRequest.latitude);
 
                 let ngo = new Ngo(
                     ngoID,
@@ -153,7 +176,7 @@ export class DashboardNgoController {
                     dto.longName,
                     dto.description,
                     await entityManager.save(address),
-                    dto.type,
+                    type,
                     phone,
                     await entityManager.save(card)
                 );
@@ -162,6 +185,70 @@ export class DashboardNgoController {
                 handleException(e, 'ngo', this.logger)
             }
         });
+    }
+
+    @Put(':ID')
+    async updateNgoData(@Param('ID') ngoID: string, @Body() dto: NgoSaveRequest) {
+        getConnection().transaction(async (entityManager: EntityManager) => {
+            const type = await NgoType.findOne({id: dto.type});
+            if (!type) {
+                throw new NotFoundException('ngo_type_does_not_exists');
+            }
+
+            const city = await City.findOne({id: dto.address.city});
+            if (!city) {
+                throw new NotFoundException('city_does_not_exists');
+            }
+
+            let ngo = await Ngo.createQueryBuilder('n')
+                .leftJoinAndSelect('n.address', 'address')
+                .leftJoinAndSelect('n.phone', 'phone')
+                .leftJoinAndSelect('phone.prefix', 'prefix')
+                .where('n.ID = :ID', {ID: ngoID})
+                .getOne();
+
+            if (!ngo) {
+                throw new NotFoundException('ngo_does_not_exists')
+            }
+
+            ngo.name = dto.name;
+            ngo.longName = dto.longName;
+            ngo.email = dto.email;
+            ngo.bankNumber = dto.bankNumber;
+            ngo.description = dto.description;
+            ngo.verified = dto.verified;
+
+
+            if (dto.verified && !ngo.verified) {
+                ngo.verifiedAt = new Date();
+            }
+
+            ngo.type = type;
+
+
+            if (ngo.phone.value !== dto.phone) {
+                let phone = await Phone.findNumber(48, dto.phone);
+                if (!phone) {
+                    let prefix = await PhonePrefix.findOne({value: 48});
+                    if (!prefix) {
+                        throw new NotFoundException('internal_server_error')
+                    }
+                    phone = new Phone(dto.phone, prefix);
+                    ngo.phone = await entityManager.save(phone);
+                }
+            }
+            let address = ngo.address;
+            address.street = dto.address.street
+            address.number = dto.address.number
+            address.postCode = dto.address.postCode
+            address.longitude = dto.address.longitude
+            address.latitude = dto.address.latitude
+            address.city = city;
+
+            await entityManager.save(ngo);
+            await entityManager.save(address);
+        });
+
     }
 
     @Post("import")
@@ -196,14 +283,17 @@ export class DashboardNgoController {
         this.logger.log("Ended to process excel file with NGO");
     }
 
-    @Put(':ID')
+    @Post(':ID/image')
+    @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image', {
             storage: diskStorage({
                 destination(req, file, cb) {
                     cb(null, 'public/image');
                 },
                 filename(req, file, cb) {
-                    cb(null, Date.now() + '-' + file.originalname);
+                    if (file) {
+                        cb(null, Date.now() + '-' + file.originalname);
+                    }
                 },
             }),
         }),
@@ -213,12 +303,30 @@ export class DashboardNgoController {
                     cb(null, 'public/image');
                 },
                 filename(req, file, cb) {
-                    cb(null, Date.now() + '-' + 'tbn-' + file.originalname);
+                    if (file) {
+                        cb(null, Date.now() + '-' + 'tbn-' + file.originalname);
+                    }
                 },
             }),
         }))
-    async updateNgo(@UploadedFile() image: any, @UploadedFile() thumbnail: any) {
+    async updateNgoImages(@Param('ID') ngoID: string, @UploadedFile() image: any, @UploadedFile() thumbnail: any) {
+        if (!image || !thumbnail) {
+            throw new BadRequestException('images_not_provided')
+        }
 
+        let ngo = await Ngo.findOne({ID: ngoID});
+        if (!ngo) {
+            throw new NotFoundException('ngo_does_not_exists')
+        }
+
+        if (image) {
+            ngo.image = image.filename
+        }
+        if (thumbnail) {
+            ngo.thumbnail = thumbnail.filename
+        }
+
+        await ngo.save()
     }
 
 
