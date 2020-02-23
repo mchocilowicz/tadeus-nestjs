@@ -1,4 +1,7 @@
 import {ApiProperty} from "@nestjs/swagger";
+import {UserPeriod} from "../../../database/entity/user-period.entity";
+import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
+import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
 
 export class ConfigurationRequest {
     @ApiProperty()
@@ -17,9 +20,18 @@ export class ConfigurationRequest {
     ngoGenerateInterval: number;
     @ApiProperty()
     ngoCloseInterval: number;
+    @ApiProperty()
+    userFrom?: Date;
+    @ApiProperty()
+    partnerFrom?: Date;
+    @ApiProperty()
+    partnerSendMessagesAt?: Date;
+    @ApiProperty()
+    partnerNotEditableAt?: Date;
+    @ApiProperty()
+    ngoFrom?: Date;
 
-
-    constructor(configuration: any) {
+    constructor(configuration: any, userPeriod?: UserPeriod, partnerPeriod?: PartnerPeriod, ngoPeriod?: NgoPeriod) {
         this.minNgoTransfer = configuration.minNgoTransfer;
         this.minPersonalPool = configuration.minPersonalPool;
         this.userExpiration = configuration.userExpiration;
@@ -28,5 +40,10 @@ export class ConfigurationRequest {
         this.partnerCloseInterval = configuration.partnerCloseInterval;
         this.ngoGenerateInterval = configuration.ngoGenerateInterval;
         this.ngoCloseInterval = configuration.ngoCloseInterval;
+        this.userFrom = userPeriod?.from;
+        this.partnerFrom = partnerPeriod?.from;
+        this.partnerSendMessagesAt = partnerPeriod?.sendMessagesAt;
+        this.partnerNotEditableAt = partnerPeriod?.notEditableAt;
+        this.ngoFrom = ngoPeriod?.from;
     }
 }

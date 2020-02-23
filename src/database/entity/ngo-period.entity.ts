@@ -38,4 +38,10 @@ export class NgoPeriod extends TadeusEntity {
         this.from = from;
         this.to = to;
     }
+
+    static findActivePeriod(): Promise<NgoPeriod | undefined> {
+        return this.createQueryBuilder("p")
+            .where("p.isClosed = false")
+            .getOne();
+    }
 }
