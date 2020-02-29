@@ -58,5 +58,6 @@ export default {
     'transaction_corrected': 'Correction has already been accepted for this transaction.',
     'correction_exists': 'Correction awaits user approval.',
     'transaction_does_not_exists': 'Transaction does not exists.',
-    'transaction_does_not_belong_to_user': 'Correction is impossible. Transaction does not belong to current user.'
+    'transaction_does_not_belong_to_user': 'Correction is impossible. Transaction does not belong to current user.',
+    'ngo_not_selected': 'Ngo is not selected'
 }

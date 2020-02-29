@@ -1,13 +1,13 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
-import {NgoType} from "./ngo-type.entity";
-import {Donation} from "./donation.entity";
-import {PhysicalCard} from "./physical-card.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {Address} from "./address.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {User} from "./user.entity";
-import {Transaction} from "./transaction.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { NgoType } from "./ngo-type.entity";
+import { Donation } from "./donation.entity";
+import { PhysicalCard } from "./physical-card.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { Address } from "./address.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { User } from "./user.entity";
+import { Transaction } from "./transaction.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'NGO'})
 export class Ngo extends TadeusEntity {
@@ -15,7 +15,7 @@ export class Ngo extends TadeusEntity {
     @Column({name: 'ID'})
     ID: string;
 
-    @Column({name: 'BANK_ACCOUNT'})
+    @Column({name: 'BANK_ACCOUNT', type: "bigint"})
     bankNumber: number;
 
     @Column({name: 'EMAIL'})

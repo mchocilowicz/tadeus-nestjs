@@ -9,16 +9,16 @@ import {
     Put,
     Query
 } from "@nestjs/common";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../database/entity/transaction.entity";
-import {EntityManager, getConnection, SelectQueryBuilder} from "typeorm";
-import {NgoPayout} from "../../../database/entity/ngo-payout.entity";
-import {Ngo} from "../../../database/entity/ngo.entity";
-import {UserPeriod} from "../../../database/entity/user-period.entity";
-import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
+import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../database/entity/transaction.entity";
+import { EntityManager, getConnection, SelectQueryBuilder } from "typeorm";
+import { NgoPayout } from "../../../database/entity/ngo-payout.entity";
+import { Ngo } from "../../../database/entity/ngo.entity";
+import { UserPeriod } from "../../../database/entity/user-period.entity";
+import { PartnerPeriod } from "../../../database/entity/partner-period.entity";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { NgoPeriod } from "../../../database/entity/ngo-period.entity";
 
 const moment = require('moment');
 
@@ -122,13 +122,33 @@ export class SettlementController {
 
     @Get('partner')
     async getPayments() {
+        let userPeriod = await UserPeriod.findActivePeriod();
+        let partnerPeriod = await PartnerPeriod.findActivePeriod();
+        let userCount: number = await UserPeriod.createQueryBuilder('p')
+            .leftJoinAndSelect('p.transactions', 'transaction')
+            .leftJoinAndSelect('transaction.tradingPoint', 'point')
+            .where('p.isClosed = true')
+            .andWhere("transaction.status = 'ACCEPTED'")
+            .andWhere('p.partnerPeriod is null')
+            .getCount();
+
         let payments: PartnerPayment[] = await PartnerPayment.createQueryBuilder('p')
             .leftJoinAndSelect('p.tradingPoint', 'point')
             .leftJoinAndSelect('p.period', 'period')
             .where("p.isPaid = false")
             .getMany();
 
-        return payments.map((p: PartnerPayment) => new PartnerPaymentResponse(p))
+        return {
+            userPeriodFrom: userPeriod?.from,
+            hasPartnerPeriod: partnerPeriod !== undefined,
+            hasData: userCount > 0,
+            payments: payments.map((p: PartnerPayment) => new PartnerPaymentResponse(p)),
+            partnerPeriodFrom: partnerPeriod?.from,
+            isEditable: partnerPeriod?.isEditable,
+            sendMessagesAt: partnerPeriod?.sendMessagesAt,
+            notEditableAt: partnerPeriod?.notEditableAt
+        }
+
     }
 
     @Put('partner/notifications')
