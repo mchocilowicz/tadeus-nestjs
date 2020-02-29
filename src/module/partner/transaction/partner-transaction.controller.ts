@@ -133,10 +133,10 @@ export class PartnerTransactionController {
             let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
             let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
 
-
+            const halfPool = pool / 2;
             transaction.updatePaymentValues(provision, pool);
-            transaction.setUserPool(pool / 2, pool / 2);
-            transaction.ngoDonation = pool / 2;
+            transaction.setUserPool(halfPool);
+            transaction.ngoDonation = halfPool;
 
             if (!user.account.firebaseToken) {
                 this.logger.error('Phone Firebase token does not exists');
@@ -261,19 +261,19 @@ export class PartnerTransactionController {
 
                 tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
                 let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
-
+                let halfPool = pool / 2;
 
                 let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
                 transaction.updatePaymentValues(provision, pool);
 
-                transaction.setUserPool(pool / 2, pool / 2);
+                transaction.setUserPool(halfPool);
                 if (!user.account.firebaseToken) {
                     this.logger.error('Phone Firebase token does not exists');
                     throw new BadRequestException('internal_server_error');
                 }
 
                 transaction.status = TransactionStatus.ACCEPTED;
-                transaction.ngoDonation = pool / 2;
+                transaction.ngoDonation = halfPool;
 
                 user.xp += transaction.userXp;
                 virtualCard.updatePool(transaction.poolValue);
