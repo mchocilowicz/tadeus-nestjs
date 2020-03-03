@@ -12,6 +12,7 @@ import { NgoPayout } from "./ngo-payout.entity";
 import { PartnerPeriod } from "./partner-period.entity";
 import { UserPeriod } from "./user-period.entity";
 import { NgoPeriod } from "./ngo-period.entity";
+import { roundToTwo } from "../../common/util/functions";
 
 const moment = require('moment');
 
@@ -47,13 +48,13 @@ export class Transaction extends TadeusEntity {
     @Column({name: 'PERSONAL_POOL', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     personalPool: number = 0;
 
-    @Column({name: 'USER_XP', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'USER_XP', default: 0, transformer: new ColumnNumericTransformer()})
     userXp: number = 0;
 
-    @Column({name: 'PARTNER_XP', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PARTNER_XP', default: 0, transformer: new ColumnNumericTransformer()})
     tradingPointXp: number = 0;
 
-    @Column({name: 'NGO_DONATION', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'NGO_DONATION', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
     ngoDonation: number = 0;
 
     @Column({name: 'STATUS', type: 'text', default: TransactionStatus.WAITING})
@@ -133,7 +134,7 @@ export class Transaction extends TadeusEntity {
     static findByTradingPointMadeToday(tradingPointId: string) {
         return this.createQueryBuilder('transaction')
             .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
-            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${ moment().format('YYYY-MM-DD') }','YYYY-MM-DD')`)
             .andWhere('transaction.isCorrection = false')
             .andWhere('tradingPoint.id = :id', {id: tradingPointId})
             .getMany();
@@ -143,7 +144,7 @@ export class Transaction extends TadeusEntity {
         return this.createQueryBuilder('transaction')
             .leftJoinAndSelect("transaction.user", 'user')
             .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
-            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${moment().format('YYYY-MM-DD')}','YYYY-MM-DD')`)
+            .where(`to_date(cast(transaction.createdAt as TEXT),'YYYY-MM-DD') = to_date('${ moment().format('YYYY-MM-DD') }','YYYY-MM-DD')`)
             .andWhere('transaction.isCorrection = false')
             .andWhere('user.id = :user', {user: userId})
             .getMany();
@@ -155,7 +156,7 @@ export class Transaction extends TadeusEntity {
     }
 
     updatePaymentValues(provision: number, pool: number) {
-        this.paymentValue = Number(provision + pool);
+        this.paymentValue = roundToTwo(Number(provision + pool));
         this.poolValue = Number(pool);
         this.provision = Number(provision);
     }

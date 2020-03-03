@@ -1,9 +1,9 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {PartnerPayment} from "./partner-payment.entity";
-import {Transaction} from "./transaction.entity";
-import {NgoPeriod} from "./ngo-period.entity";
-import {UserPeriod} from "./user-period.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { PartnerPayment } from "./partner-payment.entity";
+import { Transaction } from "./transaction.entity";
+import { NgoPeriod } from "./ngo-period.entity";
+import { UserPeriod } from "./user-period.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_PERIOD'})
 export class PartnerPeriod extends TadeusEntity {
@@ -20,13 +20,13 @@ export class PartnerPeriod extends TadeusEntity {
     @Column({name: 'IS_EDITABLE', default: true})
     isEditable: boolean = true;
 
-    @Column({name: 'SEND_MESSAGES_AT'})
+    @Column({name: 'SEND_MESSAGES_AT', nullable: true})
     sendMessagesAt?: Date;
 
-    @Column({name: 'NOT_EDITABLE_AT'})
+    @Column({name: 'NOT_EDITABLE_AT', nullable: true})
     notEditableAt?: Date;
 
-    @Column({name: 'CLOSED_AT'})
+    @Column({name: 'CLOSED_AT', nullable: true})
     closedAt?: Date;
 
     @ManyToOne(type => NgoPeriod, period => period.partnerPeriods)

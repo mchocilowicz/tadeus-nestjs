@@ -267,10 +267,10 @@ export class PartnerTransactionController {
                 transaction.updatePaymentValues(provision, pool);
 
                 transaction.setUserPool(halfPool);
-                if (!user.account.firebaseToken) {
-                    this.logger.error('Phone Firebase token does not exists');
-                    throw new BadRequestException('internal_server_error');
-                }
+                // if (!user.account.firebaseToken) {
+                //     this.logger.error('Phone Firebase token does not exists');
+                //     throw new BadRequestException('internal_server_error');
+                // }
 
                 transaction.status = TransactionStatus.ACCEPTED;
                 transaction.ngoDonation = halfPool;
@@ -303,7 +303,6 @@ export class PartnerTransactionController {
                     return {
                         token: user.account.firebaseToken,
                         api: {
-                            cardNumber: user.card.code,
                             price: dto.price,
                             donation: pool,
                             transactionID: transaction.ID
@@ -314,7 +313,6 @@ export class PartnerTransactionController {
                     return {
                         token: user.account.firebaseToken,
                         api: {
-                            cardNumber: user.card.code,
                             price: dto.price,
                             transactionID: transaction.ID
                         },
@@ -323,16 +321,16 @@ export class PartnerTransactionController {
                 }
             });
 
-            this.firebaseService.getAdmin().messaging().send({
-                token: result.token,
-                data: result.data,
-                notification: {
-                    title: 'Tadeus',
-                    body: 'Nowa transakcja',
-                }
-            })
-                .then(() => this.logger.log("Notification send"))
-                .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+            // this.firebaseService.getAdmin().messaging().send({
+            //     token: result.token,
+            //     data: result.data,
+            //     notification: {
+            //         title: 'Tadeus',
+            //         body: 'Nowa transakcja',
+            //     }
+            // })
+            //     .then(() => this.logger.log("Notification send"))
+            //     .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
 
             return result.api;
         } catch (e) {

@@ -1,8 +1,8 @@
-import {BadRequestException, Logger} from "@nestjs/common";
-import {QueryFailedError} from "typeorm";
-import {ValidationError} from "class-validator";
-import {TadeusEntity} from "../../database/entity/base.entity";
-import {Const} from "./const";
+import { BadRequestException, Logger } from "@nestjs/common";
+import { QueryFailedError } from "typeorm";
+import { ValidationError } from "class-validator";
+import { TadeusEntity } from "../../database/entity/base.entity";
+import { Const } from "./const";
 
 const _ = require("lodash");
 const moment = require("moment");
@@ -47,4 +47,8 @@ export function groupDatesByComponent(data: TadeusEntity[], token: string): Arra
     const result: Array<TadeusEntity[]> = [];
     groupedMap.forEach(value => result.push(value));
     return result;
+}
+
+export function roundToTwo(num: number): number {
+    return Math.round((num + Number.EPSILON) * 100) / 100
 }
