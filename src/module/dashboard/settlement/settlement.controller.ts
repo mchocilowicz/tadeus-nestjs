@@ -9,16 +9,17 @@ import {
     Put,
     Query
 } from "@nestjs/common";
-import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
-import { Const } from "../../../common/util/const";
-import { Transaction } from "../../../database/entity/transaction.entity";
-import { EntityManager, getConnection, SelectQueryBuilder } from "typeorm";
-import { NgoPayout } from "../../../database/entity/ngo-payout.entity";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { UserPeriod } from "../../../database/entity/user-period.entity";
-import { PartnerPeriod } from "../../../database/entity/partner-period.entity";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { NgoPeriod } from "../../../database/entity/ngo-period.entity";
+import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
+import {Const} from "../../../common/util/const";
+import {Transaction} from "../../../database/entity/transaction.entity";
+import {EntityManager, getConnection, SelectQueryBuilder} from "typeorm";
+import {NgoPayout} from "../../../database/entity/ngo-payout.entity";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {UserPeriod} from "../../../database/entity/user-period.entity";
+import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
+import {TadeusEntity} from "../../../database/entity/base.entity";
 
 const moment = require('moment');
 
@@ -93,42 +94,113 @@ export class SettlementController {
 
     @Put('partner')
     async updatePayments(@Body() dto: PartnerPaymentResponse[]) {
-        for (const payment of dto) {
-            let p: PartnerPayment | undefined = await PartnerPayment.createQueryBuilder('p')
-                .leftJoinAndSelect('p.transactions', 'transaction')
-                .where('p.ID = :id', {id: payment.ID})
-                .andWhere('transaction.isPaid = false')
-                .getOne();
+        const changedData = dto.filter(e => e.hasChanges);
 
-            getConnection().transaction(async (entityManager: EntityManager) => {
-                if (p && !p.isPaid) {
-                    const transactions: Transaction[] | undefined = p.transactions;
-                    if (payment.paidPrice > payment.price) {
-                        transactions?.forEach(t => t.isPaid = true);
-                        p.isPaid = true;
-                        p.partnerPayedAt = new Date();
-                        await entityManager.save(p);
-                        await entityManager.save(transactions);
-                    } else if (payment.paidPrice > p.paidPrice) {
-                        let totalPrice = payment.paidPrice;
-                        transactions?.forEach(t => {
-                            if (totalPrice > 0 && totalPrice >= t.poolValue) {
-                                totalPrice -= t.poolValue;
-                                t.isPaid = true;
-                            }
-                        });
-                        await entityManager.save(transactions);
-                    }
-                }
-            });
+        if (changedData.length === 0) {
+            return [];
         }
+        const changedPaymentIds = changedData.map(e => e.ID);
+        let payments: PartnerPayment[] = await PartnerPayment.createQueryBuilder('p')
+            .leftJoinAndSelect('p.transactions', 'transaction')
+            .where('p.ID IN (:...list)', {list: changedPaymentIds})
+            .getMany();
+
+        getConnection().transaction(async (entityManager: EntityManager) => {
+            for (const payment of payments) {
+                let dto = changedData.find(e => e.ID === payment.ID);
+                if (dto) {
+                    if (!payment.isPaid && dto.paidPrice > 0 && payment.paidPrice !== dto.paidPrice) {
+                        let transactions = payment.transactions;
+                        let paidTransactions: Transaction[] = [];
+                        let paidPrice = dto.paidPrice;
+                        if (transactions) {
+                            transactions
+                                .filter(t => !t.isPaid)
+                                .sort((t1, t2) => {
+                                    return this.sortTransactionsByCreationDate(t1, t2);
+                                })
+                                .forEach(t => {
+                                    if (paidPrice > 0 && paidPrice >= t.paymentValue) {
+                                        paidPrice -= t.paymentValue;
+                                        t.isPaid = true;
+                                        paidTransactions.push(t);
+                                    }
+                                });
+                            await entityManager.save(paidTransactions);
+                            payment.isPaid = transactions.length === transactions.filter(e => e.isPaid).length
+                            if (payment.isPaid) {
+                                payment.partnerPayedAt = new Date();
+                            }
+                        }
+
+                    }
+                    payment.paymentDetails = dto.details;
+                    payment.paidPrice = dto.paidPrice;
+                    await entityManager.save(payment);
+                }
+            }
+        });
+    }
+
+    @Get('partner/periods')
+    async getPartnerPeriods() {
+        const periods = await PartnerPeriod.find();
+
+        if (periods.length > 0) {
+            return periods.map(p => {
+                return {id: p.id, from: p.from}
+            })
+        }
+
+        return []
     }
 
     @Get('partner')
-    async getPayments() {
+    async getPayments(@Query() query: { showAll: string, selectedPeriod: string }) {
         let config = await Configuration.getMain();
         let userPeriod = await UserPeriod.findActivePeriod();
-        let partnerPeriod = await PartnerPeriod.findActivePeriod();
+        let partnerPeriodQuery = PartnerPeriod.createQueryBuilder('p')
+            .leftJoinAndSelect("p.payments", 'payment')
+            .leftJoinAndSelect('payment.tradingPoint', 'point')
+            .leftJoinAndSelect('payment.partnerPeriod', 'period');
+        if (query) {
+            if (query.selectedPeriod && query.selectedPeriod !== 'null') {
+                partnerPeriodQuery = partnerPeriodQuery.where("p.id = :id", {id: query.selectedPeriod});
+            } else {
+                partnerPeriodQuery = partnerPeriodQuery.where("p.isClosed = false")
+                    .andWhere("p.ngoPeriod is null");
+            }
+            if (query.showAll === 'false') {
+                partnerPeriodQuery = partnerPeriodQuery
+                    .andWhere("payment.isPaid = false");
+            }
+        } else {
+            partnerPeriodQuery = partnerPeriodQuery.where("p.isClosed = false")
+                .andWhere("p.ngoPeriod is null");
+        }
+        const partnerPeriod = await partnerPeriodQuery.getOne();
+
+        let periodPayments: PartnerPayment[] = [];
+
+        if (partnerPeriod && partnerPeriod.payments) {
+            periodPayments = partnerPeriod.payments;
+        }
+
+        if (partnerPeriod && !partnerPeriod.isClosed) {
+            let payments: PartnerPayment[] = await PartnerPayment.createQueryBuilder('p')
+                .leftJoin('p.partnerPeriod', 'period')
+                .leftJoinAndSelect('p.tradingPoint', 'point')
+                .where('period.id != :id', {id: partnerPeriod.id})
+                .andWhere('p.isPaid = false')
+                .getMany();
+
+            if (payments) {
+                periodPayments = periodPayments.concat(payments).sort((t1, t2) => {
+                    return this.sortTransactionsByCreationDate(t1, t2);
+                })
+            }
+        }
+
         let userCount: number = await UserPeriod.createQueryBuilder('p')
             .leftJoinAndSelect('p.transactions', 'transaction')
             .leftJoinAndSelect('transaction.tradingPoint', 'point')
@@ -137,25 +209,34 @@ export class SettlementController {
             .andWhere('p.partnerPeriod is null')
             .getCount();
 
-        let payments: PartnerPayment[] = await PartnerPayment.createQueryBuilder('p')
-            .leftJoinAndSelect('p.tradingPoint', 'point')
-            .leftJoinAndSelect('p.partnerPeriod', 'period')
-            .where("p.isPaid = false")
-            .getMany();
-
         return {
             userPeriodFrom: userPeriod ? userPeriod.from : null,
             hasPartnerPeriod: partnerPeriod !== undefined,
             hasDataToProcess: userCount > 0,
-            payments: payments.map((p: PartnerPayment) => new PartnerPaymentResponse(p)),
+            payments: periodPayments.map((p: PartnerPayment) => new PartnerPaymentResponse(p)),
             partnerPeriodFrom: partnerPeriod ? partnerPeriod.from : null,
+            partnerPeriodId: partnerPeriod ? partnerPeriod.id : null,
             isEditable: partnerPeriod ? partnerPeriod.isEditable : false,
             sendMessagesAt: partnerPeriod ? partnerPeriod.sendMessagesAt : null,
             notEditableAt: partnerPeriod ? partnerPeriod.notEditableAt : null,
+            isClosed: partnerPeriod ? partnerPeriod.isClosed : false,
+            closedAt: partnerPeriod ? partnerPeriod.closedAt : null,
             userCloseInterval: config ? config.userCloseInterval : 0,
             partnerEmailInterval: config ? config.partnerEmailInterval : 0,
             partnerCloseInterval: config ? config.partnerCloseInterval : 0,
             ngoGenerateInterval: config ? config.ngoGenerateInterval : 0,
+        }
+    }
+
+    @Put('partner/close')
+    async closePartnerPeriod() {
+        const period = await PartnerPeriod.findActivePeriod();
+
+        if (period) {
+            period.closedAt = new Date();
+            period.isClosed = true;
+
+            await period.save()
         }
     }
 
@@ -175,7 +256,10 @@ export class SettlementController {
             getConnection().transaction(async entityManager => {
                 let activePartnerPeriod: PartnerPeriod | undefined = await PartnerPeriod.findActivePeriod();
                 if (activePartnerPeriod) {
-                    const payments = activePartnerPeriod.payments;
+                    const payments = await PartnerPayment.createQueryBuilder('p')
+                        .where('p.isPaid = false')
+                        .getMany();
+
                     if (payments) {
                         payments.forEach(payment => {
                             payment.sendMessageAt = moment().add(1, 'days');
@@ -186,6 +270,16 @@ export class SettlementController {
                     await entityManager.save(activePartnerPeriod);
                 }
             });
+        }
+    }
+
+    private sortTransactionsByCreationDate(t1: TadeusEntity, t2: TadeusEntity): number {
+        if (moment(t1.createdAt).isAfter(t2.createdAt)) {
+            return 1;
+        } else if (moment(t1.createdAt).isBefore(t2.createdAt)) {
+            return -1
+        } else {
+            return 0;
         }
     }
 
@@ -302,6 +396,8 @@ class PartnerPaymentResponse {
     details: string;
     tradingPoint: string;
     paymentAt?: Date;
+    hasChanges: false = false;
+    messageSendAt?: Date;
 
     constructor(payment: PartnerPayment) {
         this.ID = payment.ID;
@@ -316,5 +412,7 @@ class PartnerPaymentResponse {
         this.tradingPoint = payment.tradingPoint.ID;
         this.paidPrice = payment.paidPrice;
         this.paymentAt = payment.paymentAt;
+        this.messageSendAt = payment.sendMessageAt;
+
     }
 }

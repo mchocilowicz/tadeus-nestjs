@@ -1,36 +1,38 @@
-import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { RouterModule, Routes } from "nest-router";
-import { ClientModule } from "./client/client.module";
-import { APP_FILTER, APP_INTERCEPTOR } from "@nestjs/core";
-import { TadeusExceptionFilter } from "../common/filter/tadeus-exception.filter";
-import { PartnerModule } from "./partner/partner.module";
-import { PartnerTransactionModule } from "./partner/transaction/partner-transaction.module";
-import { PartnerTerminalModule } from "./partner/terminal/partner-terminal.module";
-import { NgoModule } from "./client/ngo/ngo.module";
-import { RegisterModule } from "./client/register/register.module";
-import { PlaceModule } from "./client/place/place.module";
-import { DonationModule } from "./client/donation/donation.module";
-import { DashboardNgoModule } from "./dashboard/ngo/dashboard-ngo.module";
-import { TradingPointModule } from "./dashboard/trading-point/trading-point.module";
-import { DashboardModule } from "./dashboard/dashboard.module";
-import { StatsModule } from "./dashboard/stats/stats.module";
-import { TadeusTransformInterceptor } from "../common/interceptors/tadeus-transform.interceptor";
-import { InformationModule } from "./client/user/information.module";
-import { OpinionModule } from "./client/opinion/opinion.module";
-import { PayoutModule } from "./client/payout/payout.module";
-import { PartnerSettingsModule } from "./partner/settings/partner-settings.module";
-import { PartnerDonationModule } from "./partner/donation/partner-donation.module";
-import { PartnerOpinionModule } from "./partner/opinion/partner-opinion.module";
-import { ConfigurationModule } from "./dashboard/configuration/configuration.module";
-import { SettlementModule } from "./dashboard/settlement/settlement.module";
-import { ScheduleModule } from '@nestjs/schedule';
-import { EventEmitter } from 'events';
-import { NestEmitterModule } from "nest-emitter";
-import { UserModule } from "./dashboard/user/user.module";
-import { NgoTypeModule } from "./dashboard/ngo-type/ngo-type.module";
-import { DashboardTransactionModule } from "./dashboard/transaction/transaction.module";
-import { CodeService } from "../common/service/code.service";
+import {Module} from '@nestjs/common';
+import {TypeOrmModule} from '@nestjs/typeorm';
+import {RouterModule, Routes} from "nest-router";
+import {ClientModule} from "./client/client.module";
+import {APP_FILTER, APP_INTERCEPTOR} from "@nestjs/core";
+import {TadeusExceptionFilter} from "../common/filter/tadeus-exception.filter";
+import {PartnerModule} from "./partner/partner.module";
+import {PartnerTransactionModule} from "./partner/transaction/partner-transaction.module";
+import {PartnerTerminalModule} from "./partner/terminal/partner-terminal.module";
+import {NgoModule} from "./client/ngo/ngo.module";
+import {RegisterModule} from "./client/register/register.module";
+import {PlaceModule} from "./client/place/place.module";
+import {DonationModule} from "./client/donation/donation.module";
+import {DashboardNgoModule} from "./dashboard/ngo/dashboard-ngo.module";
+import {TradingPointModule} from "./dashboard/trading-point/trading-point.module";
+import {DashboardModule} from "./dashboard/dashboard.module";
+import {StatsModule} from "./dashboard/stats/stats.module";
+import {TadeusTransformInterceptor} from "../common/interceptors/tadeus-transform.interceptor";
+import {InformationModule} from "./client/user/information.module";
+import {OpinionModule} from "./client/opinion/opinion.module";
+import {PayoutModule} from "./client/payout/payout.module";
+import {PartnerSettingsModule} from "./partner/settings/partner-settings.module";
+import {PartnerDonationModule} from "./partner/donation/partner-donation.module";
+import {PartnerOpinionModule} from "./partner/opinion/partner-opinion.module";
+import {ConfigurationModule} from "./dashboard/configuration/configuration.module";
+import {SettlementModule} from "./dashboard/settlement/settlement.module";
+import {ScheduleModule} from '@nestjs/schedule';
+import {EventEmitter} from 'events';
+import {NestEmitterModule} from "nest-emitter";
+import {UserModule} from "./dashboard/user/user.module";
+import {NgoTypeModule} from "./dashboard/ngo-type/ngo-type.module";
+import {DashboardTransactionModule} from "./dashboard/transaction/transaction.module";
+import {CodeService} from "../common/service/code.service";
+import {SendEmailsToPartnersScheduler} from "../schedulers/email.scheduler";
+import {EmailService} from "./common/email.service";
 
 const routes: Routes = [
     {
@@ -191,7 +193,9 @@ const routes: Routes = [
         },
         // PartnerPaymentScheduler
         // ConfigurationScheduler,
-        CodeService
+        CodeService,
+        SendEmailsToPartnersScheduler,
+        EmailService
     ],
 })
 export class AppModule {

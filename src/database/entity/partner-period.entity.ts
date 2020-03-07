@@ -1,9 +1,9 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { TadeusEntity } from "./base.entity";
-import { PartnerPayment } from "./partner-payment.entity";
-import { Transaction } from "./transaction.entity";
-import { NgoPeriod } from "./ngo-period.entity";
-import { UserPeriod } from "./user-period.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
+import {TadeusEntity} from "./base.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+import {Transaction} from "./transaction.entity";
+import {NgoPeriod} from "./ngo-period.entity";
+import {UserPeriod} from "./user-period.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_PERIOD'})
 export class PartnerPeriod extends TadeusEntity {
@@ -17,8 +17,8 @@ export class PartnerPeriod extends TadeusEntity {
     @Column({name: 'IS_CLOSED', default: false})
     isClosed: boolean = false;
 
-    @Column({name: 'IS_EDITABLE', default: true})
-    isEditable: boolean = true;
+    @Column({name: 'IS_EDITABLE', default: false})
+    isEditable: boolean = false;
 
     @Column({name: 'SEND_MESSAGES_AT', nullable: true})
     sendMessagesAt?: Date;
@@ -52,7 +52,6 @@ export class PartnerPeriod extends TadeusEntity {
         return this.createQueryBuilder("p")
             .leftJoinAndSelect("p.payments", 'payment')
             .where("p.isClosed = false")
-            .andWhere("p.isEditable = true")
             .andWhere("p.ngoPeriod is null")
             .getOne();
     }

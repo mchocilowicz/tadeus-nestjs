@@ -10,7 +10,7 @@ const moment = require('moment');
 
 @Injectable()
 export class UserAccountExpirationScheduler {
-    @Cron('0 0 4 ? * * *')
+    @Cron('0 0 4 * * * *')
     async cronJob() {
         console.log('executing UserAccountExpirationScheduler Job');
 
@@ -30,7 +30,7 @@ export class UserAccountExpirationScheduler {
             if (account && user && config) {
                 if (account.role.value === RoleEnum.CLIENT) {
                     const numberOfDays = moment().diff(moment(user.updatedAt), 'days', true);
-                    if (Math.ceil(numberOfDays) > config.userExpirationAfterDays) {
+                    if (Math.ceil(numberOfDays) > config.userExpiration) {
                         account.status = Status.NOT_ACTIVE;
                         await account.save();
                     }
