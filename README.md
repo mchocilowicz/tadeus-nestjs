@@ -2,27 +2,6 @@
 
 Project build using NestJs framework (https://docs.nestjs.com/)   
 
-##  Technology
-- nestjs
-- multer
-- nodemailer
-- twilio
-- PayU
-- Swagger
-- Typeorm
-- dotenv
-- jest
-- nest-router
-- nest-schedule
-- node-polyglot
-- xlsx
-- typescript
-- passport
-- lodash
-- jwt
-- class-validator
-- i18next
-
 ## Installation
 
 ### Dependencies:
@@ -34,26 +13,37 @@ $ npm install
 To properly run application it is required to specify environment variables in .env file in config directory. 
 
 ```
-TDS_DATABASE_URL - URL to Postgresql Database
-TDS_DATABASE_SCHEMA - Database schema to store all project tables
-TDS_VI - 16 chars to hash algoritm
-TDS_ALG - hashing algorithm
-TDS_PWD - 32 chars Password for hashing
-TDS_TOKEN - algorithm to hash 
-TDS_SALT - 13 chars salt
-TDS_CRYPTO - crypto.js hashing algorithm
-TDS_JWT_EVEREST - 18 chars for jwt
-TDS_EMAIL_HOST - email host
-TDS_EMAIL_USER- email user
-TDS_EMAIL_PASSWORD - email password
+TDS_DATABASE_URL= URL to Postgresql Database
+TDS_DATABASE_SCHEMA=Postgresql Schema (best to use small letters)
+TDS_VI=16 chars to hash algoritm
+TDS_ALG=hashing algorithm
+TDS_PWD=32 chars Password for hashing
+TDS_TOKEN=algorithm to hash
+TDS_SALT=13 chars salt password
+TDS_CRYPTO=crypto.js hashing algorithm
+TDS_JWT_EVEREST=18 chars for jwt
+TDS_EMAIL_HOST=email host
+TDS_EMAIL_USER=email user
+TDS_EMAIL_PASSWORD=email password
+TDS_FIREBASE_DATABASE_URL= from firebase account
+TDS_TWILIO_ACCOUNT=Twilio account code
+TDS_TWILIO_AUTH_TOKEN=Twilio auth token
+TDS_TWILIO_PHONE=Twilio phone number to send messages
 ```
 
 ## Important notes
-Mandatory directories:
-- config - configuration stored in .env
--  public/excel - template excel file to download in dashboard
-- public/image - stores icon.jpg and thumbnail.jpg to be provided by owner. it stores images during image changes. 
-- public/import- files stored during importing files
+Mandatory directories outside of project files:
+- config:
+    - configuration stored in .env 
+    - firebase-admin json file
+- public:
+    - excel:
+        - template excel file to download in dashboard
+    - image:
+        - stores icon.jpg and thumbnail.jpg to be provided by owner as default images. 
+        - it stores images during image changes.
+    - import:
+        - files stored during importing files
 
 ## Project structure
 - common - all mechanics related to overall functions used in project
@@ -65,16 +55,15 @@ Mandatory directories:
 - schedulers - Jobs run in background at specific time
 
 ### Database setup
+- Install Postresql
+- Create user for application
+- Create schema for application tables
 - Add PostGIS plugin
-- Create new schema
 - Run all migration script using
 ```
 $ npm run typeorm-migration-run
 ```
 - Create new entry in Configuration Table with name type="MAIN" by hand or with Dashboard project.
-- Create three data rows in Period Table with type "CLIENT", "PARTNER", "NGO" by hand or with Dashboard project.
-- Keep in mind that Period type "PARTNER" must have relation with "CLIENT" and "NGO" must have relation with "PARTNER".
-
 
 ## Running the app
 Running app locally
