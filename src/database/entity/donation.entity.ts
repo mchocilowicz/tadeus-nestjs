@@ -6,6 +6,7 @@ import { TadeusEntity } from "./base.entity";
 import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
 import { UserPeriod } from "./user-period.entity";
 import { NgoPeriod } from "./ngo-period.entity";
+import { NgoPayout } from "./ngo-payout.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'DONATION'})
 export class Donation extends TadeusEntity {
@@ -40,6 +41,10 @@ export class Donation extends TadeusEntity {
     @ManyToOne(type => NgoPeriod, period => period.donations)
     @JoinColumn({name: 'NGO_PERIOD_SKID'})
     ngoPeriod?: NgoPeriod;
+
+    @ManyToOne(type => NgoPayout, payout => payout.donations)
+    @JoinColumn({name: 'NGO_PAYOUTT_SKID'})
+    payout?: NgoPayout;
 
     constructor(ID: string, type: DonationEnum, pool: PoolEnum, user: User, period: UserPeriod, ngo: Ngo, paymentNumber?: string) {
         super();

@@ -1,22 +1,22 @@
-import {Injectable} from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
+import { Twilio } from "twilio";
+import { MessageInstance } from "twilio/lib/rest/api/v2010/account/message";
 
 const twilio = require("twilio");
 
 @Injectable()
 export class SmsService {
-    private twilioClient: any;
+    private twilioClient: Twilio;
 
-    constructor() {
-        // const accountSid = process.env.TWILIO_ACCOUNT_SKID;
-        // const authToken = process.env.TWILIO_AUTH_TOKEN;
-        // this.twilioClient = twilio(accountSid, authToken)
+    constructor(accountSid: any = process.env.TDS_TWILIO_ACCOUNT, authToken: any = process.env.TDS_TWILIO_AUTH_TOKEN) {
+        this.twilioClient = twilio(accountSid, authToken)
     }
 
-    sendMessage(code: number, phone: string): void {
+    sendMessage(code: any, phone: any): void {
         this.twilioClient.messages.create({
             body: code,
-            from: '+48732230089',
+            from: process.env.TDS_TWILIO_PHONE,
             to: '+48' + phone
-        }).then((message: string) => console.log(message));
+        }).then((message: MessageInstance) => console.log(message.dateSent));
     }
 }

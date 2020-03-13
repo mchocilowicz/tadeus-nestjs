@@ -1,9 +1,10 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {Ngo} from "./ngo.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {Transaction} from "./transaction.entity";
-import {NgoPeriod} from "./ngo-period.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { Ngo } from "./ngo.entity";
+import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
+import { Transaction } from "./transaction.entity";
+import { NgoPeriod } from "./ngo-period.entity";
+import { Donation } from "./donation.entity";
 
 @Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'NGO_PAYOUT'})
 export class NgoPayout extends TadeusEntity {
@@ -27,6 +28,9 @@ export class NgoPayout extends TadeusEntity {
 
     @OneToMany(type => Transaction, transactions => transactions.payout)
     transactions?: Transaction[];
+
+    @OneToMany(type => Donation, donation => donation.payout)
+    donations?: Donation[];
 
     constructor(price: number, ngo: Ngo, period: NgoPeriod) {
         super();

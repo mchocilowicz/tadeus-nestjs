@@ -5,21 +5,25 @@ import {
     Get,
     InternalServerErrorException,
     Logger,
+    Param,
+    Patch,
     Post,
     Put,
     Query
 } from "@nestjs/common";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../database/entity/transaction.entity";
-import {EntityManager, getConnection, SelectQueryBuilder} from "typeorm";
-import {NgoPayout} from "../../../database/entity/ngo-payout.entity";
-import {Ngo} from "../../../database/entity/ngo.entity";
-import {UserPeriod} from "../../../database/entity/user-period.entity";
-import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
-import {TadeusEntity} from "../../../database/entity/base.entity";
+import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../database/entity/transaction.entity";
+import { EntityManager, getConnection } from "typeorm";
+import { NgoPayout } from "../../../database/entity/ngo-payout.entity";
+import { Ngo } from "../../../database/entity/ngo.entity";
+import { UserPeriod } from "../../../database/entity/user-period.entity";
+import { PartnerPeriod } from "../../../database/entity/partner-period.entity";
+import { Configuration } from "../../../database/entity/configuration.entity";
+import { NgoPeriod } from "../../../database/entity/ngo-period.entity";
+import { TadeusEntity } from "../../../database/entity/base.entity";
+import { Donation } from "../../../database/entity/donation.entity";
+import { roundToTwo } from "../../../common/util/functions";
 
 const moment = require('moment');
 
@@ -127,7 +131,7 @@ export class SettlementController {
                                     }
                                 });
                             await entityManager.save(paidTransactions);
-                            payment.isPaid = transactions.length === transactions.filter(e => e.isPaid).length
+                            payment.isPaid = transactions.length === transactions.filter(e => e.isPaid).length;
                             if (payment.isPaid) {
                                 payment.partnerPayedAt = new Date();
                             }
@@ -155,12 +159,26 @@ export class SettlementController {
         return []
     }
 
+    @Get('ngo/periods')
+    async getNgoPeriods() {
+        const periods = await NgoPeriod.find();
+
+        if (periods.length > 0) {
+            return periods.map(p => {
+                return {id: p.id, from: p.from}
+            })
+        }
+
+        return [];
+    }
+
     @Get('partner')
     async getPayments(@Query() query: { showAll: string, selectedPeriod: string }) {
         let config = await Configuration.getMain();
         let userPeriod = await UserPeriod.findActivePeriod();
         let partnerPeriodQuery = PartnerPeriod.createQueryBuilder('p')
             .leftJoinAndSelect("p.payments", 'payment')
+            .leftJoinAndSelect("p.ngoPeriod", 'ngoPeriod')
             .leftJoinAndSelect('payment.tradingPoint', 'point')
             .leftJoinAndSelect('payment.partnerPeriod', 'period');
         if (query) {
@@ -221,6 +239,7 @@ export class SettlementController {
             notEditableAt: partnerPeriod ? partnerPeriod.notEditableAt : null,
             isClosed: partnerPeriod ? partnerPeriod.isClosed : false,
             closedAt: partnerPeriod ? partnerPeriod.closedAt : null,
+            generatePayout: partnerPeriod ? !partnerPeriod.ngoPeriod : true,
             userCloseInterval: config ? config.userCloseInterval : 0,
             partnerEmailInterval: config ? config.partnerEmailInterval : 0,
             partnerCloseInterval: config ? config.partnerCloseInterval : 0,
@@ -228,16 +247,118 @@ export class SettlementController {
         }
     }
 
-    @Put('partner/close')
-    async closePartnerPeriod() {
-        const period = await PartnerPeriod.findActivePeriod();
+    @Post('partner/:id/ngoPayout')
+    async closePartnerPeriod(@Param('id') id: string) {
+        getConnection().transaction(async (entityManager: EntityManager) => {
 
-        if (period) {
-            period.closedAt = new Date();
-            period.isClosed = true;
+            let period = await PartnerPeriod.createQueryBuilder("p")
+                .where("p.isEditable = false")
+                .andWhere("p.sendMessagesAt is not null")
+                .andWhere("p.notEditableAt is not null")
+                .andWhere("p.isClosed = true")
+                .andWhere("p.closedAt is not null")
+                .andWhere("p.ngoPeriod is null")
+                .andWhere('p.id = :id', {id: id})
+                .getOne();
 
-            await period.save()
-        }
+            if (!period) {
+                throw new BadRequestException('partner_period_not_allowed')
+            }
+
+            let ngoPeriod = await NgoPeriod.createQueryBuilder('p')
+                .leftJoinAndSelect("p.payouts", "payout")
+                .leftJoinAndSelect("payout.transactions", 'transaction')
+                .andWhere("p.isClosed = false")
+                .getOne();
+
+            let ngoList: Ngo[] = await Ngo.createQueryBuilder('n')
+                .leftJoinAndSelect("n.transactions", "transaction")
+                .leftJoinAndSelect("n.donations", "donation")
+                .leftJoinAndSelect("transaction.userPeriod", 'transactionUserPeriod')
+                .leftJoinAndSelect("donation.userPeriod", 'donationUserPeriod')
+                .leftJoin('transactionUserPeriod.partnerPeriod', 'transactionPartnerPeriod')
+                .leftJoin('donationUserPeriod.partnerPeriod', 'donationPartnerPeriod')
+                .where("transactionPartnerPeriod.id = :id", {id: id})
+                .orWhere("donationPartnerPeriod.id = :id", {id: id})
+                .getMany();
+
+            let payouts: NgoPayout[] = [];
+
+            if (ngoPeriod && ngoPeriod.payouts) {
+                payouts = ngoPeriod.payouts.filter(p => !p.canDisplay);
+            }
+
+
+            if (!ngoPeriod) {
+                ngoPeriod = new NgoPeriod(moment(), moment());
+                ngoPeriod = await entityManager.save(ngoPeriod);
+            }
+
+            period.ngoPeriod = ngoPeriod;
+            await entityManager.save(period);
+
+            for (const ngo of ngoList) {
+                const transactions = ngo.transactions;
+                const donations = ngo.donations;
+
+                let initialPrice = 0;
+
+                if (transactions) {
+                    initialPrice = transactions.reduce((prev: number, value: Transaction) => prev + (value.ngoDonation), initialPrice);
+                }
+                if (donations) {
+                    initialPrice = donations.reduce((prev: number, value: Donation) => prev + (value.price), initialPrice);
+                }
+
+                let payout = new NgoPayout(
+                    roundToTwo(initialPrice),
+                    ngo,
+                    ngoPeriod);
+                payout.transactions = ngo.transactions;
+                payout.donations = ngo.donations;
+                payouts.push(payout);
+            }
+
+            let userPeriods = await UserPeriod.createQueryBuilder('u')
+                .leftJoinAndSelect("u.partnerPeriod", 'p')
+                .where("u.ngoPeriod is null")
+                .andWhere("u.isClosed = true")
+                .andWhere("p.id = :id", {id: id})
+                .getMany();
+
+
+            for (let payout of payouts) {
+                let transactions = payout.transactions;
+                let donations = payout.donations;
+
+                if (transactions) {
+                    const paidTransactions = transactions.filter(t => t.isPaid);
+                    payout.canDisplay = paidTransactions.length === transactions.length;
+                } else {
+                    payout.canDisplay = true;
+                }
+
+                let savedPayout = await entityManager.save(payout);
+                if (!payout.id) {
+                    if (transactions) {
+                        transactions.forEach(t => {
+                            t.payout = savedPayout;
+                        });
+                        await entityManager.save(transactions);
+                    }
+                    if (donations) {
+                        donations.forEach(d => {
+                            d.payout = savedPayout;
+                        });
+                        await entityManager.save(donations);
+                    }
+                }
+            }
+            for (const userPeriod of userPeriods) {
+                userPeriod.ngoPeriod = ngoPeriod;
+            }
+            await entityManager.save(userPeriods);
+        })
     }
 
     @Put('partner/notifications')
@@ -284,19 +405,54 @@ export class SettlementController {
     }
 
     @Get('ngo')
-    async getNgoPayouts(@Query() query: any) {
-        let payoutQuery: SelectQueryBuilder<NgoPayout> = NgoPayout.createQueryBuilder("n")
-            .leftJoinAndSelect("n.ngo", "ngo")
-            .leftJoinAndSelect("n.period", "period")
-            .where("n.canDisplay = true");
+    async getNgoPayouts(@Query() query: { selectedPeriod: string, showAll: string }) {
+        let config = await Configuration.getMain();
 
-        if (!query && !query.showAll) {
-            payoutQuery.andWhere("n.isPaid = true")
+        let ngoPeriodQuery = NgoPeriod.createQueryBuilder('n')
+            .leftJoinAndSelect("n.payouts", 'payout')
+            .leftJoinAndSelect("payout.ngo", 'ngoPeriod');
+
+        if (query) {
+            if (query.selectedPeriod && query.selectedPeriod !== 'null') {
+                ngoPeriodQuery = ngoPeriodQuery.where("n.id = :id", {id: query.selectedPeriod});
+            } else {
+                ngoPeriodQuery = ngoPeriodQuery.where("n.isClosed = false")
+            }
+            if (query.showAll === 'false') {
+                ngoPeriodQuery = ngoPeriodQuery
+                    .andWhere("payout.isPaid = false");
+            }
+        } else {
+            ngoPeriodQuery = ngoPeriodQuery.where("n.isClosed = false");
+        }
+        const ngoPeriod = await ngoPeriodQuery.getOne();
+
+        let ngoPayouts: NgoPayout[] = [];
+
+        if (ngoPeriod && ngoPeriod.payouts) {
+            ngoPayouts = ngoPeriod.payouts;
         }
 
-        return payoutQuery
-            .getMany();
+        if (ngoPeriod && !ngoPeriod.isClosed) {
+            let payouts: NgoPayout[] = await NgoPayout.createQueryBuilder('n')
+                .leftJoin('n.ngoPeriod', 'period')
+                .leftJoinAndSelect('n.ngo', 'ngo')
+                .where('period.id != :id', {id: ngoPeriod.id})
+                .andWhere('n.isPaid = false')
+                .getMany();
 
+            if (payouts) {
+                ngoPayouts = ngoPayouts.concat(payouts).sort((t1, t2) => {
+                    return this.sortTransactionsByCreationDate(t1, t2);
+                })
+            }
+        }
+
+
+        return {
+            payouts: ngoPayouts,
+
+        }
     }
 
     @Put('ngo')
@@ -304,82 +460,11 @@ export class SettlementController {
 
     }
 
-    @Post('ngo')
-    async generateNgoPayouts() {
-        let period = await PartnerPeriod.createQueryBuilder("p")
-            .where("p.isEditable = false")
-            .andWhere("p.sendMessagesAt is not null")
-            .andWhere("p.notEditableAt is not null")
-            .andWhere("p.isClosed = false")
-            .andWhere("p.closedAt is null")
-            .andWhere("p.ngoPeriod is null")
-            .getOne();
-
-        let ngoPeriod = await NgoPeriod.createQueryBuilder('n')
-            .leftJoinAndSelect("n.payouts", "payout")
-            .leftJoinAndSelect("payout.transactions", 'transaction')
-            .andWhere("p.isClosed = false")
-            .andWhere("payout.isPaid = false")
-            .getOne();
-
-        let ngos: Ngo[] = await Ngo.createQueryBuilder('n')
-            .leftJoinAndSelect("n.transactions", "t")
-            .leftJoin("t.payment", 'payment')
-            .leftJoin("payment.period", 'period')
-            .where("period.id = :id", {id: period?.id})
-            .getMany();
-
-        let payouts: NgoPayout[] = [];
-
-        if (ngoPeriod && ngoPeriod.payouts) {
-            payouts = ngoPeriod.payouts;
-        }
-
-        for (const ngo of ngos) {
-            if (ngoPeriod && ngo.transactions) {
-                let payout = new NgoPayout(
-                    ngo.transactions?.reduce((prev: number, value: Transaction) => prev + (value.ngoDonation), 0),
-                    ngo,
-                    ngoPeriod);
-                payout.transactions = ngo.transactions;
-                payouts.push(payout);
-            }
-        }
-
-        let userPeriods = await UserPeriod.createQueryBuilder('u')
-            .leftJoinAndSelect("u.partnerPeriod", 'p')
-            .where("u.ngoPeriod is null")
-            .andWhere("p.id = :id", {id: period?.id})
-            .getMany();
-
-        getConnection().transaction(async (entityManager: EntityManager) => {
-            for (let payout of payouts) {
-                let transactions = payout.transactions;
-                if (transactions) {
-                    let paidT = transactions.filter(value => value.isPaid);
-
-                    if (!payout.id) {
-                        if (paidT.length === transactions.length) {
-                            payout.canDisplay = true;
-                        }
-                        payout = await entityManager.save(payout);
-                        transactions.forEach(t => {
-                            t.payout = payout;
-                        });
-                        await entityManager.save(transactions);
-                    } else {
-                        if (paidT.length === transactions.length) {
-                            payout.canDisplay = true;
-                        }
-                        await entityManager.save(payout);
-                    }
-                }
-            }
-            for (const userPeriod of userPeriods) {
-                userPeriod.ngoPeriod = ngoPeriod;
-                await entityManager.save(userPeriod);
-            }
-        })
+    @Patch('ngo/:id/close')
+    async closeNgoPeriod(@Param('id') id: string) {
+        await NgoPeriod.createQueryBuilder("p")
+            .where('p.id = :id', {id: id})
+            .andWhere('p.isClosed = false')
     }
 }
 
@@ -413,6 +498,5 @@ class PartnerPaymentResponse {
         this.paidPrice = payment.paidPrice;
         this.paymentAt = payment.paymentAt;
         this.messageSendAt = payment.sendMessageAt;
-
     }
 }

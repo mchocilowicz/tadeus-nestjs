@@ -1,11 +1,12 @@
-import {Injectable} from "@nestjs/common";
-import {Cron} from "@nestjs/schedule";
-import {PartnerPayment} from "../database/entity/partner-payment.entity";
-import {EmailService} from "../module/common/email.service";
-import {EntityManager, getConnection} from "typeorm";
-import {roundToTwo} from "../common/util/functions";
-import {PartnerPeriod} from "../database/entity/partner-period.entity";
-import {Configuration} from "../database/entity/configuration.entity";
+import { Injectable } from "@nestjs/common";
+import { Cron } from "@nestjs/schedule";
+import { PartnerPayment } from "../database/entity/partner-payment.entity";
+import { EmailService } from "../module/common/email.service";
+import { EntityManager, getConnection } from "typeorm";
+import { roundToTwo } from "../common/util/functions";
+import { PartnerPeriod } from "../database/entity/partner-period.entity";
+import { Configuration } from "../database/entity/configuration.entity";
+import { NgoPeriod } from "../database/entity/ngo-period.entity";
 
 const moment = require('moment');
 
@@ -18,15 +19,29 @@ export class SendEmailsToPartnersScheduler {
     @Cron('0 15 20 * * *')
     async disableEditionInCurrentPeriod() {
         const today = moment().format('YYYY-MM-DD');
-        await PartnerPeriod.createQueryBuilder('p')
-            .where('p.isEditable = true')
-            .andWhere("to_char(p.notEditableAt,'YYYY-MM-DD') = :date", {date: today})
-            .getOne();
-        let period: PartnerPeriod | undefined = await PartnerPeriod.findActivePeriod();
-        if (period) {
-            period.isEditable = false;
-            await period.save()
-        }
+
+        getConnection().transaction(async (entityManager: EntityManager) => {
+            let config: Configuration | undefined = await Configuration.getMain();
+            let period: PartnerPeriod | undefined = await PartnerPeriod.createQueryBuilder('p')
+                .where('p.isEditable = true')
+                .andWhere("p.isClosed = false")
+                .andWhere("p.ngoPeriod is null")
+                .andWhere("to_char(p.notEditableAt,'YYYY-MM-DD') = :date", {date: today})
+                .getOne();
+
+            if (period && config) {
+                period.isEditable = false;
+                period.isClosed = true;
+                period.closedAt = moment();
+                await entityManager.save(period);
+
+                let ngoPeriod = await NgoPeriod.findActivePeriod();
+                if (!ngoPeriod) {
+                    ngoPeriod = new NgoPeriod(moment(), moment().add(config.ngoGenerateInterval + config.ngoCloseInterval, 'days'));
+                    await entityManager.save(ngoPeriod);
+                }
+            }
+        })
     }
 
     @Cron('0 15 20 * * *')

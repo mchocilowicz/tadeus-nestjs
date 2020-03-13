@@ -7,6 +7,7 @@ import { User } from "../database/entity/user.entity";
 import { Donation } from "../database/entity/donation.entity";
 import { CodeService } from "../common/service/code.service";
 import { DonationEnum, PoolEnum } from "../common/enum/donation.enum";
+import { PartnerPeriod } from "../database/entity/partner-period.entity";
 
 const moment = require('moment');
 
@@ -18,7 +19,7 @@ export class ConfigurationScheduler {
     constructor(private codeService: CodeService) {
     }
 
-    @Cron('45 * * * * *')
+    @Cron('* * 22 * * *')
     async createNewUserPeriod() {
         await getConnection().transaction(async (entityManager: EntityManager) => {
             const config: Configuration | undefined = await Configuration.getMain();
@@ -70,6 +71,12 @@ export class ConfigurationScheduler {
 
             const newPeriod = new UserPeriod(moment(), moment().add(config.userCloseInterval + 1, 'days'));
             await entityManager.save(newPeriod);
+
+            const partnerPeriod = await PartnerPeriod.findActivePeriod();
+            if (!partnerPeriod) {
+                const newPartnerPeriod = new PartnerPeriod(moment(), moment().add(config.partnerEmailInterval + 1, 'days'));
+                await entityManager.save(newPartnerPeriod);
+            }
         });
     }
 
