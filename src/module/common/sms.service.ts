@@ -8,7 +8,9 @@ const twilio = require("twilio");
 export class SmsService {
     private twilioClient: Twilio;
 
-    constructor(accountSid: any = process.env.TDS_TWILIO_ACCOUNT, authToken: any = process.env.TDS_TWILIO_AUTH_TOKEN) {
+    constructor() {
+        const accountSid: any = process.env.TDS_TWILIO_ACCOUNT;
+        const authToken: any = process.env.TDS_TWILIO_AUTH_TOKEN;
         this.twilioClient = twilio(accountSid, authToken)
     }
 

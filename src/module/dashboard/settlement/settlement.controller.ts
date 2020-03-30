@@ -407,6 +407,9 @@ export class SettlementController {
     @Get('ngo')
     async getNgoPayouts(@Query() query: { selectedPeriod: string, showAll: string }) {
         let config = await Configuration.getMain();
+        if (!config) {
+            throw new InternalServerErrorException('internal_server_error')
+        }
 
         let ngoPeriodQuery = NgoPeriod.createQueryBuilder('n')
             .leftJoinAndSelect("n.payouts", 'payout')
@@ -448,23 +451,73 @@ export class SettlementController {
             }
         }
 
-
         return {
-            payouts: ngoPayouts,
-
+            payouts: ngoPayouts.filter(e => e.canDisplay).map(e => new NgoPayment(e)),
+            currentPeriod: ngoPeriod ? ngoPeriod.id : null,
+            from: ngoPeriod ? ngoPeriod.from : null,
+            isClosed: ngoPeriod ? ngoPeriod.isClosed : false,
+            closeInterval: config.ngoCloseInterval
         }
     }
 
     @Put('ngo')
-    async updateNgoPayouts() {
+    async updateNgoPayouts(@Body() dto: NgoPayment[]) {
+        const changedData = dto.filter(e => e.hasChanges);
 
+        if (changedData.length === 0) {
+            return;
+        }
+
+        const changedPaymentIds = changedData.map(e => e.id);
+        let payouts: NgoPayout[] = await NgoPayout.createQueryBuilder('n')
+            .where('n.id IN (:...list)', {list: changedPaymentIds})
+            .getMany();
+
+        getConnection().transaction(async (entityManager: EntityManager) => {
+            for (const payout of payouts) {
+                let dto = changedData.find(e => e.id === payout.id);
+                if (dto) {
+                    payout.paymentDetails = dto.paymentDetails;
+                    payout.isPaid = dto.isPaid;
+                    await entityManager.save(payout);
+                }
+            }
+        });
     }
 
     @Patch('ngo/:id/close')
     async closeNgoPeriod(@Param('id') id: string) {
-        await NgoPeriod.createQueryBuilder("p")
+        const period = await NgoPeriod.createQueryBuilder("p")
             .where('p.id = :id', {id: id})
             .andWhere('p.isClosed = false')
+            .getOne();
+
+        if (period) {
+            period.isClosed = true;
+            await period.save();
+        }
+    }
+}
+
+class NgoPayment {
+    id: string;
+    isPaid: boolean;
+    paymentDetails?: string;
+    hasChanges: boolean;
+    ngoId: string;
+    ngoName: string;
+    createdAt: Date;
+    price: number;
+
+    constructor(payout: NgoPayout) {
+        this.id = payout.id;
+        this.isPaid = payout.isPaid;
+        this.paymentDetails = payout.paymentDetails;
+        this.hasChanges = false;
+        this.ngoId = payout.ngo.id;
+        this.ngoName = payout.ngo.name;
+        this.price = payout.price;
+        this.createdAt = payout.createdAt;
     }
 }
 

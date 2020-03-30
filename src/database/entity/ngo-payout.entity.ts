@@ -15,6 +15,9 @@ export class NgoPayout extends TadeusEntity {
     @Column({name: 'IS_PAID', default: false})
     isPaid: boolean = false;
 
+    @Column({name: 'PAYMENT_DETAILS', nullable: true})
+    paymentDetails?: string;
+
     @Column({name: 'CAN_DISPLAY', default: false})
     canDisplay: boolean = false;
 
