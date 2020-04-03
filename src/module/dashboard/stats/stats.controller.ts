@@ -20,63 +20,53 @@ export class StatsController {
     constructor(private readonly service: StatsService) {
     }
 
-    @Get('user')
-    async getUsersStats() {
-        let users: User[] = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :name', {name: RoleEnum.CLIENT})
-            .getMany();
+    @Get()
+    async getStats() {
+            let users: User[] = await User.createQueryBuilder('user')
+                .leftJoinAndSelect('user.account', 'account')
+                .leftJoinAndSelect('account.role', 'role')
+                .where('role.value = :name', {name: RoleEnum.CLIENT})
+                .getMany();
 
-        return {
-            activePoints: users.filter((points: User) => points.registered).length,
-            ...this.service.getTimeStats(users as TadeusEntity[])
-        }
-    }
+            let card: VirtualCard[] = await VirtualCard.find();
+            let donations: Donation[] = await Donation.find();
+            const points: TradingPoint[] = await TradingPoint.find();
 
-    @Get('ngo')
-    async getNgoStats() {
-        let donations: Donation[] = await Donation.find();
-        let card: VirtualCard[] = await VirtualCard.find();
+            const transactions: Transaction[] = await Transaction.find();
+
+            let years: Array<Transaction[]> = groupDatesByComponent(transactions, 'Y') as Array<Transaction[]>;
+            let allweeks = [];
+            let allMonths = [];
+            for (const year of years) {
+                allweeks.push(_.flatten(groupDatesByComponent(year, 'w')));
+                allMonths.push(_.flatten(groupDatesByComponent(year, 'M')));
+            }
+
+            let transactionsIn24Hours = transactions.filter((t: Transaction) => moment(t.updatedAt).isBetween(moment().format(Const.DATE_FORMAT), moment().subtract(1, 'days').format(Const.DATE_FORMAT)));
 
 
-        return {
-            overall: donations.reduce((o, e: any) => o + e.price, 0),
-            personalPool: donations.filter((d: any) => d.pool === 'PERSONAL').reduce((o, e: any) => o + e.price, 0),
-            donationPool: donations.filter((d: any) => d.pool === 'DONATION').reduce((o, e: any) => o + e.price, 0),
-            ngo: donations.filter((d: any) => d.pool === 'DONATION' && d.type === DonationEnum.NGO).reduce((o, e: any) => o + e.price, 0),
-            userPool: card.reduce((o, e: VirtualCard) => o + e.personalPool, 0)
-        }
-    }
-
-    @Get('trading-point')
-    async getPointStats() {
-        const points: TradingPoint[] = await TradingPoint.find();
-        return {
-            activePoints: points.length,
-            ...this.service.getTimeStats(points)
-        }
-    }
-
-    @Get('transaction')
-    async getTransactionsStats() {
-        const transactions: Transaction[] = await Transaction.find();
-
-        let years: Array<Transaction[]> = groupDatesByComponent(transactions, 'Y') as Array<Transaction[]>;
-        let allweeks = [];
-        let allMonths = [];
-        for (const year of years) {
-            allweeks.push(_.flatten(groupDatesByComponent(year, 'w')));
-            allMonths.push(_.flatten(groupDatesByComponent(year, 'M')));
-        }
-
-        let transactionsIn24Hours = transactions.filter((t: Transaction) => moment(t.updatedAt).isBetween(moment().format(Const.DATE_FORMAT), moment().subtract(1, 'days').format(Const.DATE_FORMAT)));
-
-        return {
-            today: transactionsIn24Hours.reduce((o, e: Transaction) => o + e.price, 0),
-            weeks: this.service.getPeriodOverview(allweeks),
-            months: this.service.getPeriodOverview(allMonths)
-        }
+            return {
+                user: {
+                    activeUsers: users.filter((points: User) => points.registered).length,
+                    ...this.service.getTimeStats(users as TadeusEntity[])
+                },
+                ngo: {
+                    overall: donations.reduce((o, e: any) => o + e.price, 0),
+                    personalPool: donations.filter((d: any) => d.pool === 'PERSONAL').reduce((o, e: any) => o + e.price, 0),
+                    donationPool: donations.filter((d: any) => d.pool === 'DONATION').reduce((o, e: any) => o + e.price, 0),
+                    ngo: donations.filter((d: any) => d.pool === 'DONATION' && d.type === DonationEnum.NGO).reduce((o, e: any) => o + e.price, 0),
+                    userPool: card.reduce((o, e: VirtualCard) => o + e.personalPool, 0)
+                },
+                trading-point: {
+                    activePoints: points.length,
+                    ...this.service.getTimeStats(points)
+                },
+                transactions: {
+                    today: transactionsIn24Hours.reduce((o, e: Transaction) => o + e.price, 0),
+                    weeks: this.service.getPeriodOverview(allweeks),
+                    months: this.service.getPeriodOverview(allMonths)
+                }
+            }
     }
 
 }
