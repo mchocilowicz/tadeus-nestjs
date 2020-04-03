@@ -33,23 +33,23 @@ export class StatsService {
         let activeOneMonthAgo: TadeusEntity[] = [];
         let activeMonthsAgo: TadeusEntity[] = [];
 
-        const todayDate = moment().format(Const.DATE_FORMAT);
-        const weekAgoDate = moment().subtract(7, 'days').format(Const.DATE_FORMAT);
-        const monthAgoDate = moment().subtract(1, 'months').format(Const.DATE_FORMAT);
+        const yesterdayDate = moment().subtract(1,'days');
+        const weekAgoDate = moment().subtract(7, 'days');
+        const monthAgoDate = moment().subtract(1, 'months');
 
         if (list) {
             list.forEach((point: TadeusEntity) => {
                 const pointLastUpdatteAt = moment(point.updatedAt);
 
-                if (pointLastUpdatteAt.format(Const.DATE_FORMAT) === todayDate) {
+                if (pointLastUpdatteAt.isBetween(yesterdayDate, moment())) {
                     activeToday.push(point);
-                } else if (pointLastUpdatteAt.isBetween(todayDate, weekAgoDate)) {
+                } else if (pointLastUpdatteAt.isBetween(weekAgoDate, moment())) {
                     activeInWeek.push(point);
-                } else if (pointLastUpdatteAt.isBetween(todayDate, monthAgoDate)) {
+                } else if (pointLastUpdatteAt.isBetween(monthAgoDate, moment())) {
                     activeInMonth.push(point);
-                } else if (pointLastUpdatteAt.isBetween(moment().subtract(1, 'months').format(Const.DATE_FORMAT), moment().subtract(2, 'months').format(Const.DATE_FORMAT))) {
+                } else if (pointLastUpdatteAt.isBetween(monthAgoDate.subtract(1,'months'), monthAgoDate)) {
                     activeOneMonthAgo.push(point);
-                } else if (pointLastUpdatteAt.isBetween(moment().subtract(3, 'months').format(Const.DATE_FORMAT), moment().subtract(100, 'years').format(Const.DATE_FORMAT))) {
+                } else if (pointLastUpdatteAt.isBetween(monthAgoDate.subtract(2, 'months'), moment().subtract(100, 'years'))) {
                     activeMonthsAgo.push(point);
                 }
             });
