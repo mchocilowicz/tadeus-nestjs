@@ -1,4 +1,4 @@
-import {Controller, Get, Param} from "@nestjs/common";
+import {Controller, Get, Query} from "@nestjs/common";
 import {Transaction} from "../../../database/entity/transaction.entity";
 import {TransactionStatus} from "../../../common/enum/status.enum";
 
@@ -17,10 +17,11 @@ export class ReportsController {
             .getRawMany();
     }
 
-    @Get(':date')
-    async getReports(@Param('date') date: string) {
-        if (!date) {
-            date = moment().format('YYYY-MM');
+    @Get()
+    async getReports(@Query() query: { date: string }) {
+        let date = moment().format('YYYY-MM');
+        if (query && query.date) {
+            date = query.date
         }
 
         let transactions = await Transaction.createQueryBuilder('t')
@@ -30,6 +31,34 @@ export class ReportsController {
             .where("to_char(t.createdAt,'YYYY-MM') = :date", {date: date})
             .andWhere("t.status = :status", {status: TransactionStatus.ACCEPTED})
             .getMany();
+
+        // Indywidualny miesięczny dla NGO’s
+        // o Wartość przekazanej donacji
+        // o Ilu użytkowników przekazało donację
+        // o Z ilu punktów handlowych pochodzą donacje
+        // o Trzy najbardziej „zasłużone” punkty handlowe
+        let ngoList = transactions.map(elem => {
+            let obj = {
+                ID: elem.ngo.ID,
+                name: elem.ngo.name,
+                usersCount: 0,
+                donations: 0,
+                tradingPointsCount: 0,
+                tradingPoint: []
+            };
+            return obj;
+        })
+        let groupedTransactionByNgo = _.groupBy(transactions, (elem: Transaction) => elem.ngo.ID);
+
+        // Indywidualny miesięczny dla PUNKTU HANDLOWEGO
+        // o Wartość przekazanej donacji
+        // o Ilu użytkowników przekazało donację
+        // o Do ilu NGO’s trafiły donacje
+        // o Trzy najbardziej obdarowane NGO’
+
+
+        let groupedTransactionByPoint = _.groupBy(transactions, (elem: Transaction) => elem.tradingPoint.ID);
+
 
         return "Test";
     }
