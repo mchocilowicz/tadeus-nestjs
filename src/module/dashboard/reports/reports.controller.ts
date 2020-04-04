@@ -20,6 +20,7 @@ export class ReportsController {
     @Get()
     async getReports(@Query() query: { date: string }) {
         let date = moment().format('YYYY-MM');
+
         if (query && query.date) {
             date = query.date
         }
@@ -32,12 +33,7 @@ export class ReportsController {
             .andWhere("t.status = :status", {status: TransactionStatus.ACCEPTED})
             .getMany();
 
-        // Indywidualny miesięczny dla NGO’s
-        // o Wartość przekazanej donacji
-        // o Ilu użytkowników przekazało donację
-        // o Z ilu punktów handlowych pochodzą donacje
-        // o Trzy najbardziej „zasłużone” punkty handlowe
-        let ngoList = transactions.map(elem => {
+        let ngoList = _.uniqBy(transactions.map(elem => {
             let obj = {
                 ID: elem.ngo.ID,
                 name: elem.ngo.name,
@@ -47,20 +43,86 @@ export class ReportsController {
                 tradingPoint: []
             };
             return obj;
-        })
+        }), "ID");
+
         let groupedTransactionByNgo = _.groupBy(transactions, (elem: Transaction) => elem.ngo.ID);
+        Object.keys(groupedTransactionByNgo).forEach((value: string) => {
+            const foundNgo = ngoList.find((n: any) => n.ID === value);
+            if (foundNgo) {
+                const transactions: Transaction[] = groupedTransactionByNgo[value];
+                foundNgo.usersCount = _.uniq(transactions.map(t => t.user.id)).length;
+                foundNgo.donations = transactions.reduce((previousValue, currentValue) => previousValue + currentValue.ngoDonation, 0);
+                foundNgo.tradingPointsCount = _.uniq(transactions.map(t => t.tradingPoint.id)).length;
+                const tradingPoints = _.uniqBy(transactions.map(elem => {
+                    return {
+                        ID: elem.tradingPoint.ID,
+                        name: elem.tradingPoint.name,
+                        transactionsCount: 0
+                    }
+                }), 'ID');
+                tradingPoints.forEach((point: any) => {
+                    point.transactionsCount = transactions.filter(e => e.tradingPoint.ID === point.ID).length;
+                });
+                foundNgo.tradingPoint = _.take(tradingPoints.sort((a: any, b: any) => {
+                    if (a.transactionsCount > b.transactionsCount) {
+                        return -1;
+                    } else if (a.transactionsCount < b.transactionsCount) {
+                        return 1;
+                    } else {
+                        return 0
+                    }
+                }), 3);
+            }
+        });
 
-        // Indywidualny miesięczny dla PUNKTU HANDLOWEGO
-        // o Wartość przekazanej donacji
-        // o Ilu użytkowników przekazało donację
-        // o Do ilu NGO’s trafiły donacje
-        // o Trzy najbardziej obdarowane NGO’
 
+        let pointList = _.uniqBy(transactions.map(elem => {
+            let obj = {
+                ID: elem.tradingPoint.ID,
+                name: elem.tradingPoint.name,
+                usersCount: 0,
+                donations: 0,
+                ngoCount: 0,
+                ngoList: []
+            };
+            return obj;
+        }), "ID");
 
         let groupedTransactionByPoint = _.groupBy(transactions, (elem: Transaction) => elem.tradingPoint.ID);
+        Object.keys(groupedTransactionByPoint).forEach((value: string) => {
+            const founPoint = pointList.find((n: any) => n.ID === value);
+            if (founPoint) {
+                const transactions: Transaction[] = groupedTransactionByPoint[value];
+                founPoint.usersCount = _.uniq(transactions.map(t => t.user.id)).length;
+                founPoint.donations = transactions.reduce((previousValue, currentValue) => previousValue + currentValue.ngoDonation, 0);
+                founPoint.ngoCount = _.uniq(transactions.map(t => t.ngo.id)).length;
+                const ngos = _.uniqBy(transactions.map(elem => {
+                    return {
+                        ID: elem.ngo.ID,
+                        name: elem.ngo.name,
+                        transactionsCount: 0
+                    }
+                }), 'ID');
+                ngos.forEach((ngo: any) => {
+                    ngo.transactionsCount = transactions.filter(e => e.ngo.ID === ngo.ID).length;
+                });
+                founPoint.ngoList = _.take(ngos.sort((a: any, b: any) => {
+                    if (a.transactionsCount > b.transactionsCount) {
+                        return -1;
+                    } else if (a.transactionsCount < b.transactionsCount) {
+                        return 1;
+                    } else {
+                        return 0
+                    }
+                }), 3);
+            }
+        });
 
 
-        return "Test";
+        return {
+            ngo: ngoList,
+            tradingPoint: pointList
+        }
     }
 
 }
