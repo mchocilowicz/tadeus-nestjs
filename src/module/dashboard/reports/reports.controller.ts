@@ -1,15 +1,25 @@
-import {Controller, Get, Query} from "@nestjs/common";
+import {Controller, Get, Query, UseGuards} from "@nestjs/common";
 import {Transaction} from "../../../database/entity/transaction.entity";
 import {TransactionStatus} from "../../../common/enum/status.enum";
+import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {Const} from "../../../common/util/const";
 
 
 const moment = require("moment");
 const _ = require('lodash');
 
 @Controller()
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class ReportsController {
 
     @Get('dates')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async getReportsDates() {
         const dates = await Transaction.createQueryBuilder('t')
             .select("to_char(t.createdAt,'YYYY-MM')", 'date')
@@ -20,6 +30,8 @@ export class ReportsController {
     }
 
     @Get()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async getReports(@Query() query: { date: string }) {
         let date = moment().format('YYYY-MM');
 

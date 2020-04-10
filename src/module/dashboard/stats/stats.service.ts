@@ -14,12 +14,12 @@ export class StatsService {
         return list.map((value: Transaction[]) => {
             if (value.length === 1) {
                 return {
-                    period: value[0].createdAt,
+                    period: this.prepareDate(value[0].createdAt),
                     price: value[0].price
                 }
             } else {
                 return {
-                    period: `${value[0].createdAt} - ${value[value.length - 1].createdAt}`,
+                    period: `${this.prepareDate(value[0].createdAt)} - ${this.prepareDate(value[value.length - 1].createdAt)}`,
                     price: value.reduce((p: number, v: Transaction) => p + v.price, 0)
                 }
             }
@@ -62,5 +62,9 @@ export class StatsService {
             overMonth: activeOneMonthAgo.length,
             months: activeMonthsAgo.length
         }
+    }
+
+    private prepareDate(date: Date): string {
+        return moment(date).format(Const.DATE_FORMAT);
     }
 }

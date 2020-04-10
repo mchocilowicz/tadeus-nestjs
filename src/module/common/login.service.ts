@@ -1,22 +1,22 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CodeService } from "../../common/service/code.service";
-import { User } from "../../database/entity/user.entity";
-import { Role } from "../../database/entity/role.entity";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { PhoneRequest } from "../../models/common/request/phone.request";
-import { Status, Step } from "../../common/enum/status.enum";
-import { CryptoService } from "../../common/service/crypto.service";
-import { EntityManager, getConnection } from "typeorm";
-import { Account } from "../../database/entity/account.entity";
-import { VirtualCard } from "../../database/entity/virtual-card.entity";
-import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
-import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
-import { Phone } from "../../database/entity/phone.entity";
-import { PhonePrefix } from "../../database/entity/phone-prefix.entity";
-import { Terminal } from "../../database/entity/terminal.entity";
-import { Admin } from "../../database/entity/admin.entity";
-import { SmsService } from "./sms.service";
+import {BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException} from '@nestjs/common';
+import {CodeService} from "../../common/service/code.service";
+import {User} from "../../database/entity/user.entity";
+import {Role} from "../../database/entity/role.entity";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {PhoneRequest} from "../../models/common/request/phone.request";
+import {Status, Step} from "../../common/enum/status.enum";
+import {CryptoService} from "../../common/service/crypto.service";
+import {EntityManager, getConnection} from "typeorm";
+import {Account} from "../../database/entity/account.entity";
+import {VirtualCard} from "../../database/entity/virtual-card.entity";
+import {TadeusJwtService} from "./TadeusJwtModule/TadeusJwtService";
+import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
+import {Phone} from "../../database/entity/phone.entity";
+import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
+import {Terminal} from "../../database/entity/terminal.entity";
+import {Admin} from "../../database/entity/admin.entity";
+import {SmsService} from "./sms.service";
 
 @Injectable()
 export class LoginService {
@@ -52,7 +52,7 @@ export class LoginService {
                 await entityManager.save(user);
 
                 if (!savedAccount.id || !savedAccount.code) {
-                    this.logger.error(`Account not saved properly for User(Anonymous) ${ user.id }`);
+                    this.logger.error(`Account not saved properly for User(Anonymous) ${user.id}`);
                     throw new BadRequestException('internal_server_error')
                 }
 
@@ -84,12 +84,13 @@ export class LoginService {
     async signInDashboard(dto: PhoneRequest): Promise<void> {
         let admin: Admin | undefined = await Admin.createQueryBuilder('a')
             .leftJoinAndSelect('a.account', 'account')
-            .leftJoinAndSelect('a.role', 'role')
+            .leftJoinAndSelect('account.role', 'role')
             .leftJoinAndSelect('a.phone', 'phone')
             .leftJoin('phone.prefix', 'prefix')
             .where(`phone.value = :phone`, {phone: dto.phone})
             .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
             .andWhere(`role.value = :role`, {role: RoleEnum.DASHBOARD})
+            .andWhere('account.status = :status', {status: Status.ACTIVE})
             .getOne();
 
         await this.signInEntity(admin, RoleEnum.DASHBOARD)
@@ -126,7 +127,7 @@ export class LoginService {
             if (!phone) {
                 const prefix = await PhonePrefix.findOne({value: dto.phonePrefix});
                 if (!prefix) {
-                    this.logger.error(`Prefix ${ dto.phonePrefix } is not in Database`);
+                    this.logger.error(`Prefix ${dto.phonePrefix} is not in Database`);
                     throw new BadRequestException('internal_server_error')
                 }
                 phone = await entityManager.save(new Phone(dto.phone, prefix));
@@ -136,7 +137,7 @@ export class LoginService {
                 const account = user.account;
 
                 if (!account || account.role.value !== RoleEnum.CLIENT) {
-                    this.logger.error(`Account CLIENT does not exists for registered User ${ user.id }`);
+                    this.logger.error(`Account CLIENT does not exists for registered User ${user.id}`);
                     throw new BadRequestException('internal_server_error')
                 }
 
@@ -245,7 +246,7 @@ export class LoginService {
         const account = entity.account;
 
         if (!account || !account.code) {
-            this.logger.error(`Account ${ role } for  ${ entity.id } does not exists`);
+            this.logger.error(`Account ${role} for  ${entity.id} does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -304,7 +305,7 @@ export class LoginService {
         const account = entity.account;
 
         if (!account) {
-            this.logger.error(`${ entity.id } does not have assigned Account ${ role }`);
+            this.logger.error(`${entity.id} does not have assigned Account ${role}`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -317,10 +318,8 @@ export class LoginService {
             }
 
             account.code = this.codeService.generateSmsCode();
-
-            this.smsService.sendMessage(account.code, entity.phone.value);
-
-            await entityManager.save(account)
+            await entityManager.save(account);
+            await this.smsService.sendMessage(account.code, entity.phone.value);
         })
     }
 

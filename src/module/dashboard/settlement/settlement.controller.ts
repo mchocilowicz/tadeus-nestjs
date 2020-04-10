@@ -6,24 +6,29 @@ import {
     InternalServerErrorException,
     Logger,
     Param,
-    Patch,
     Post,
     Put,
-    Query
+    Query,
+    UseGuards
 } from "@nestjs/common";
-import { PartnerPayment } from "../../../database/entity/partner-payment.entity";
-import { Const } from "../../../common/util/const";
-import { Transaction } from "../../../database/entity/transaction.entity";
-import { EntityManager, getConnection } from "typeorm";
-import { NgoPayout } from "../../../database/entity/ngo-payout.entity";
-import { Ngo } from "../../../database/entity/ngo.entity";
-import { UserPeriod } from "../../../database/entity/user-period.entity";
-import { PartnerPeriod } from "../../../database/entity/partner-period.entity";
-import { Configuration } from "../../../database/entity/configuration.entity";
-import { NgoPeriod } from "../../../database/entity/ngo-period.entity";
-import { TadeusEntity } from "../../../database/entity/base.entity";
-import { Donation } from "../../../database/entity/donation.entity";
-import { roundToTwo } from "../../../common/util/functions";
+import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
+import {Const} from "../../../common/util/const";
+import {Transaction} from "../../../database/entity/transaction.entity";
+import {EntityManager, getConnection} from "typeorm";
+import {NgoPayout} from "../../../database/entity/ngo-payout.entity";
+import {Ngo} from "../../../database/entity/ngo.entity";
+import {UserPeriod} from "../../../database/entity/user-period.entity";
+import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
+import {Configuration} from "../../../database/entity/configuration.entity";
+import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
+import {TadeusEntity} from "../../../database/entity/base.entity";
+import {Donation} from "../../../database/entity/donation.entity";
+import {roundToTwo} from "../../../common/util/functions";
+import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
 
 const moment = require('moment');
 
@@ -33,6 +38,10 @@ export class SettlementController {
     private readonly logger = new Logger(SettlementController.name);
 
     @Post('partner')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async generatePartnerPayments() {
         let userPeriods: UserPeriod[] = await UserPeriod.createQueryBuilder('p')
             .leftJoinAndSelect('p.transactions', 'transaction')
@@ -97,6 +106,10 @@ export class SettlementController {
     }
 
     @Put('partner')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updatePayments(@Body() dto: PartnerPaymentResponse[]) {
         const changedData = dto.filter(e => e.hasChanges);
 
@@ -147,6 +160,10 @@ export class SettlementController {
     }
 
     @Get('partner/periods')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getPartnerPeriods() {
         const periods = await PartnerPeriod.find();
 
@@ -160,6 +177,10 @@ export class SettlementController {
     }
 
     @Get('ngo/periods')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getNgoPeriods() {
         const periods = await NgoPeriod.find();
 
@@ -173,6 +194,10 @@ export class SettlementController {
     }
 
     @Get('partner')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getPayments(@Query() query: { showAll: string, selectedPeriod: string }) {
         let config = await Configuration.getMain();
         let userPeriod = await UserPeriod.findActivePeriod();
@@ -248,6 +273,10 @@ export class SettlementController {
     }
 
     @Post('partner/:id/ngoPayout')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async closePartnerPeriod(@Param('id') id: string) {
         getConnection().transaction(async (entityManager: EntityManager) => {
 
@@ -362,6 +391,10 @@ export class SettlementController {
     }
 
     @Put('partner/notifications')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async closePayments() {
         let userPeriods: UserPeriod[] = await UserPeriod.createQueryBuilder('p')
             .leftJoinAndSelect('p.transactions', 'transaction')
@@ -405,6 +438,10 @@ export class SettlementController {
     }
 
     @Get('ngo')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getNgoPayouts(@Query() query: { selectedPeriod: string, showAll: string }) {
         let config = await Configuration.getMain();
         if (!config) {
@@ -461,6 +498,10 @@ export class SettlementController {
     }
 
     @Put('ngo')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updateNgoPayouts(@Body() dto: NgoPayment[]) {
         const changedData = dto.filter(e => e.hasChanges);
 
@@ -485,7 +526,11 @@ export class SettlementController {
         });
     }
 
-    @Patch('ngo/:id/close')
+    @Put('ngo/:id/close')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async closeNgoPeriod(@Param('id') id: string) {
         const period = await NgoPeriod.createQueryBuilder("p")
             .where('p.id = :id', {id: id})

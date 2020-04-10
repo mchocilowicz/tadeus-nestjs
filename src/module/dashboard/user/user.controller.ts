@@ -1,7 +1,18 @@
-import {BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Put, Query} from "@nestjs/common";
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    Put,
+    Query,
+    UseGuards
+} from "@nestjs/common";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {User} from "../../../database/entity/user.entity";
-import {ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {UserResponse} from "../../../models/dashboard/response/user.response";
 import {Status} from "../../../common/enum/status.enum";
 import {UserViewResponse} from "../../../models/dashboard/response/user-view.response";
@@ -10,14 +21,22 @@ import {EntityManager, getConnection} from "typeorm";
 import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {Opinion} from "../../../database/entity/opinion.entity";
 import {Account} from "../../../database/entity/account.entity";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {Const} from "../../../common/util/const";
 
 const moment = require('moment');
 
 @Controller()
 @ApiTags('user')
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class UserController {
 
     @Get()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, isArray: true, type: UserResponse})
     @ApiQuery({name: 'updatedFrom', type: Date, description: 'updated from', required: false})
     @ApiQuery({name: 'updatedTo', type: Date, description: 'updated to', required: false})
@@ -78,11 +97,15 @@ export class UserController {
     }
 
     @Get('status')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async getUserStatus() {
         return Object.keys(Status)
     }
 
     @Get('opinion')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async getUsersOpinion() {
         return await Opinion.createQueryBuilder("o")
             .leftJoinAndSelect("o.user", 'user')
@@ -100,6 +123,8 @@ export class UserController {
     }
 
     @Get(':ID')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async getUserById(@Param('ID') id: string) {
         let user: User | undefined = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
@@ -123,6 +148,8 @@ export class UserController {
     }
 
     @Put(':ID/transfer')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async transferUserMoney(@Param('ID') ID: string, @Body() dto: any) {
         let user = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')
@@ -159,6 +186,8 @@ export class UserController {
     }
 
     @Put(':ID')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async updateUserStatus(@Param('ID') ID: string, @Body() dto: any) {
         let user = await User.createQueryBuilder('user')
             .leftJoinAndSelect("user.phone", 'phone')
@@ -194,6 +223,8 @@ export class UserController {
     }
 
     @Delete(':ID')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async deleteUser(@Param('ID') id: string) {
         let user = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')

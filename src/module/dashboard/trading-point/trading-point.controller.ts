@@ -11,6 +11,7 @@ import {
     Query,
     Res,
     UploadedFile,
+    UseGuards,
     UseInterceptors
 } from "@nestjs/common";
 import {TradingPoint} from "../../../database/entity/trading-point.entity";
@@ -18,7 +19,7 @@ import {EntityManager, getConnection, QueryFailedError} from "typeorm";
 import {FileInterceptor} from "@nestjs/platform-express";
 import {City} from "../../../database/entity/city.entity";
 import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
-import {ApiConsumes, ApiTags} from "@nestjs/swagger";
+import {ApiBearerAuth, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {validate} from "class-validator";
 import {extractErrors} from "../../../common/util/functions";
 import {ExcelException} from "../../../common/exceptions/excel.exception";
@@ -35,6 +36,10 @@ import {Address} from "../../../database/entity/address.entity";
 import {Status, Step} from "../../../common/enum/status.enum";
 import {TradingPointSaveRequest} from "../../../models/dashboard/request/trading-point-save.request";
 import {Opinion} from "../../../database/entity/opinion.entity";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {Const} from "../../../common/util/const";
 
 const moment = require("moment");
 
@@ -47,6 +52,10 @@ export class TradingPointController {
     }
 
     @Get()
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getAllTradePoints(@Query() query: { name: string, type: string, city: string }) {
         let sql = await TradingPoint.createQueryBuilder('t')
             .leftJoinAndSelect('t.address', 'address')
@@ -78,6 +87,10 @@ export class TradingPointController {
     }
 
     @Get('opinion')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getOpinionsForTradingPoints() {
         return await Opinion.createQueryBuilder("o")
             .leftJoinAndSelect("o.tradingPoint", 'point')
@@ -95,6 +108,10 @@ export class TradingPointController {
     }
 
     @Get(':ID')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getTradePointById(@Param('ID') id: string) {
         const p: TradingPoint | undefined = await TradingPoint.createQueryBuilder('t')
             .leftJoinAndSelect('t.address', 'address')
@@ -154,6 +171,10 @@ export class TradingPointController {
     }
 
     @Post()
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async createTradePoint(@Body() dto: TradingPointSaveRequest) {
         await getConnection().transaction(async (entityManager: EntityManager) => {
             let type = await TradingPointType.findOne({id: dto.type});
@@ -209,6 +230,10 @@ export class TradingPointController {
     }
 
     @Put(":ID")
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updateTradingPointInformation(@Param('ID') id: string, @Body() dto: TradingPointSaveRequest) {
         let point = await TradingPoint.findOne({ID: id}, {relations: ['address', 'phone']});
         if (!point) {
@@ -265,6 +290,10 @@ export class TradingPointController {
     }
 
     @Post(':ID/image')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image', {
         storage: diskStorage({
@@ -290,6 +319,10 @@ export class TradingPointController {
     }
 
     @Post(':ID/terminal')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async assignNewTerminal(@Param('ID') id: string, @Body() dto: any) {
         const role = await Role.findOne({value: RoleEnum.TERMINAL});
 
@@ -362,11 +395,19 @@ export class TradingPointController {
     }
 
     @Get('/excel')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     getImage(@Res()response: any) {
         response.sendFile('trading-point.xlsx', {root: 'public/excel'});
     }
 
     @Post("import")
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({

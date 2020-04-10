@@ -1,20 +1,29 @@
-import {Body, Controller, Get, Post} from "@nestjs/common";
+import {Body, Controller, Get, Post, UseGuards} from "@nestjs/common";
 import {Configuration} from "../../../database/entity/configuration.entity";
-import {ApiTags} from "@nestjs/swagger";
+import {ApiBearerAuth, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {ConfigurationRequest} from "../../../models/dashboard/request/configuration.request";
 import {getConnection} from "typeorm";
 import {UserPeriod} from "../../../database/entity/user-period.entity";
 import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
 import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
 import {ConfigurationSaveRequest} from "../../../models/dashboard/request/configuration-save.request";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {Const} from "../../../common/util/const";
 
 const moment = require('moment');
 
 @Controller()
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 @ApiTags('configuration')
 export class ConfigurationController {
 
     @Post()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async save(@Body() dto: ConfigurationSaveRequest) {
         return await getConnection().transaction(async entityManager => {
             let config = await Configuration.getMain();
@@ -58,6 +67,8 @@ export class ConfigurationController {
     }
 
     @Get()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async getConfiguration() {
         let config = await Configuration.getMain();
         let userPeriod = await UserPeriod.findActivePeriod();

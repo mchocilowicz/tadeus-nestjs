@@ -2,7 +2,6 @@ import {
     BadRequestException,
     Body,
     Controller,
-    Delete,
     Get,
     Logger,
     NotFoundException,
@@ -12,9 +11,10 @@ import {
     Query,
     Res,
     UploadedFile,
+    UseGuards,
     UseInterceptors
 } from "@nestjs/common";
-import {ApiBody, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
+import {ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
 import {Ngo} from "../../../database/entity/ngo.entity";
 import {EntityManager, getConnection, QueryFailedError} from "typeorm";
@@ -32,6 +32,10 @@ import {Phone} from "../../../database/entity/phone.entity";
 import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
 import {Address} from "../../../database/entity/address.entity";
 import {NgoSaveRequest} from "../../../models/dashboard/request/ngo-save.request";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
 
 const moment = require("moment");
 
@@ -44,7 +48,10 @@ export class DashboardNgoController {
     }
 
     @Get()
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     getNgoList(@Query() query: any) {
         let sql = Ngo.createQueryBuilder('n')
             .leftJoinAndSelect('n.address', 'address')
@@ -77,11 +84,19 @@ export class DashboardNgoController {
 
 
     @Get('/excel')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     getImage(@Res() response: any) {
         response.sendFile('ngo.xlsx', {root: 'public/excel'});
     }
 
     @Get(':ID')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getNgoById(@Param('ID') ngoId: string) {
         let ngo = await Ngo.createQueryBuilder('n')
             .leftJoinAndSelect('n.address', 'address')
@@ -131,7 +146,10 @@ export class DashboardNgoController {
     }
 
     @Post()
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiBody({type: NgoSaveRequest})
     async create(@Body() dto: NgoSaveRequest) {
         await getConnection().transaction(async (entityManager: EntityManager) => {
@@ -188,6 +206,10 @@ export class DashboardNgoController {
     }
 
     @Put(':ID')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updateNgoData(@Param('ID') ngoID: string, @Body() dto: NgoSaveRequest) {
         getConnection().transaction(async (entityManager: EntityManager) => {
             const type = await NgoType.findOne({id: dto.type});
@@ -238,11 +260,11 @@ export class DashboardNgoController {
                 }
             }
             let address = ngo.address;
-            address.street = dto.address.street
-            address.number = dto.address.number
-            address.postCode = dto.address.postCode
-            address.longitude = dto.address.longitude
-            address.latitude = dto.address.latitude
+            address.street = dto.address.street;
+            address.number = dto.address.number;
+            address.postCode = dto.address.postCode;
+            address.longitude = dto.address.longitude;
+            address.latitude = dto.address.latitude;
             address.city = city;
 
             await entityManager.save(ngo);
@@ -252,6 +274,10 @@ export class DashboardNgoController {
     }
 
     @Post("import")
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file', {
         storage: diskStorage({
@@ -284,6 +310,10 @@ export class DashboardNgoController {
     }
 
     @Post(':ID/image')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image', {
             storage: diskStorage({
@@ -327,12 +357,6 @@ export class DashboardNgoController {
         }
 
         await ngo.save()
-    }
-
-
-    @Delete()
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-    delete() {
     }
 
     private async saveNgoRow(row: any, index: number, errors: object[]) {

@@ -1,11 +1,17 @@
-import {Body, Controller, Get, Logger, NotFoundException, Param, Post, Put} from "@nestjs/common";
-import {ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
+import {Body, Controller, Get, Logger, NotFoundException, Param, Post, Put, UseGuards} from "@nestjs/common";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
 import {NgoTypeRequest} from "../../../models/common/request/ngo-type.request";
 import {NgoType} from "../../../database/entity/ngo-type.entity";
 import {handleException} from "../../../common/util/functions";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
 
 @Controller()
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 @ApiTags('trading-point-type')
 export class NgoTypeController {
     private readonly logger = new Logger(NgoTypeController.name);
@@ -14,7 +20,8 @@ export class NgoTypeController {
     }
 
     @Post()
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBody({type: NgoTypeRequest})
     async createNgoType(@Body() dto: NgoTypeRequest) {
         const type = new NgoType(dto.name);
@@ -26,7 +33,8 @@ export class NgoTypeController {
     }
 
     @Put(':id')
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async updateType(@Param('id') id: string, @Body() dto: any) {
         const type: NgoType | undefined = await NgoType.findOne({id: id});
 
@@ -39,7 +47,8 @@ export class NgoTypeController {
     }
 
     @Get()
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     getAllTypes() {
         return NgoType.find();
     }

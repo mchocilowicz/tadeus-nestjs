@@ -1,4 +1,4 @@
-import {Controller, Get} from "@nestjs/common";
+import {Controller, Get, UseGuards} from "@nestjs/common";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {Const} from "../../../common/util/const";
 import {User} from "../../../database/entity/user.entity";
@@ -10,17 +10,25 @@ import {VirtualCard} from "../../../database/entity/virtual-card.entity";
 import {Transaction} from "../../../database/entity/transaction.entity";
 import {groupDatesByComponent} from "../../../common/util/functions";
 import {StatsService} from "./stats.service";
+import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
 
 const moment = require("moment");
 const _ = require('lodash');
 
 @Controller()
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class StatsController {
 
     constructor(private readonly service: StatsService) {
     }
 
     @Get()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async getStats() {
         let users: User[] = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.account', 'account')

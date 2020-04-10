@@ -1,11 +1,17 @@
-import {Body, Controller, Get, Logger, NotFoundException, Param, Post, Put} from "@nestjs/common";
-import {ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
+import {Body, Controller, Get, Logger, NotFoundException, Param, Post, Put, UseGuards} from "@nestjs/common";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
 import {handleException} from "../../../common/util/functions";
 import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
 import {TradingPointTypeRequest} from "../../../models/common/request/trading-point-type.request";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
 
 @Controller()
+@ApiBearerAuth()
+@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 @ApiTags('trading-point-type')
 export class TradingPointTypeController {
     private readonly logger = new Logger(TradingPointTypeController.name);
@@ -14,7 +20,8 @@ export class TradingPointTypeController {
     }
 
     @Post()
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBody({type: TradingPointTypeRequest})
     async savePlaceType(@Body() dto: TradingPointTypeRequest) {
         const type = new TradingPointType(dto.name);
@@ -26,12 +33,15 @@ export class TradingPointTypeController {
     }
 
     @Get()
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     getAllTypes() {
         return TradingPointType.find();
     }
 
     @Put(':id')
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
     async updateType(@Param('id') id: string, @Body() dto: any) {
         const type = await TradingPointType.findOne({id: id});
         if (!type) {
