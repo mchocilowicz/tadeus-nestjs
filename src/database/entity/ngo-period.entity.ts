@@ -6,7 +6,7 @@ import {Transaction} from "./transaction.entity";
 import {UserPeriod} from "./user-period.entity";
 import {PartnerPeriod} from "./partner-period.entity";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'NGO_PERIOD'})
+@Entity({name: 'NGO_PERIOD'})
 export class NgoPeriod extends TadeusEntity {
 
     @Column({name: 'FROM'})

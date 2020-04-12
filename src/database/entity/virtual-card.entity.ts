@@ -2,7 +2,7 @@ import {Column, Entity, Generated} from "typeorm";
 import {TadeusEntity} from "./base.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'VIRTUAL_CARD'})
+@Entity({name: 'VIRTUAL_CARD'})
 export class VirtualCard extends TadeusEntity {
     @Column({name: "ID"})
     ID: string;

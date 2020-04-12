@@ -6,7 +6,7 @@ import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Account} from "./account.entity";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'TERMINAL'})
+@Entity({name: 'TERMINAL'})
 export class Terminal extends TadeusEntity {
     @Column({name: 'STATUS', type: 'text', nullable: true})
     step: Step = Step.SIGN_IN;

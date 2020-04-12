@@ -1,11 +1,11 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
-import { TadeusEntity } from "./base.entity";
-import { Donation } from "./donation.entity";
-import { Transaction } from "./transaction.entity";
-import { NgoPeriod } from "./ngo-period.entity";
-import { PartnerPeriod } from "./partner-period.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
+import {TadeusEntity} from "./base.entity";
+import {Donation} from "./donation.entity";
+import {Transaction} from "./transaction.entity";
+import {NgoPeriod} from "./ngo-period.entity";
+import {PartnerPeriod} from "./partner-period.entity";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'USER_PERIOD'})
+@Entity({name: 'USER_PERIOD'})
 export class UserPeriod extends TadeusEntity {
     @Column({name: 'FROM'})
     from: Date;

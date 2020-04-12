@@ -4,7 +4,7 @@ import {Status} from "../../common/enum/status.enum";
 import {TadeusEntity} from "./base.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ACCOUNT'})
+@Entity({name: 'ACCOUNT'})
 export class Account extends TadeusEntity {
 
     @Column({name: 'ID'})

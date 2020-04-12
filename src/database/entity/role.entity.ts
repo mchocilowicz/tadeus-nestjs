@@ -2,7 +2,7 @@ import {Column, Entity, OneToMany} from "typeorm";
 import {Account} from "./account.entity";
 import {TadeusEntity} from "./base.entity";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ROLE'})
+@Entity({name: 'ROLE'})
 export class Role extends TadeusEntity {
 
     @Column({name: 'VALUE', unique: true})

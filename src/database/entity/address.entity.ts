@@ -5,7 +5,7 @@ import {Ngo} from "./ngo.entity";
 import {TradingPoint} from "./trading-point.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'ADDRESS'})
+@Entity({name: 'ADDRESS'})
 export class Address extends TadeusEntity {
     @Column({name: 'STREET'})
     street: string;

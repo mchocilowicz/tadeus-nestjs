@@ -5,7 +5,7 @@ import {Transaction} from "./transaction.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 import {PartnerPeriod} from "./partner-period.entity";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PARTNER_PAYMENT'})
+@Entity({name: 'PARTNER_PAYMENT'})
 export class PartnerPayment extends TadeusEntity {
     @Column({name: 'ID'})
     ID: string;

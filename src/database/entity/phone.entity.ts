@@ -8,7 +8,7 @@ import {TadeusEntity} from "./base.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 import {Admin} from "./admin.entity";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PHONE'})
+@Entity({name: 'PHONE'})
 @Unique(['value'])
 export class Phone extends TadeusEntity {
     @Column({name: 'VALUE', unique: true, transformer: new ColumnNumericTransformer()})

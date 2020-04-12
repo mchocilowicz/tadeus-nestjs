@@ -3,7 +3,7 @@ import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'PHONE_PREFIX'})
+@Entity({name: 'PHONE_PREFIX'})
 @Unique(['value'])
 export class PhonePrefix extends TadeusEntity {
     @Column({name: 'VALUE', transformer: new ColumnNumericTransformer()})

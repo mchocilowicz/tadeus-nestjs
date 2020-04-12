@@ -1,22 +1,22 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
-import { TradingPoint } from "./trading-point.entity";
-import { User } from "./user.entity";
+import {Column, Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
+import {TradingPoint} from "./trading-point.entity";
+import {User} from "./user.entity";
 
-import { Terminal } from "./terminal.entity";
-import { TadeusEntity } from "./base.entity";
-import { PartnerPayment } from "./partner-payment.entity";
-import { ColumnNumericTransformer } from "../../common/util/number-column.transformer";
-import { TransactionStatus } from "../../common/enum/status.enum";
-import { Ngo } from "./ngo.entity";
-import { NgoPayout } from "./ngo-payout.entity";
-import { PartnerPeriod } from "./partner-period.entity";
-import { UserPeriod } from "./user-period.entity";
-import { NgoPeriod } from "./ngo-period.entity";
-import { roundToTwo } from "../../common/util/functions";
+import {Terminal} from "./terminal.entity";
+import {TadeusEntity} from "./base.entity";
+import {PartnerPayment} from "./partner-payment.entity";
+import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {TransactionStatus} from "../../common/enum/status.enum";
+import {Ngo} from "./ngo.entity";
+import {NgoPayout} from "./ngo-payout.entity";
+import {PartnerPeriod} from "./partner-period.entity";
+import {UserPeriod} from "./user-period.entity";
+import {NgoPeriod} from "./ngo-period.entity";
+import {roundToTwo} from "../../common/util/functions";
 
 const moment = require('moment');
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'TRANSACTION'})
+@Entity({name: 'TRANSACTION'})
 export class Transaction extends TadeusEntity {
     @Column({name: 'ID'})
     ID: string;

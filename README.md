@@ -14,7 +14,6 @@ To properly run application it is required to specify environment variables in .
 
 ```
 TDS_DATABASE_URL= URL to Postgresql Database
-TDS_DATABASE_SCHEMA=Postgresql Schema (best to use small letters)
 TDS_VI=16 chars to hash algoritm
 TDS_ALG=hashing algorithm
 TDS_PWD=32 chars Password for hashing

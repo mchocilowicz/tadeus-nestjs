@@ -4,7 +4,7 @@ import {Ngo} from "./ngo.entity";
 import {TadeusEntity} from "./base.entity";
 import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
 
-@Entity({schema: process.env.TDS_DATABASE_SCHEMA, name: 'NGO_TYPE'})
+@Entity({name: 'NGO_TYPE'})
 export class NgoType extends TadeusEntity {
 
     @Column({name: 'NAME'})
