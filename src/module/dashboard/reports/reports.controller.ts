@@ -7,6 +7,7 @@ import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
 import {Const} from "../../../common/util/const";
+import {roundToTwo} from "../../../common/util/functions";
 
 
 const moment = require("moment");
@@ -65,7 +66,7 @@ export class ReportsController {
             if (foundNgo) {
                 const transactions: Transaction[] = groupedTransactionByNgo[value];
                 foundNgo.usersCount = _.uniq(transactions.map(t => t.user.id)).length;
-                foundNgo.donations = transactions.reduce((previousValue, currentValue) => previousValue + currentValue.ngoDonation, 0);
+                foundNgo.donations = roundToTwo(transactions.reduce((previousValue, currentValue) => previousValue + currentValue.ngoDonation, 0));
                 foundNgo.count = _.uniq(transactions.map(t => t['tradingPoint'].id)).length;
                 const tradingPoints = _.uniqBy(transactions.map(elem => {
                     return {
@@ -108,7 +109,7 @@ export class ReportsController {
             if (founPoint) {
                 const transactions: Transaction[] = groupedTransactionByPoint[value];
                 founPoint.usersCount = _.uniq(transactions.map(t => t.user.id)).length;
-                founPoint.donations = transactions.reduce((previousValue, currentValue) => previousValue + currentValue.ngoDonation, 0);
+                founPoint.donations = roundToTwo(transactions.reduce((previousValue, currentValue) => previousValue + currentValue.ngoDonation, 0));
                 founPoint.count = _.uniq(transactions.map(t => t['ngo'].id)).length;
                 const ngos = _.uniqBy(transactions.map(elem => {
                     return {

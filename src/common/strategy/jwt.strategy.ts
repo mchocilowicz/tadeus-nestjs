@@ -32,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
                 .leftJoinAndSelect('admin.account', 'account')
                 .leftJoinAndSelect('account.role', 'role')
                 .where(`account.id = :id`, {id: id})
-                .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
+                .andWhere(`role.value = :role`, {role: RoleEnum.DASHBOARD})
                 .andWhere(`account.status = :status`, {status: Status.ACTIVE})
                 .getOne();
 
