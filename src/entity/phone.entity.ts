@@ -5,7 +5,7 @@ import {User} from "./user.entity";
 import {Terminal} from "./terminal.entity";
 import {Ngo} from "./ngo.entity";
 import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 import {Admin} from "./admin.entity";
 
 @Entity({name: 'PHONE'})

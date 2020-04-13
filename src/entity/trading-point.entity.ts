@@ -6,7 +6,7 @@ import {Terminal} from "./terminal.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Address} from "./address.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 import {Opinion} from "./opinion.entity";
 
 @Entity({name: 'PARTNER'})

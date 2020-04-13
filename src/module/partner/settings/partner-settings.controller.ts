@@ -1,6 +1,6 @@
 import {Body, Controller, Get, Put, Req, UseGuards} from "@nestjs/common";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {Terminal} from "../../../entity/terminal.entity";
+import {TradingPoint} from "../../../entity/trading-point.entity";
 import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
 import {Roles} from "../../../common/decorators/roles.decorator";

@@ -1,21 +1,21 @@
 import {BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException} from '@nestjs/common';
 import {CodeService} from "../../common/service/code.service";
-import {User} from "../../database/entity/user.entity";
-import {Role} from "../../database/entity/role.entity";
+import {User} from "../../entity/user.entity";
+import {Role} from "../../entity/role.entity";
 import {RoleEnum} from "../../common/enum/role.enum";
 import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
 import {PhoneRequest} from "../../models/common/request/phone.request";
 import {Status, Step} from "../../common/enum/status.enum";
 import {CryptoService} from "../../common/service/crypto.service";
 import {EntityManager, getConnection} from "typeorm";
-import {Account} from "../../database/entity/account.entity";
-import {VirtualCard} from "../../database/entity/virtual-card.entity";
+import {Account} from "../../entity/account.entity";
+import {VirtualCard} from "../../entity/virtual-card.entity";
 import {TadeusJwtService} from "./TadeusJwtModule/TadeusJwtService";
 import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
-import {Phone} from "../../database/entity/phone.entity";
-import {PhonePrefix} from "../../database/entity/phone-prefix.entity";
-import {Terminal} from "../../database/entity/terminal.entity";
-import {Admin} from "../../database/entity/admin.entity";
+import {Phone} from "../../entity/phone.entity";
+import {PhonePrefix} from "../../entity/phone-prefix.entity";
+import {Terminal} from "../../entity/terminal.entity";
+import {Admin} from "../../entity/admin.entity";
 import {SmsService} from "./sms.service";
 
 @Injectable()

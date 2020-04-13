@@ -1,6 +1,6 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {Phone} from "../../../database/entity/phone.entity";
-import {User} from "../../../database/entity/user.entity";
+import {Phone} from "../../../entity/phone.entity";
+import {User} from "../../../entity/user.entity";
 
 export class UserDetailsResponse {
     @ApiProperty()

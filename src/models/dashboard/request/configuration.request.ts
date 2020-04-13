@@ -1,7 +1,7 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {UserPeriod} from "../../../database/entity/user-period.entity";
-import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
-import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
+import {UserPeriod} from "../../../entity/user-period.entity";
+import {PartnerPeriod} from "../../../entity/partner-period.entity";
+import {NgoPeriod} from "../../../entity/ngo-period.entity";
 
 export class ConfigurationRequest {
     @ApiProperty()

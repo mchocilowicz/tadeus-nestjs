@@ -1,5 +1,5 @@
 import {ApiProperty} from "@nestjs/swagger";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {VirtualCard} from "../../../entity/virtual-card.entity";
 
 export class VirtualCardResponse {
     @ApiProperty()

@@ -7,10 +7,10 @@ import {Opinion} from "./opinion.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {UserPayout} from "./user-payout.entity";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {RoleEnum} from "../common/enum/role.enum";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 import {Ngo} from "./ngo.entity";
-import {Status, TransactionStatus} from "../../common/enum/status.enum";
+import {Status, TransactionStatus} from "../common/enum/status.enum";
 
 const moment = require('moment');
 

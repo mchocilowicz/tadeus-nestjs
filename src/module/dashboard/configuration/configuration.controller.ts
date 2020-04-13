@@ -1,11 +1,11 @@
 import {Body, Controller, Get, Post, UseGuards} from "@nestjs/common";
-import {Configuration} from "../../../database/entity/configuration.entity";
+import {Configuration} from "../../../entity/configuration.entity";
 import {ApiBearerAuth, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {ConfigurationRequest} from "../../../models/dashboard/request/configuration.request";
 import {getConnection} from "typeorm";
-import {UserPeriod} from "../../../database/entity/user-period.entity";
-import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
-import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
+import {UserPeriod} from "../../../entity/user-period.entity";
+import {PartnerPeriod} from "../../../entity/partner-period.entity";
+import {NgoPeriod} from "../../../entity/ngo-period.entity";
 import {ConfigurationSaveRequest} from "../../../models/dashboard/request/configuration-save.request";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";

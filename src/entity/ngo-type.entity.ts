@@ -2,7 +2,7 @@ import {Column, Entity, Generated, OneToMany} from "typeorm";
 import {ApiProperty} from "@nestjs/swagger";
 import {Ngo} from "./ngo.entity";
 import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 
 @Entity({name: 'NGO_TYPE'})
 export class NgoType extends TadeusEntity {

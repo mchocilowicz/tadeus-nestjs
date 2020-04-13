@@ -1,19 +1,19 @@
 import {BadRequestException, Body, Controller, Get, HttpCode, Logger, Put, Query, Req, UseGuards} from "@nestjs/common";
 import {getConnection} from "typeorm";
 import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Ngo} from "../../../database/entity/ngo.entity";
+import {Ngo} from "../../../entity/ngo.entity";
 import {Const} from "../../../common/util/const";
-import {NgoType} from "../../../database/entity/ngo-type.entity";
+import {NgoType} from "../../../entity/ngo-type.entity";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
 import {CityResponse} from "../../../models/common/response/city.response";
-import {City} from "../../../database/entity/city.entity";
+import {City} from "../../../entity/city.entity";
 import {SelectedNgoRequest} from "../../../models/client/request/selected-ngo.request";
 import {NgoQuery} from "../../../models/client/ngo.query";
-import {User} from "../../../database/entity/user.entity";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
+import {User} from "../../../entity/user.entity";
+import {VirtualCard} from "../../../entity/virtual-card.entity";
 
 const moment = require('moment');
 

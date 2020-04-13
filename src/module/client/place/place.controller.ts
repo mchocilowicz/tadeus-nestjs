@@ -1,15 +1,15 @@
 import {Controller, Get, Logger, Query, UseGuards} from "@nestjs/common";
 import {ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
+import {TradingPoint} from "../../../entity/trading-point.entity";
 import {Const} from "../../../common/util/const";
-import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
+import {TradingPointType} from "../../../entity/trading-point-type.entity";
 import {CityResponse} from "../../../models/common/response/city.response";
 import {PlaceQuery} from "../../../models/client/place.query";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
-import {City} from "../../../database/entity/city.entity";
+import {City} from "../../../entity/city.entity";
 
 @Controller()
 @ApiTags('place')

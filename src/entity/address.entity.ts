@@ -3,7 +3,7 @@ import {BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany} from "ty
 import {City} from "./city.entity";
 import {Ngo} from "./ngo.entity";
 import {TradingPoint} from "./trading-point.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 
 @Entity({name: 'ADDRESS'})
 export class Address extends TadeusEntity {

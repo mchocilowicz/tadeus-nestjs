@@ -1,9 +1,9 @@
 import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
 import {Ngo} from "./ngo.entity";
 import {User} from "./user.entity";
-import {DonationEnum, PoolEnum} from "../../common/enum/donation.enum";
+import {DonationEnum, PoolEnum} from "../common/enum/donation.enum";
 import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 import {UserPeriod} from "./user-period.entity";
 import {NgoPeriod} from "./ngo-period.entity";
 import {NgoPayout} from "./ngo-payout.entity";

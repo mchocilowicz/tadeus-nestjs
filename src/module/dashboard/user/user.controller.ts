@@ -11,16 +11,16 @@ import {
     UseGuards
 } from "@nestjs/common";
 import {RoleEnum} from "../../../common/enum/role.enum";
-import {User} from "../../../database/entity/user.entity";
+import {User} from "../../../entity/user.entity";
 import {ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
 import {UserResponse} from "../../../models/dashboard/response/user.response";
 import {Status} from "../../../common/enum/status.enum";
 import {UserViewResponse} from "../../../models/dashboard/response/user-view.response";
-import {Phone} from "../../../database/entity/phone.entity";
+import {Phone} from "../../../entity/phone.entity";
 import {EntityManager, getConnection} from "typeorm";
-import {VirtualCard} from "../../../database/entity/virtual-card.entity";
-import {Opinion} from "../../../database/entity/opinion.entity";
-import {Account} from "../../../database/entity/account.entity";
+import {VirtualCard} from "../../../entity/virtual-card.entity";
+import {Opinion} from "../../../entity/opinion.entity";
+import {Account} from "../../../entity/account.entity";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";

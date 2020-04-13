@@ -1,5 +1,5 @@
 import {Controller, Get, Param, UseGuards} from "@nestjs/common";
-import {Transaction} from "../../../database/entity/transaction.entity";
+import {Transaction} from "../../../entity/transaction.entity";
 import {TransactionStatus} from "../../../common/enum/status.enum";
 import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
 import {Roles} from "../../../common/decorators/roles.decorator";

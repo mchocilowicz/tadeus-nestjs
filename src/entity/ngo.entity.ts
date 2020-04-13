@@ -5,7 +5,7 @@ import {PhysicalCard} from "./physical-card.entity";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
 import {Address} from "./address.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 import {User} from "./user.entity";
 import {Transaction} from "./transaction.entity";
 

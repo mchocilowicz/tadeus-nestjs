@@ -2,7 +2,7 @@ import {Body, Controller, Get, Logger, NotFoundException, Param, Post, Put, UseG
 import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
 import {handleException} from "../../../common/util/functions";
-import {TradingPointType} from "../../../database/entity/trading-point-type.entity";
+import {TradingPointType} from "../../../entity/trading-point-type.entity";
 import {TradingPointTypeRequest} from "../../../models/common/request/trading-point-type.request";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";

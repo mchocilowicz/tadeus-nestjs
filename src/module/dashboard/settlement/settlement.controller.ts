@@ -11,18 +11,18 @@ import {
     Query,
     UseGuards
 } from "@nestjs/common";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
+import {PartnerPayment} from "../../../entity/partner-payment.entity";
 import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../database/entity/transaction.entity";
+import {Transaction} from "../../../entity/transaction.entity";
 import {EntityManager, getConnection} from "typeorm";
-import {NgoPayout} from "../../../database/entity/ngo-payout.entity";
-import {Ngo} from "../../../database/entity/ngo.entity";
-import {UserPeriod} from "../../../database/entity/user-period.entity";
-import {PartnerPeriod} from "../../../database/entity/partner-period.entity";
-import {Configuration} from "../../../database/entity/configuration.entity";
-import {NgoPeriod} from "../../../database/entity/ngo-period.entity";
-import {TadeusEntity} from "../../../database/entity/base.entity";
-import {Donation} from "../../../database/entity/donation.entity";
+import {NgoPayout} from "../../../entity/ngo-payout.entity";
+import {Ngo} from "../../../entity/ngo.entity";
+import {UserPeriod} from "../../../entity/user-period.entity";
+import {PartnerPeriod} from "../../../entity/partner-period.entity";
+import {Configuration} from "../../../entity/configuration.entity";
+import {NgoPeriod} from "../../../entity/ngo-period.entity";
+import {TadeusEntity} from "../../../entity/base.entity";
+import {Donation} from "../../../entity/donation.entity";
 import {roundToTwo} from "../../../common/util/functions";
 import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
 import {Roles} from "../../../common/decorators/roles.decorator";

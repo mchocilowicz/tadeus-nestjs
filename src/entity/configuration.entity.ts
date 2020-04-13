@@ -1,6 +1,6 @@
 import {Column, Entity} from "typeorm";
 import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 
 @Entity({name: 'SETTINGS'})
 export class Configuration extends TadeusEntity {

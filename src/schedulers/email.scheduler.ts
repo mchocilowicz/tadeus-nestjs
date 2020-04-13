@@ -1,12 +1,12 @@
-import { Injectable } from "@nestjs/common";
-import { Cron } from "@nestjs/schedule";
-import { PartnerPayment } from "../database/entity/partner-payment.entity";
-import { EmailService } from "../module/common/email.service";
-import { EntityManager, getConnection } from "typeorm";
-import { roundToTwo } from "../common/util/functions";
-import { PartnerPeriod } from "../database/entity/partner-period.entity";
-import { Configuration } from "../database/entity/configuration.entity";
-import { NgoPeriod } from "../database/entity/ngo-period.entity";
+import {Injectable} from "@nestjs/common";
+import {Cron} from "@nestjs/schedule";
+import {PartnerPayment} from "../entity/partner-payment.entity";
+import {EmailService} from "../module/common/email.service";
+import {EntityManager, getConnection} from "typeorm";
+import {roundToTwo} from "../common/util/functions";
+import {PartnerPeriod} from "../entity/partner-period.entity";
+import {Configuration} from "../entity/configuration.entity";
+import {NgoPeriod} from "../entity/ngo-period.entity";
 
 const moment = require('moment');
 
@@ -16,7 +16,7 @@ export class SendEmailsToPartnersScheduler {
     constructor(private readonly emailService: EmailService) {
     }
 
-    @Cron('0 15 20 * * *')
+    @Cron('0 59 23 * * *')
     async disableEditionInCurrentPeriod() {
         const today = moment().format('YYYY-MM-DD');
 
@@ -44,7 +44,7 @@ export class SendEmailsToPartnersScheduler {
         })
     }
 
-    @Cron('0 15 20 * * *')
+    @Cron('* * 8 * * *')
     async sendEmails() {
         const today = moment().format('YYYY-MM-DD');
         let period: PartnerPeriod | undefined = await PartnerPeriod.findActivePeriod();

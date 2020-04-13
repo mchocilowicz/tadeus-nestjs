@@ -1,7 +1,7 @@
 import {Column, Entity, OneToMany, Unique} from "typeorm";
 import {Phone} from "./phone.entity";
 import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 
 @Entity({name: 'PHONE_PREFIX'})
 @Unique(['value'])

@@ -6,14 +6,14 @@ module.exports = {
         ssl: true
     },
     entities: [
-        "src/database/entity/*.entity{.ts,.js}"
+        "src/entity/*.entity{.ts,.js}"
     ],
     migrations: [
-        "src/database/migrations/*.ts"
+        "migrations/*.ts"
     ],
     cli: {
-        migrationsDir: "src/database/migrations"
+        migrationsDir: "migrations"
     },
     synchronize: false,
-    logging: true
+    logging: false
 };

@@ -1,7 +1,7 @@
 import {Controller, Get, Req, UseGuards} from "@nestjs/common";
-import {Terminal} from "../../../database/entity/terminal.entity";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {PartnerPayment} from "../../../database/entity/partner-payment.entity";
+import {Terminal} from "../../../entity/terminal.entity";
+import {TradingPoint} from "../../../entity/trading-point.entity";
+import {PartnerPayment} from "../../../entity/partner-payment.entity";
 import {CodeService} from "../../../common/service/code.service";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {RoleEnum} from "../../../common/enum/role.enum";

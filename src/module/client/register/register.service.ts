@@ -1,14 +1,14 @@
 import {BadRequestException, Injectable, Logger, NotFoundException} from "@nestjs/common";
 import {TadeusJwtService} from "../../common/TadeusJwtModule/TadeusJwtService";
 import {CodeService} from "../../../common/service/code.service";
-import {User} from "../../../database/entity/user.entity";
+import {User} from "../../../entity/user.entity";
 import {UserInformationRequest} from "../../../models/common/request/user-Information.request";
 import {handleException} from "../../../common/util/functions";
 import {CodeVerificationRequest} from "../../../models/common/request/code-verification.request";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {getConnection} from "typeorm";
 import {CryptoService} from "../../../common/service/crypto.service";
-import {Account} from "../../../database/entity/account.entity";
+import {Account} from "../../../entity/account.entity";
 
 
 @Injectable()

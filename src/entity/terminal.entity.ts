@@ -1,5 +1,5 @@
 import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
-import {Status, Step} from "../../common/enum/status.enum";
+import {Status, Step} from "../common/enum/status.enum";
 import {TradingPoint} from "./trading-point.entity";
 import {Transaction} from "./transaction.entity";
 import {Phone} from "./phone.entity";

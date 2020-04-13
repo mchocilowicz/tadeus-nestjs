@@ -1,6 +1,6 @@
 import {Injectable} from "@nestjs/common";
-import {Transaction} from "../../../database/entity/transaction.entity";
-import {TadeusEntity} from "../../../database/entity/base.entity";
+import {Transaction} from "../../../entity/transaction.entity";
+import {TadeusEntity} from "../../../entity/base.entity";
 import {Const} from "../../../common/util/const";
 
 const moment = require("moment");

@@ -5,11 +5,11 @@ import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
 import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
 import {Const} from "../../../common/util/const";
-import {User} from "../../../database/entity/user.entity";
-import {Phone} from "../../../database/entity/phone.entity";
+import {User} from "../../../entity/user.entity";
+import {Phone} from "../../../entity/phone.entity";
 import {getConnection} from "typeorm";
 import {PayoutRequest} from "../../../models/client/request/payout.request";
-import {UserPayout} from "../../../database/entity/user-payout.entity";
+import {UserPayout} from "../../../entity/user-payout.entity";
 
 @Controller()
 @ApiTags('payout')

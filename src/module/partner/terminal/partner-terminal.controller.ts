@@ -19,14 +19,14 @@ import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
 import {EntityManager, getConnection} from "typeorm";
 import {CodeService} from "../../../common/service/code.service";
-import {Terminal} from "../../../database/entity/terminal.entity";
+import {Terminal} from "../../../entity/terminal.entity";
 import {TerminalRequest} from "../../../models/common/request/terminal.request";
-import {TradingPoint} from "../../../database/entity/trading-point.entity";
-import {Phone} from "../../../database/entity/phone.entity";
+import {TradingPoint} from "../../../entity/trading-point.entity";
+import {Phone} from "../../../entity/phone.entity";
 import {Status} from "../../../common/enum/status.enum";
-import {Account} from "../../../database/entity/account.entity";
-import {Role} from "../../../database/entity/role.entity";
-import {PhonePrefix} from "../../../database/entity/phone-prefix.entity";
+import {Account} from "../../../entity/account.entity";
+import {Role} from "../../../entity/role.entity";
+import {PhonePrefix} from "../../../entity/phone-prefix.entity";
 
 @Controller()
 @ApiTags('terminal')

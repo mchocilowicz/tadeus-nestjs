@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { Transaction } from "../../database/entity/transaction.entity";
-import { TradingPoint } from "../../database/entity/trading-point.entity";
+import {Injectable} from "@nestjs/common";
+import {Transaction} from "../../entity/transaction.entity";
+import {TradingPoint} from "../../entity/trading-point.entity";
 
 const _ = require('lodash');
 

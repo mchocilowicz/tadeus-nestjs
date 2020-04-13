@@ -6,8 +6,8 @@ import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
 import {Const} from "../../../common/util/const";
 import {UserDetailsRequest} from "../../../models/client/request/user-details.request";
-import {User} from "../../../database/entity/user.entity";
-import {Phone} from "../../../database/entity/phone.entity";
+import {User} from "../../../entity/user.entity";
+import {Phone} from "../../../entity/phone.entity";
 import {getConnection} from "typeorm";
 import {UserDetailsResponse} from "../../../models/client/request/user-details.response";
 

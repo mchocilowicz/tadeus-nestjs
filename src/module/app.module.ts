@@ -25,8 +25,6 @@ import {PartnerOpinionModule} from "./partner/opinion/partner-opinion.module";
 import {ConfigurationModule} from "./dashboard/configuration/configuration.module";
 import {SettlementModule} from "./dashboard/settlement/settlement.module";
 import {ScheduleModule} from '@nestjs/schedule';
-import {EventEmitter} from 'events';
-import {NestEmitterModule} from "nest-emitter";
 import {UserModule} from "./dashboard/user/user.module";
 import {NgoTypeModule} from "./dashboard/ngo-type/ngo-type.module";
 import {DashboardTransactionModule} from "./dashboard/transaction/transaction.module";
@@ -124,10 +122,6 @@ const routes: Routes = [
                 path: '/settlement',
                 module: SettlementModule
             },
-            //         {
-            //             path: '/trading-point-type',
-            //             module: TradingPointTypeModule
-            //         },
             {
                 path: '/ngo-type',
                 module: NgoTypeModule
@@ -150,7 +144,6 @@ const routes: Routes = [
 
 @Module({
     imports: [
-        NestEmitterModule.forRoot(new EventEmitter()),
         ScheduleModule.forRoot(),
         RouterModule.forRoutes(routes),
         TypeOrmModule.forRoot(),

@@ -1,7 +1,7 @@
 import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
 import {TadeusEntity} from "./base.entity";
 import {User} from "./user.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 
 @Entity({name: 'USER_PAYOUT'})
 export class UserPayout extends TadeusEntity {

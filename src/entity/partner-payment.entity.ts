@@ -2,7 +2,7 @@ import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
 import {TradingPoint} from "./trading-point.entity";
 import {TadeusEntity} from "./base.entity";
 import {Transaction} from "./transaction.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
 import {PartnerPeriod} from "./partner-period.entity";
 
 @Entity({name: 'PARTNER_PAYMENT'})

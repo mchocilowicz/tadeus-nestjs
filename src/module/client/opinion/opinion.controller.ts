@@ -6,7 +6,7 @@ import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
 import {Const} from "../../../common/util/const";
 import {NotificationRequest} from "../../../models/client/request/notification.request";
-import {Opinion} from "../../../database/entity/opinion.entity";
+import {Opinion} from "../../../entity/opinion.entity";
 
 @Controller()
 @ApiBearerAuth()

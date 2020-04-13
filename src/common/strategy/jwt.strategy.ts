@@ -1,12 +1,12 @@
 import {ExtractJwt, Strategy} from 'passport-jwt';
 import {PassportStrategy} from "@nestjs/passport";
 import {Injectable, UnauthorizedException} from "@nestjs/common";
-import {User} from "../../database/entity/user.entity";
+import {User} from "../../entity/user.entity";
 import {CryptoService} from "../service/crypto.service";
 import {RoleEnum} from "../enum/role.enum";
-import {Account} from "../../database/entity/account.entity";
-import {Terminal} from "../../database/entity/terminal.entity";
-import {Admin} from "../../database/entity/admin.entity";
+import {Account} from "../../entity/account.entity";
+import {Terminal} from "../../entity/terminal.entity";
+import {Admin} from "../../entity/admin.entity";
 import {Status} from "../enum/status.enum";
 
 @Injectable()

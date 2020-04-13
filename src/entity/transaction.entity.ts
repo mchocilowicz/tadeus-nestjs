@@ -5,14 +5,14 @@ import {User} from "./user.entity";
 import {Terminal} from "./terminal.entity";
 import {TadeusEntity} from "./base.entity";
 import {PartnerPayment} from "./partner-payment.entity";
-import {ColumnNumericTransformer} from "../../common/util/number-column.transformer";
-import {TransactionStatus} from "../../common/enum/status.enum";
+import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
+import {TransactionStatus} from "../common/enum/status.enum";
 import {Ngo} from "./ngo.entity";
 import {NgoPayout} from "./ngo-payout.entity";
 import {PartnerPeriod} from "./partner-period.entity";
 import {UserPeriod} from "./user-period.entity";
 import {NgoPeriod} from "./ngo-period.entity";
-import {roundToTwo} from "../../common/util/functions";
+import {roundToTwo} from "../common/util/functions";
 
 const moment = require('moment');
 
