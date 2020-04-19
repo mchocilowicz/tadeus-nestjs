@@ -1,7 +1,7 @@
 import {MigrationInterface, QueryRunner} from "typeorm";
 
-export class tableSchemas1556728215581 implements MigrationInterface {
-    name = 'tableSchemas1556728215581';
+export class tableSchema1557324230113 implements MigrationInterface {
+    name = 'tableSchema1557324230113'
 
     public async up(queryRunner: QueryRunner): Promise<any> {
         await queryRunner.query(`CREATE TABLE "ROLE" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "VALUE" character varying NOT NULL, CONSTRAINT "UQ_c58718b3be59bb22e566a5b4663" UNIQUE ("VALUE"), CONSTRAINT "PK_abea48d8aef706625146572d8ea" PRIMARY KEY ("SKID"))`, undefined);
@@ -15,7 +15,7 @@ export class tableSchemas1556728215581 implements MigrationInterface {
         await queryRunner.query(`CREATE TABLE "PARTNER_PERIOD" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "FROM" TIMESTAMP NOT NULL, "TO" TIMESTAMP NOT NULL, "IS_CLOSED" boolean NOT NULL DEFAULT false, "IS_EDITABLE" boolean NOT NULL DEFAULT false, "SEND_MESSAGES_AT" TIMESTAMP, "NOT_EDITABLE_AT" TIMESTAMP, "CLOSED_AT" TIMESTAMP, "NGO_PERIOD_SKID" uuid, CONSTRAINT "PK_875e2c383cfcba111dd05558e38" PRIMARY KEY ("SKID"))`, undefined);
         await queryRunner.query(`CREATE TABLE "PARTNER_PAYMENT" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "ID" character varying NOT NULL, "VALID_FROM" TIMESTAMP, "VALID_TO" TIMESTAMP, "PAYMENT_DETAILS" character varying, "IS_PAID" boolean NOT NULL DEFAULT false, "PRICE" numeric NOT NULL, "PAID_PRICE" numeric, "TRANSACTION_COUNT" numeric NOT NULL, "SELL_PRICE" numeric NOT NULL, "DONATION_PRICE" numeric NOT NULL, "PROVISION_PRICE" numeric NOT NULL, "SEND_MESSAGE_AT" TIMESTAMP, "PAYMENT_AT" TIMESTAMP, "PAYED_AT" TIMESTAMP, "PARTNER_SKID" uuid, "PARTNER_PERIOD_SKID" uuid, CONSTRAINT "PK_6795399bfeca408caf87b395e83" PRIMARY KEY ("SKID"))`, undefined);
         await queryRunner.query(`CREATE TABLE "PHONE_PREFIX" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "VALUE" integer NOT NULL, "CODE" character varying NOT NULL, "MAX_LENGTH" integer NOT NULL, CONSTRAINT "UQ_9e3b128cd86947b3aeafe3a2365" UNIQUE ("VALUE"), CONSTRAINT "PK_c389917d29581488731c260c36b" PRIMARY KEY ("SKID"))`, undefined);
-        await queryRunner.query(`CREATE TABLE "ADMIN" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "PHONE_SKID" uuid, "ACCOUNT_SKID" uuid, CONSTRAINT "REL_2a3a11437003b2dc1722c776fe" UNIQUE ("ACCOUNT_SKID"), CONSTRAINT "PK_ed5da96b1763e379fd833016ec4" PRIMARY KEY ("SKID"))`, undefined);
+        await queryRunner.query(`CREATE TABLE "DASHBOARD" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "PHONE_SKID" uuid, "ACCOUNT_SKID" uuid, CONSTRAINT "REL_6512d600a7cb03d0e9721762c8" UNIQUE ("ACCOUNT_SKID"), CONSTRAINT "PK_5ee0fe6a995205eaa6f656a7e64" PRIMARY KEY ("SKID"))`, undefined);
         await queryRunner.query(`CREATE TABLE "PHONE" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "VALUE" integer NOT NULL, "PHONE_PREFIX_SKID" uuid, CONSTRAINT "UQ_325410bc0f0ef7ff8a6405e266d" UNIQUE ("VALUE"), CONSTRAINT "UQ_325410bc0f0ef7ff8a6405e266d" UNIQUE ("VALUE"), CONSTRAINT "PK_c13d8038e725c2ba94a4ac94c60" PRIMARY KEY ("SKID"))`, undefined);
         await queryRunner.query(`CREATE TABLE "TERMINAL" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "STATUS" text, "ID" character varying NOT NULL, "IS_MAIN" boolean NOT NULL DEFAULT false, "NAME" character varying, "PHONE_SKID" uuid, "PARTNER_SKID" uuid, "ACCOUNT_SKID" uuid, CONSTRAINT "REL_332848db29394e3af13f28f31d" UNIQUE ("ACCOUNT_SKID"), CONSTRAINT "PK_57752d0c7ffbb38e46c2508b7c1" PRIMARY KEY ("SKID"))`, undefined);
         await queryRunner.query(`CREATE TABLE "OPINION" ("SKID" uuid NOT NULL DEFAULT uuid_generate_v4(), "CREATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "UPDATED_AT" TIMESTAMP NOT NULL DEFAULT now(), "VALUE" character varying NOT NULL, "EMAIL" character varying, "USER_SKID" uuid, "PARTNER_SKID" uuid, CONSTRAINT "PK_177858ff40a464ce039a6d00ced" PRIMARY KEY ("SKID"))`, undefined);
@@ -37,8 +37,8 @@ export class tableSchemas1556728215581 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "PARTNER_PERIOD" ADD CONSTRAINT "FK_6b7a9de7f8b9e4e02fc0d587e3e" FOREIGN KEY ("NGO_PERIOD_SKID") REFERENCES "NGO_PERIOD"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
         await queryRunner.query(`ALTER TABLE "PARTNER_PAYMENT" ADD CONSTRAINT "FK_05589418d14278187c05fd63a1e" FOREIGN KEY ("PARTNER_SKID") REFERENCES "PARTNER"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
         await queryRunner.query(`ALTER TABLE "PARTNER_PAYMENT" ADD CONSTRAINT "FK_d5384d971319d2682d6885e8fff" FOREIGN KEY ("PARTNER_PERIOD_SKID") REFERENCES "PARTNER_PERIOD"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
-        await queryRunner.query(`ALTER TABLE "ADMIN" ADD CONSTRAINT "FK_fb82dba997e85b9fa9e75c2a6a3" FOREIGN KEY ("PHONE_SKID") REFERENCES "PHONE"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
-        await queryRunner.query(`ALTER TABLE "ADMIN" ADD CONSTRAINT "FK_2a3a11437003b2dc1722c776fea" FOREIGN KEY ("ACCOUNT_SKID") REFERENCES "ACCOUNT"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
+        await queryRunner.query(`ALTER TABLE "DASHBOARD" ADD CONSTRAINT "FK_63e91bd3d0047fed23ee617df78" FOREIGN KEY ("PHONE_SKID") REFERENCES "PHONE"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
+        await queryRunner.query(`ALTER TABLE "DASHBOARD" ADD CONSTRAINT "FK_6512d600a7cb03d0e9721762c8c" FOREIGN KEY ("ACCOUNT_SKID") REFERENCES "ACCOUNT"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
         await queryRunner.query(`ALTER TABLE "PHONE" ADD CONSTRAINT "FK_40e2304f5557afde77afd652ebe" FOREIGN KEY ("PHONE_PREFIX_SKID") REFERENCES "PHONE_PREFIX"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
         await queryRunner.query(`ALTER TABLE "TERMINAL" ADD CONSTRAINT "FK_e87bf3117619893d04d92b724c0" FOREIGN KEY ("PHONE_SKID") REFERENCES "PHONE"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
         await queryRunner.query(`ALTER TABLE "TERMINAL" ADD CONSTRAINT "FK_47197e29e69b5ee390fbc2d8f4e" FOREIGN KEY ("PARTNER_SKID") REFERENCES "PARTNER"("SKID") ON DELETE NO ACTION ON UPDATE NO ACTION`, undefined);
@@ -110,8 +110,8 @@ export class tableSchemas1556728215581 implements MigrationInterface {
         await queryRunner.query(`ALTER TABLE "TERMINAL" DROP CONSTRAINT "FK_47197e29e69b5ee390fbc2d8f4e"`, undefined);
         await queryRunner.query(`ALTER TABLE "TERMINAL" DROP CONSTRAINT "FK_e87bf3117619893d04d92b724c0"`, undefined);
         await queryRunner.query(`ALTER TABLE "PHONE" DROP CONSTRAINT "FK_40e2304f5557afde77afd652ebe"`, undefined);
-        await queryRunner.query(`ALTER TABLE "ADMIN" DROP CONSTRAINT "FK_2a3a11437003b2dc1722c776fea"`, undefined);
-        await queryRunner.query(`ALTER TABLE "ADMIN" DROP CONSTRAINT "FK_fb82dba997e85b9fa9e75c2a6a3"`, undefined);
+        await queryRunner.query(`ALTER TABLE "DASHBOARD" DROP CONSTRAINT "FK_6512d600a7cb03d0e9721762c8c"`, undefined);
+        await queryRunner.query(`ALTER TABLE "DASHBOARD" DROP CONSTRAINT "FK_63e91bd3d0047fed23ee617df78"`, undefined);
         await queryRunner.query(`ALTER TABLE "PARTNER_PAYMENT" DROP CONSTRAINT "FK_d5384d971319d2682d6885e8fff"`, undefined);
         await queryRunner.query(`ALTER TABLE "PARTNER_PAYMENT" DROP CONSTRAINT "FK_05589418d14278187c05fd63a1e"`, undefined);
         await queryRunner.query(`ALTER TABLE "PARTNER_PERIOD" DROP CONSTRAINT "FK_6b7a9de7f8b9e4e02fc0d587e3e"`, undefined);
@@ -133,7 +133,7 @@ export class tableSchemas1556728215581 implements MigrationInterface {
         await queryRunner.query(`DROP TABLE "OPINION"`, undefined);
         await queryRunner.query(`DROP TABLE "TERMINAL"`, undefined);
         await queryRunner.query(`DROP TABLE "PHONE"`, undefined);
-        await queryRunner.query(`DROP TABLE "ADMIN"`, undefined);
+        await queryRunner.query(`DROP TABLE "DASHBOARD"`, undefined);
         await queryRunner.query(`DROP TABLE "PHONE_PREFIX"`, undefined);
         await queryRunner.query(`DROP TABLE "PARTNER_PAYMENT"`, undefined);
         await queryRunner.query(`DROP TABLE "PARTNER_PERIOD"`, undefined);

@@ -54,8 +54,8 @@ export class CodeService {
     generateSmsCode(): number {
         const min = Math.ceil(1000);
         const max = Math.floor(9999);
-        // return Math.floor(Math.random() * (max - min + 1)) + min;
-        return 1234;
+
+        return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
     generateTerminalNumber(count: number): string {
