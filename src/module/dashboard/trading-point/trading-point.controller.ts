@@ -107,6 +107,12 @@ export class TradingPointController {
             .getRawMany();
     }
 
+    @Get('/excel')
+    getImage(@Res()response: any) {
+        response.setHeader('Content-Disposition', 'attachment; filename=' + 'tradingPoint.xlsx');
+        response.sendFile('trading-point.xlsx', {root: 'public/excel'});
+    }
+
     @Get(':ID')
     @ApiBearerAuth()
     @Roles(RoleEnum.DASHBOARD)
@@ -392,15 +398,6 @@ export class TradingPointController {
                 }
             });
         }
-    }
-
-    @Get('/excel')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
-    getImage(@Res()response: any) {
-        response.sendFile('trading-point.xlsx', {root: 'public/excel'});
     }
 
     @Post("import")

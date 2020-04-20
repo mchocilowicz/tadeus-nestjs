@@ -84,11 +84,8 @@ export class DashboardNgoController {
 
 
     @Get('/excel')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     getImage(@Res() response: any) {
+        response.setHeader('Content-Disposition', 'attachment; filename=' + 'ngo.xlsx');
         response.sendFile('ngo.xlsx', {root: 'public/excel'});
     }
 
