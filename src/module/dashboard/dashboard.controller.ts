@@ -74,10 +74,6 @@ export class DashboardController {
     }
 
     @Get('/img/:imageName')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiResponse({status: 200, type: "File", description: "Image"})
     getImage(@Param('imageName') imageName: string, @Res() res: any) {
         res.sendFile(imageName, {root: 'public/image'});
