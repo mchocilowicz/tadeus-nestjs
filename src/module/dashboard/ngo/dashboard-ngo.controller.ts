@@ -337,7 +337,7 @@ export class DashboardNgoController {
             }),
         }))
     async updateNgoImages(@Param('ID') ngoID: string, @UploadedFile() image: any, @UploadedFile() thumbnail: any) {
-        if (!image || !thumbnail) {
+        if (!image && !thumbnail) {
             throw new BadRequestException('images_not_provided')
         }
 
