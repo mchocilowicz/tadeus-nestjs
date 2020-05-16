@@ -41,6 +41,9 @@ export class TradingPoint extends TadeusEntity {
     @Column({name: 'ACTIVE', default: false})
     active: boolean = false;
 
+    @Column({length: 550, name: 'DESCRIPTION', nullable: true})
+    description?: string;
+
     @Column({name: 'CLOSED_AT', nullable: true})
     closedAt?: Date;
 

@@ -34,7 +34,7 @@ export class User extends TadeusEntity {
     @Column({name: 'LAST_NAME', nullable: true})
     lastName?: string;
 
-    @Column({name: 'ACCOUNT_NUMBER', nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'ACCOUNT_NUMBER', nullable: true, type: "bigint", transformer: new ColumnNumericTransformer()})
     bankAccount?: number;
 
     @Column({name: 'COLLECTED_MONEY', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})

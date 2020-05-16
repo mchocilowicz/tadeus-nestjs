@@ -6,12 +6,12 @@ export class PayoutRequest {
     @ApiProperty()
     surName: string;
     @ApiProperty()
-    bankAccount: string;
+    bankAccount: number;
 
 
     constructor(firstName: string,
                 lastName: string,
-                bankAccount: string) {
+                bankAccount: number) {
         this.name = firstName;
         this.surName = lastName;
         this.bankAccount = bankAccount;

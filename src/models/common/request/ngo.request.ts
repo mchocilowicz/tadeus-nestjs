@@ -24,7 +24,7 @@ export class NgoRequest {
     @ApiProperty({required: true})
     postCode: string;
     @ApiProperty({required: true})
-    bankNumber: string;
+    bankNumber: number;
     @ApiProperty({required: true})
     email: string;
     @ApiProperty({required: true})
@@ -41,7 +41,7 @@ export class NgoRequest {
                 description: string,
                 street: string,
                 number: number,
-                bankNumber: string,
+                bankNumber: number,
                 email: string,
                 phone: number,
                 phonePrefix: number,

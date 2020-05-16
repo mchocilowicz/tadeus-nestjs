@@ -15,7 +15,7 @@ export class Ngo extends TadeusEntity {
     @Column({name: 'ID'})
     ID: string;
 
-    @Column({name: 'BANK_ACCOUNT', type: "bigint"})
+    @Column({name: 'BANK_ACCOUNT', type: "bigint", transformer: new ColumnNumericTransformer()})
     bankNumber: number;
 
     @Column({name: 'EMAIL'})

@@ -12,9 +12,10 @@ export class TradingPointSaveRequest {
     vat: number;
     fee: number;
     xp: number;
+    description: string;
     address: AddressSaveRequest;
 
-    constructor(ID: string, phone: number, type: string, name: string, donationPercentage: number, email: string, price: number, active: boolean, vat: number, fee: number, xp: number, address: AddressSaveRequest) {
+    constructor(ID: string, phone: number, type: string, name: string, donationPercentage: number, email: string, price: number, active: boolean, vat: number, fee: number, xp: number, description: string, address: AddressSaveRequest) {
         this.ID = ID;
         this.type = type;
         this.phone = phone;
@@ -27,5 +28,6 @@ export class TradingPointSaveRequest {
         this.fee = fee;
         this.xp = xp;
         this.address = address;
+        this.description = description;
     }
 }

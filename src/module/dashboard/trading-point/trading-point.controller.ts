@@ -157,6 +157,7 @@ export class TradingPointController {
             email: p.email,
             price: p.price,
             active: p.active,
+            description: p.description,
             terminals: p.terminals?.filter(t => !t.isMain).map((t: Terminal) => {
                 return {
                     ID: t.ID,
@@ -228,6 +229,7 @@ export class TradingPointController {
             point.vat = dto.vat;
             point.fee = dto.fee;
             point.xp = dto.xp;
+            point.description = dto.description;
 
             await entityManager.save(point);
 
@@ -275,6 +277,7 @@ export class TradingPointController {
         point.fee = dto.fee;
         point.xp = dto.xp;
         point.type = type;
+        point.description = dto.description;
 
         const address = point.address;
 
