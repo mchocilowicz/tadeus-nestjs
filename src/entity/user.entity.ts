@@ -99,8 +99,7 @@ export class User extends TadeusEntity {
     static getUserForTransaction(code: string, prefix: number, phone: number) {
         if (code) {
             return this.getUserForTransactionByCode(code)
-        }
-        if (prefix && phone) {
+        } else {
             return this.getUserForTransactionByPhone(prefix, phone)
         }
     }

@@ -113,11 +113,6 @@ export class ClientController {
         const userXpRating = (user.xp / topXp) * 100;
         const ratingValue = userXpRating > 100 ? 100 : userXpRating;
 
-        let period: UserPeriod | undefined = await UserPeriod.findActivePeriod();
-        if (!period) {
-            throw new BadRequestException('internal_server_error')
-        }
-
         return new MainResponse(user, card, ratingValue, payout, moment().isAfter(payout));
     }
 

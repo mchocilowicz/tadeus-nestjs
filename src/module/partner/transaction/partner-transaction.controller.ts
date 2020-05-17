@@ -137,11 +137,6 @@ export class PartnerTransactionController {
             transaction.updatePaymentValues(provision, pool);
             transaction.setUserPool(halfPool);
             transaction.ngoDonation = halfPool;
-
-            if (!user.account.firebaseToken) {
-                this.logger.error('Phone Firebase token does not exists');
-                throw new BadRequestException('internal_server_error');
-            }
             transaction.isCorrection = true;
             transaction.correction = oldTransaction;
 
