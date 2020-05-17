@@ -97,6 +97,15 @@ export class User extends TadeusEntity {
     }
 
     static getUserForTransaction(code: string, prefix: number, phone: number) {
+        if (code) {
+            return this.getUserForTransactionByCode(code)
+        }
+        if (prefix && phone) {
+            return this.getUserForTransactionByPhone(prefix, phone)
+        }
+    }
+
+    static getUserForTransactionByCode(code: string) {
         return this.createQueryBuilder('user')
             .leftJoin('user.phone', 'phone')
             .leftJoinAndSelect('user.account', 'account')
@@ -108,8 +117,22 @@ export class User extends TadeusEntity {
             .where('virtual-card.code = :code', {code: code})
             .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
             .andWhere('account.status = :status', {status: Status.ACTIVE})
-            .orWhere('prefix.value = :prefix', {prefix: prefix})
-            .orWhere('phone.value = :phone', {phone: phone})
+            .getOne();
+    }
+
+    static getUserForTransactionByPhone(prefix: number, phone: number) {
+        return this.createQueryBuilder('user')
+            .leftJoin('user.phone', 'phone')
+            .leftJoinAndSelect('user.account', 'account')
+            .leftJoin('account.role', 'role')
+            .leftJoin('phone.prefix', 'prefix')
+            .leftJoinAndSelect('user.card', 'virtual-card')
+            .leftJoinAndSelect('user.ngo', 'ngo')
+            .leftJoinAndSelect('ngo.card', 'physical-card')
+            .where('role.value = :role', {role: RoleEnum.CLIENT})
+            .andWhere('account.status = :status', {status: Status.ACTIVE})
+            .andWhere('prefix.value = :prefix', {prefix: prefix})
+            .andWhere('phone.value = :phone', {phone: phone})
             .getOne();
     }
 
