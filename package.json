@@ -11,18 +11,11 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "start": "ts-node -r tsconfig-paths/register src/main.ts",
-    "start:dev": "concurrently --handle-input \"wait-on dist/main.js && nodemon\" \"tsc -w -p tsconfig.build.json\" ",
-    "prestart:prod": "rimraf prod && npm run build",
-    "start:prod": "pm2 start dist/main.js",
     "typeorm-migration-generate": "ts-node ./node_modules/typeorm/cli.js migration:generate -n",
     "typeorm-migration-run": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "typeorm-migration-revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
     "typeorm-migration-create": "ts-node ./node_modules/typeorm/cli.js migration:create -n",
-    "test": "jest",
-    "test:watch": "jest --watch",
-    "test:cov": "jest --coverage",
-    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test": "jest"
   },
   "dependencies": {
     "@nestjs/common": "^6.10.14",

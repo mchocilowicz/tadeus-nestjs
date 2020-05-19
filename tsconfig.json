@@ -7,7 +7,7 @@
     "experimentalDecorators": true,
     "target": "es6",
     "sourceMap": true,
-    "outDir": "./prod_tadeus",
+    "outDir": "./dist/tadeus",
     "baseUrl": "./",
     "incremental": true,
     "strict": true
