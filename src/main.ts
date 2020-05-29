@@ -1,7 +1,6 @@
 import {NestFactory} from '@nestjs/core';
 import {NestExpressApplication} from '@nestjs/platform-express';
 import {DocumentBuilder, SwaggerModule} from "@nestjs/swagger";
-import * as rateLimit from 'express-rate-limit';
 import * as helmet from 'helmet';
 import * as compression from 'compression';
 import {Const} from "./common/util/const";
@@ -65,10 +64,6 @@ async function bootstrap() {
 
         app.enableCors();
         app.use(helmet());
-        app.use(rateLimit({
-            windowMs: 15 * 60 * 1000,
-            max: 100
-        }));
         app.use(compression());
         app.use(morgan('combined'));
 
