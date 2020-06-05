@@ -22,6 +22,8 @@ export class ConfigurationScheduler {
     @Cron('* * 3 * * *')
     async createNewUserPeriod() {
         await getConnection().transaction(async (entityManager: EntityManager) => {
+            this.logger.log('Opening new User Periods start')
+
             const config: Configuration | undefined = await Configuration.getMain();
 
             if (!config) {
@@ -31,10 +33,12 @@ export class ConfigurationScheduler {
             let currentDate = moment().format('YYYY-MM-DD');
             let userPeriods: UserPeriod[] = await UserPeriod.findPeriodsToClose(currentDate);
 
+            this.logger.log(`Found ${userPeriods.length} User Periods to process`)
+
             if (userPeriods.length === 0) {
                 return;
             }
-
+            
             for (const userPeriod of userPeriods) {
                 userPeriod.isClosed = true;
 
@@ -77,6 +81,8 @@ export class ConfigurationScheduler {
                 const newPartnerPeriod = new PartnerPeriod(moment(), moment().add(config.partnerEmailInterval + 1, 'days'));
                 await entityManager.save(newPartnerPeriod);
             }
+
+            this.logger.log('Opening new User Periods end')
         });
     }
 }

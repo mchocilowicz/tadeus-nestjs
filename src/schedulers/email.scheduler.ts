@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import {Injectable, Logger} from "@nestjs/common";
 import {Cron} from "@nestjs/schedule";
 import {PartnerPayment} from "../entity/partner-payment.entity";
 import {EmailService} from "../module/common/email.service";
@@ -13,12 +13,17 @@ const moment = require('moment');
 @Injectable()
 export class SendEmailsToPartnersScheduler {
 
+    private readonly logger = new Logger(SendEmailsToPartnersScheduler.name);
+    
+
     constructor(private readonly emailService: EmailService) {
     }
 
     @Cron('0 59 23 * * *')
     async disableEditionInCurrentPeriod() {
         const today = moment().format('YYYY-MM-DD');
+
+        this.logger.log("Closing Partner Period for edition start")
 
         getConnection().transaction(async (entityManager: EntityManager) => {
             let config: Configuration | undefined = await Configuration.getMain();
@@ -30,6 +35,7 @@ export class SendEmailsToPartnersScheduler {
                 .getOne();
 
             if (period && config) {
+                this.logger.log("Found Partner period to disable edition " + period.id)
                 period.isEditable = false;
                 period.isClosed = true;
                 period.closedAt = moment();
@@ -42,10 +48,13 @@ export class SendEmailsToPartnersScheduler {
                 }
             }
         })
+        this.logger.log("Closing Partner Period for edition end")
     }
 
     @Cron('* * 8 * * *')
     async sendEmails() {
+        this.logger.log("Sending email to Partners start")
+
         const today = moment().format('YYYY-MM-DD');
         let period: PartnerPeriod | undefined = await PartnerPeriod.findActivePeriod();
         let config: Configuration | undefined = await Configuration.getMain();
@@ -59,6 +68,7 @@ export class SendEmailsToPartnersScheduler {
 
 
         if (payments && period && config) {
+            this.logger.log(`Found ${payments.length} Partners payments to send emails`)
             let lst: any[] = [];
             let limit = moment().add(8, 'days');
             period.sendMessagesAt = limit;
@@ -100,6 +110,6 @@ export class SendEmailsToPartnersScheduler {
             })
 
         }
-
+        this.logger.log("Sending email to Partners end")
     }
 }

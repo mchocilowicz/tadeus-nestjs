@@ -305,6 +305,7 @@ export class PartnerTransactionController {
                         token: user.account.firebaseToken,
                         api: {
                             price: dto.price,
+                            donation: pool,
                             transactionID: transaction.ID
                         },
                         data: data

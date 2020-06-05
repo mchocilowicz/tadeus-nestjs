@@ -1,4 +1,4 @@
-import {Injectable} from "@nestjs/common";
+import {Injectable, Logger} from "@nestjs/common";
 import {Configuration} from "../entity/configuration.entity";
 import {User} from "../entity/user.entity";
 import {Status} from "../common/enum/status.enum";
@@ -10,9 +10,14 @@ const moment = require('moment');
 
 @Injectable()
 export class UserAccountExpirationScheduler {
+
+    private readonly logger = new Logger(UserAccountExpirationScheduler.name);
+
     @Cron('0 0 4 * * * *')
     async cronJob() {
-        console.log('executing UserAccountExpirationScheduler Job');
+
+
+        this.logger.log('Users expiration check start');
 
         const users: User[] = await User.createQueryBuilder('user')
             .leftJoinAndSelect('user.accounts', 'account')
@@ -21,6 +26,8 @@ export class UserAccountExpirationScheduler {
             .where('account.status = :status', {status: Status.ACTIVE})
             .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
             .getMany();
+
+        this.logger.log(`Found ${users.length} Users`);
 
         const config = await Configuration.findOne({type: 'MAIN'});
 
@@ -37,5 +44,6 @@ export class UserAccountExpirationScheduler {
                 }
             }
         }
+        this.logger.log('Users expiration check start');
     }
 }

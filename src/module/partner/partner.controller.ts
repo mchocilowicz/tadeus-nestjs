@@ -88,7 +88,7 @@ export class PartnerController {
             paymentAt = payments[0].paymentAt
         }
 
-        return new PartnerDetailsResponse(account.ID, partner, hasPayments, paymentPrice, paymentAt)
+        return new PartnerDetailsResponse(account.ID, partner, hasPayments, partner.price, paymentPrice, paymentAt)
     }
 
     @Get('history')
