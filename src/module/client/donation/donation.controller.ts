@@ -1,20 +1,21 @@
-import {BadRequestException, Body, Controller, Get, Logger, Post, Req, UseGuards} from "@nestjs/common";
-import {ApiBearerAuth, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {User} from "../../../entity/user.entity";
-import {Donation} from "../../../entity/donation.entity";
-import {DonationEnum, PoolEnum} from "../../../common/enum/donation.enum";
-import {CodeService} from "../../../common/service/code.service";
-import {Ngo} from "../../../entity/ngo.entity";
-import {getConnection} from "typeorm";
-import {Configuration} from "../../../entity/configuration.entity";
-import {NgoDonationRequest} from "../../../models/client/request/donation.request";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {VirtualCard} from "../../../entity/virtual-card.entity";
-import {UserPeriod} from "../../../entity/user-period.entity";
+import { BadRequestException, Body, Controller, Get, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { User } from "../../../entity/user.entity";
+import { Donation } from "../../../entity/donation.entity";
+import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
+import { CodeService } from "../../../common/service/code.service";
+import { Ngo } from "../../../entity/ngo.entity";
+import { getConnection } from "typeorm";
+import { Configuration } from "../../../entity/configuration.entity";
+import { NgoDonationRequest } from "../../../models/client/request/donation.request";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { VirtualCard } from "../../../entity/virtual-card.entity";
+import { UserPeriod } from "../../../entity/user-period.entity";
+import { TierService } from "../../common/tier.service";
 
 const moment = require("moment");
 
@@ -135,6 +136,7 @@ export class DonationController {
 
             if (cardChanged) {
                 virtualCard.personalPool -= request.tadeusDonation + request.ngoDonation;
+                TierService.asignTier(request.tadeusDonation + request.ngoDonation, user, virtualCard)
                 await entityManager.save(virtualCard);
             }
         });

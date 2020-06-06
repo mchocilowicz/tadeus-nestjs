@@ -1,5 +1,5 @@
-import {ApiProperty} from "@nestjs/swagger";
-import {TradingPoint} from "../../../entity/trading-point.entity";
+import { ApiProperty } from "@nestjs/swagger";
+import { TradingPoint } from "../../../entity/trading-point.entity";
 
 export class PartnerDetailsResponse {
     @ApiProperty()
@@ -19,11 +19,13 @@ export class PartnerDetailsResponse {
     @ApiProperty()
     hasPayments: boolean = false;
     @ApiProperty()
-    price: number;
+    paymentPrice: number;
+    @ApiProperty()
+    defaultPrice: number;
     @ApiProperty()
     paymentAt?: Date;
 
-    constructor(userID: string, tradingPoint: TradingPoint, hasPayments: boolean, paymentPrice: number, paymentAt?: Date) {
+    constructor(userID: string, tradingPoint: TradingPoint, hasPayments: boolean, defaultPrice: number, paymentPrice: number, paymentAt?: Date) {
         this.id = userID;
         this.name = tradingPoint.name;
         this.city = tradingPoint.address.city.name;
@@ -32,7 +34,8 @@ export class PartnerDetailsResponse {
         this.postCode = tradingPoint.address.postCode;
         this.xp = Number(tradingPoint.xp);
         this.hasPayments = hasPayments;
-        this.price = paymentPrice;
+        this.paymentPrice = paymentPrice;
         this.paymentAt = paymentAt;
+        this.defaultPrice = defaultPrice;
     }
 }

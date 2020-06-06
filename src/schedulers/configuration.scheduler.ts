@@ -1,13 +1,14 @@
-import {Injectable, Logger, NotFoundException} from "@nestjs/common";
-import {EntityManager, getConnection} from "typeorm";
-import {Configuration} from "../entity/configuration.entity";
-import {Cron} from "@nestjs/schedule";
-import {UserPeriod} from "../entity/user-period.entity";
-import {User} from "../entity/user.entity";
-import {Donation} from "../entity/donation.entity";
-import {CodeService} from "../common/service/code.service";
-import {DonationEnum, PoolEnum} from "../common/enum/donation.enum";
-import {PartnerPeriod} from "../entity/partner-period.entity";
+import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { EntityManager, getConnection } from "typeorm";
+import { Configuration } from "../entity/configuration.entity";
+import { Cron } from "@nestjs/schedule";
+import { UserPeriod } from "../entity/user-period.entity";
+import { User } from "../entity/user.entity";
+import { Donation } from "../entity/donation.entity";
+import { CodeService } from "../common/service/code.service";
+import { DonationEnum, PoolEnum } from "../common/enum/donation.enum";
+import { PartnerPeriod } from "../entity/partner-period.entity";
+import { TierService } from "../module/common/tier.service";
 
 const moment = require('moment');
 
@@ -65,6 +66,8 @@ export class ConfigurationScheduler {
                         let card = user.card;
                         donation.price = card.donationPool;
                         card.donationPool = 0;
+
+                        TierService.asignTier(donation.price, user, card)
 
                         await entityManager.save(card);
                         await entityManager.save(donation);

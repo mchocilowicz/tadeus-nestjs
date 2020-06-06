@@ -1,6 +1,7 @@
-import {Column, Entity, Generated} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
+import { Column, Entity, Generated } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { ColumnNumericTransformer } from "../common/util/number-column.transformer";
+import { TierEnum } from "../common/enum/tier.enum";
 
 @Entity({name: 'VIRTUAL_CARD'})
 export class VirtualCard extends TadeusEntity {
@@ -19,6 +20,12 @@ export class VirtualCard extends TadeusEntity {
 
     @Column({name: "STATUS"})
     status: string = 'NOT_ACTIVE';
+
+    @Column({name: 'TIER', type: 'text', default: TierEnum.RUBIN})
+    tier: TierEnum = TierEnum.RUBIN;
+
+    @Column({name: 'EXPIRED_AT', nullable: true})
+    expiredAt?: Date;
 
     constructor(ID: string) {
         super();
