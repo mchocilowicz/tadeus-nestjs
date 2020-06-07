@@ -113,7 +113,17 @@ export class ClientController {
         const userXpRating = (user.xp / topXp) * 100;
         const ratingValue = userXpRating > 100 ? 100 : userXpRating;
 
-        return new MainResponse(user, card, ratingValue, payout, moment().isAfter(payout));
+        let ngoChange = true;
+        if (user.ngoSelectedAt) {
+            let date = moment(user.ngoSelectedAt).add(30, 'days');
+            if (moment().isAfter(date)) {
+                ngoChange = true
+            } else {
+                ngoChange = false;
+            }
+        }
+
+        return new MainResponse(user, card, ratingValue, payout, moment().isAfter(payout), ngoChange);
     }
 
     @Get('history')
