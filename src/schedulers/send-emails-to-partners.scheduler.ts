@@ -1,12 +1,11 @@
-import {Injectable, Logger} from "@nestjs/common";
-import {Cron} from "@nestjs/schedule";
-import {PartnerPayment} from "../entity/partner-payment.entity";
-import {EmailService} from "../module/common/email.service";
-import {EntityManager, getConnection} from "typeorm";
-import {roundToTwo} from "../common/util/functions";
-import {PartnerPeriod} from "../entity/partner-period.entity";
-import {Configuration} from "../entity/configuration.entity";
-import {NgoPeriod} from "../entity/ngo-period.entity";
+import { Injectable, Logger } from "@nestjs/common";
+import { Cron } from "@nestjs/schedule";
+import { PartnerPayment } from "../entity/partner-payment.entity";
+import { EmailService } from "../module/common/email.service";
+import { EntityManager, getConnection } from "typeorm";
+import { roundToTwo } from "../common/util/functions";
+import { PartnerPeriod } from "../entity/partner-period.entity";
+import { Configuration } from "../entity/configuration.entity";
 
 const moment = require('moment');
 
@@ -14,41 +13,9 @@ const moment = require('moment');
 export class SendEmailsToPartnersScheduler {
 
     private readonly logger = new Logger(SendEmailsToPartnersScheduler.name);
-    
+
 
     constructor(private readonly emailService: EmailService) {
-    }
-
-    @Cron('0 59 23 * * *')
-    async disableEditionInCurrentPeriod() {
-        const today = moment().format('YYYY-MM-DD');
-
-        this.logger.log("Closing Partner Period for edition start")
-
-        getConnection().transaction(async (entityManager: EntityManager) => {
-            let config: Configuration | undefined = await Configuration.getMain();
-            let period: PartnerPeriod | undefined = await PartnerPeriod.createQueryBuilder('p')
-                .where('p.isEditable = true')
-                .andWhere("p.isClosed = false")
-                .andWhere("p.ngoPeriod is null")
-                .andWhere("to_char(p.notEditableAt,'YYYY-MM-DD') = :date", {date: today})
-                .getOne();
-
-            if (period && config) {
-                this.logger.log("Found Partner period to disable edition " + period.id)
-                period.isEditable = false;
-                period.isClosed = true;
-                period.closedAt = moment();
-                await entityManager.save(period);
-
-                let ngoPeriod = await NgoPeriod.findActivePeriod();
-                if (!ngoPeriod) {
-                    ngoPeriod = new NgoPeriod(moment(), moment().add(config.ngoGenerateInterval + config.ngoCloseInterval, 'days'));
-                    await entityManager.save(ngoPeriod);
-                }
-            }
-        })
-        this.logger.log("Closing Partner Period for edition end")
     }
 
     @Cron('* * 8 * * *')
@@ -68,7 +35,7 @@ export class SendEmailsToPartnersScheduler {
 
 
         if (payments && period && config) {
-            this.logger.log(`Found ${payments.length} Partners payments to send emails`)
+            this.logger.log(`Found ${ payments.length } Partners payments to send emails`)
             let lst: any[] = [];
             let limit = moment().add(8, 'days');
             period.sendMessagesAt = limit;
@@ -96,7 +63,7 @@ export class SendEmailsToPartnersScheduler {
                 }
                 payment.paymentAt = limit;
             });
-            getConnection().transaction(async (entityManager: EntityManager) => {
+            await getConnection().transaction(async (entityManager: EntityManager) => {
                 await entityManager.save(payments);
                 await entityManager.save(period);
 

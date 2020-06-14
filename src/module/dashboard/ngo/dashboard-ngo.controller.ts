@@ -14,28 +14,28 @@ import {
     UseGuards,
     UseInterceptors
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Ngo} from "../../../entity/ngo.entity";
-import {EntityManager, getConnection, QueryFailedError} from "typeorm";
-import {extractErrors, handleException} from "../../../common/util/functions";
-import {NgoType} from "../../../entity/ngo-type.entity";
-import {FileInterceptor} from "@nestjs/platform-express";
-import {NgoRowExcel} from "../../../models/dashboard/excel/ngo-row.excel";
-import {validate} from "class-validator";
-import {ExcelException} from "../../../common/exceptions/excel.exception";
-import {City} from "../../../entity/city.entity";
-import {CodeService} from "../../../common/service/code.service";
-import {PhysicalCard} from "../../../entity/physical-card.entity";
-import {diskStorage} from "multer";
-import {Phone} from "../../../entity/phone.entity";
-import {PhonePrefix} from "../../../entity/phone-prefix.entity";
-import {Address} from "../../../entity/address.entity";
-import {NgoSaveRequest} from "../../../models/dashboard/request/ngo-save.request";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiHeader, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Ngo } from "../../../entity/ngo.entity";
+import { EntityManager, getConnection, QueryFailedError } from "typeorm";
+import { extractErrors, handleException } from "../../../common/util/functions";
+import { NgoType } from "../../../entity/ngo-type.entity";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { NgoRowExcel } from "../../../models/dashboard/excel/ngo-row.excel";
+import { validate } from "class-validator";
+import { ExcelException } from "../../../common/exceptions/excel.exception";
+import { City } from "../../../entity/city.entity";
+import { CodeService } from "../../../common/service/code.service";
+import { PhysicalCard } from "../../../entity/physical-card.entity";
+import { diskStorage } from "multer";
+import { Phone } from "../../../entity/phone.entity";
+import { PhonePrefix } from "../../../entity/phone-prefix.entity";
+import { Address } from "../../../entity/address.entity";
+import { NgoSaveRequest } from "../../../models/dashboard/request/ngo-save.request";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
 
 const moment = require("moment");
 
@@ -284,7 +284,7 @@ export class DashboardNgoController {
             filename: (req, file, cb) => {
                 const newFileName = moment().format("YYYYMMDDHHmmss");
 
-                return cb(null, `${newFileName}_${file.originalname}`)
+                return cb(null, `${ newFileName }_${ file.originalname }`)
             }
         })
     }))

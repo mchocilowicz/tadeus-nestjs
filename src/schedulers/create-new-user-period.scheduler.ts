@@ -13,9 +13,9 @@ import { TierService } from "../module/common/tier.service";
 const moment = require('moment');
 
 @Injectable()
-export class ConfigurationScheduler {
+export class CreateNewUserPeriodScheduler {
 
-    private readonly logger = new Logger(ConfigurationScheduler.name);
+    private readonly logger = new Logger(CreateNewUserPeriodScheduler.name);
 
     constructor(private codeService: CodeService) {
     }
@@ -34,12 +34,12 @@ export class ConfigurationScheduler {
             let currentDate = moment().format('YYYY-MM-DD');
             let userPeriods: UserPeriod[] = await UserPeriod.findPeriodsToClose(currentDate);
 
-            this.logger.log(`Found ${userPeriods.length} User Periods to process`)
+            this.logger.log(`Found ${ userPeriods.length } User Periods to process`)
 
             if (userPeriods.length === 0) {
                 return;
             }
-            
+
             for (const userPeriod of userPeriods) {
                 userPeriod.isClosed = true;
 

@@ -1,9 +1,9 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {Donation} from "./donation.entity";
-import {Transaction} from "./transaction.entity";
-import {NgoPeriod} from "./ngo-period.entity";
-import {PartnerPeriod} from "./partner-period.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { Donation } from "./donation.entity";
+import { Transaction } from "./transaction.entity";
+import { NgoPeriod } from "./ngo-period.entity";
+import { PartnerPeriod } from "./partner-period.entity";
 
 @Entity({name: 'USER_PERIOD'})
 export class UserPeriod extends TadeusEntity {
@@ -44,8 +44,12 @@ export class UserPeriod extends TadeusEntity {
 
     static findPeriodsToClose(date: String): Promise<UserPeriod[]> {
         return this.createQueryBuilder('p')
+            .leftJoin('p.ngoPeriod', 'ngo')
+            .leftJoin('p.partnerPeriod', 'partner')
             .where('p.isClosed = false')
-            .andWhere("to_char(p.to,'YYYY-MM-DD') = :date", {date: date})
+            .andWhere("to_char(p.to,'YYYY-MM-DD') <= :date", {date: date})
+            .andWhere('ngo is null')
+            .andWhere('partner is null')
             .orderBy('p.to', 'DESC')
             .getMany();
     }

@@ -1,10 +1,10 @@
-import {Injectable, Logger} from "@nestjs/common";
-import {Configuration} from "../entity/configuration.entity";
-import {User} from "../entity/user.entity";
-import {Status} from "../common/enum/status.enum";
-import {RoleEnum} from "../common/enum/role.enum";
-import {Account} from "../entity/account.entity";
-import {Cron} from "@nestjs/schedule";
+import { Injectable, Logger } from "@nestjs/common";
+import { Configuration } from "../entity/configuration.entity";
+import { User } from "../entity/user.entity";
+import { Status } from "../common/enum/status.enum";
+import { RoleEnum } from "../common/enum/role.enum";
+import { Account } from "../entity/account.entity";
+import { Cron } from "@nestjs/schedule";
 
 const moment = require('moment');
 
@@ -15,8 +15,6 @@ export class UserAccountExpirationScheduler {
 
     @Cron('0 0 4 * * * *')
     async cronJob() {
-
-
         this.logger.log('Users expiration check start');
 
         const users: User[] = await User.createQueryBuilder('user')
@@ -27,7 +25,7 @@ export class UserAccountExpirationScheduler {
             .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
             .getMany();
 
-        this.logger.log(`Found ${users.length} Users`);
+        this.logger.log(`Found ${ users.length } Users`);
 
         const config = await Configuration.findOne({type: 'MAIN'});
 
