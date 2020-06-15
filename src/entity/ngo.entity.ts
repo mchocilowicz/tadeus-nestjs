@@ -1,13 +1,13 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
-import {NgoType} from "./ngo-type.entity";
-import {Donation} from "./donation.entity";
-import {PhysicalCard} from "./physical-card.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {Address} from "./address.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
-import {User} from "./user.entity";
-import {Transaction} from "./transaction.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { NgoType } from "./ngo-type.entity";
+import { Donation } from "./donation.entity";
+import { PhysicalCard } from "./physical-card.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { Address } from "./address.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import { User } from "./user.entity";
+import { Transaction } from "./transaction.entity";
 
 @Entity({name: 'NGO'})
 export class Ngo extends TadeusEntity {
@@ -15,8 +15,8 @@ export class Ngo extends TadeusEntity {
     @Column({name: 'ID'})
     ID: string;
 
-    @Column({name: 'BANK_ACCOUNT', type: "bigint", transformer: new ColumnNumericTransformer()})
-    bankNumber: number;
+    @Column({name: 'BANK_ACCOUNT', nullable: true})
+    bankNumber?: string;
 
     @Column({name: 'EMAIL'})
     email: string;
@@ -45,10 +45,10 @@ export class Ngo extends TadeusEntity {
     @Column({name: 'IS_TADEUS'})
     isTadeus: boolean = false;
 
-    @Column({name: 'TOTAL_DONATION', nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'TOTAL_DONATION', nullable: true, transformer: new NumberColumnTransformer()})
     totalDonation?: number;
 
-    @Column({name: 'LAST_DONATION', nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'LAST_DONATION', nullable: true, transformer: new NumberColumnTransformer()})
     lastDonation?: number;
 
     @ManyToOne(type => Phone)
@@ -78,7 +78,7 @@ export class Ngo extends TadeusEntity {
 
     constructor(ID: string,
                 email: string,
-                bankNumber: number,
+                bankNumber: string,
                 name: string,
                 longName: string,
                 description: string,

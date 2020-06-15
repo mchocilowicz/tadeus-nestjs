@@ -20,7 +20,7 @@ export class CreateNewUserPeriodScheduler {
     constructor(private codeService: CodeService) {
     }
 
-    @Cron('* * 3 * * *')
+    @Cron('0 0 3 * * *')
     async createNewUserPeriod() {
         await getConnection().transaction(async (entityManager: EntityManager) => {
             this.logger.log('Opening new User Periods start')

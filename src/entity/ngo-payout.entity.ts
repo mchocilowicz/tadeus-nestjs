@@ -1,15 +1,15 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {Ngo} from "./ngo.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
-import {Transaction} from "./transaction.entity";
-import {NgoPeriod} from "./ngo-period.entity";
-import {Donation} from "./donation.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { Ngo } from "./ngo.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import { Transaction } from "./transaction.entity";
+import { NgoPeriod } from "./ngo-period.entity";
+import { Donation } from "./donation.entity";
 
 @Entity({name: 'NGO_PAYOUT'})
 export class NgoPayout extends TadeusEntity {
 
-    @Column({name: 'PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PRICE', type: 'decimal', transformer: new NumberColumnTransformer()})
     price: number;
 
     @Column({name: 'IS_PAID', default: false})

@@ -1,6 +1,6 @@
 import { Column, Entity, Generated } from "typeorm";
 import { TadeusEntity } from "./base.entity";
-import { ColumnNumericTransformer } from "../common/util/number-column.transformer";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
 import { TierEnum } from "../common/enum/tier.enum";
 
 @Entity({name: 'VIRTUAL_CARD'})
@@ -12,10 +12,10 @@ export class VirtualCard extends TadeusEntity {
     @Generated("uuid")
     code?: string;
 
-    @Column({name: "DONATION_POOL", type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: "DONATION_POOL", type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     donationPool: number = 0;
 
-    @Column({name: "PERSONAL_POOL", type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: "PERSONAL_POOL", type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     personalPool: number = 0;
 
     @Column({name: "STATUS"})

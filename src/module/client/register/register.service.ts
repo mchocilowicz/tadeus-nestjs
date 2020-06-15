@@ -1,14 +1,14 @@
-import {BadRequestException, Injectable, Logger, NotFoundException} from "@nestjs/common";
-import {TadeusJwtService} from "../../common/TadeusJwtModule/TadeusJwtService";
-import {CodeService} from "../../../common/service/code.service";
-import {User} from "../../../entity/user.entity";
-import {UserInformationRequest} from "../../../models/common/request/user-Information.request";
-import {handleException} from "../../../common/util/functions";
-import {CodeVerificationRequest} from "../../../models/common/request/code-verification.request";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {getConnection} from "typeorm";
-import {CryptoService} from "../../../common/service/crypto.service";
-import {Account} from "../../../entity/account.entity";
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { TadeusJwtService } from "../../common/TadeusJwtModule/TadeusJwtService";
+import { CodeService } from "../../../common/service/code.service";
+import { User } from "../../../entity/user.entity";
+import { UserInformationRequest } from "../../../models/common/request/user-Information.request";
+import { handleException } from "../../../common/util/functions";
+import { CodeVerificationRequest } from "../../../models/common/request/code-verification.request";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { getConnection } from "typeorm";
+import { CryptoService } from "../../../common/service/crypto.service";
+import { Account } from "../../../entity/account.entity";
 
 
 @Injectable()
@@ -33,7 +33,7 @@ export class RegisterService {
         const account: Account = user.account;
 
         if (!account || !account.token) {
-            this.logger.error(`User ${user.id} does not have CLIENT account`);
+            this.logger.error(`User ${ user.id } does not have CLIENT account`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -62,7 +62,7 @@ export class RegisterService {
         let account = user.account;
 
         if (!account || !account.code || account.role.value !== RoleEnum.CLIENT) {
-            this.logger.error(`User ${user.id} does not have CLIENT account`);
+            this.logger.error(`User ${ user.id } does not have CLIENT account`);
             throw new BadRequestException('internal_server_error');
         }
 

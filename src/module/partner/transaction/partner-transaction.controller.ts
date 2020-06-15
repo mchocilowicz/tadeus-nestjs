@@ -24,7 +24,7 @@ import { Transaction } from "../../../entity/transaction.entity";
 import { TransactionResponse } from "../../../models/common/response/transaction.response";
 import { getConnection } from "typeorm";
 import { CorrectionRequest, TransactionRequest } from "../../../models/partner/request/transaction.request";
-import { handleException } from "../../../common/util/functions";
+import { handleException, roundToTwo } from "../../../common/util/functions";
 import { TradingPoint } from "../../../entity/trading-point.entity";
 import { User } from "../../../entity/user.entity";
 import { Terminal } from "../../../entity/terminal.entity";
@@ -134,7 +134,7 @@ export class PartnerTransactionController {
             let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
             let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
 
-            const halfPool = pool / 2;
+            const halfPool = roundToTwo(pool / 2);
             transaction.updatePaymentValues(provision, pool);
             transaction.setUserPool(halfPool);
             transaction.ngoDonation = halfPool;
@@ -147,11 +147,11 @@ export class PartnerTransactionController {
                 transactionID: transaction.ID,
                 tradingPointName: tradingPoint.name,
                 transactionDate: moment().format(Const.DATE_TIME_FORMAT),
-                prevAmount: `${oldTransaction.price}`,
-                newAmount: `${dto.price}`,
+                prevAmount: `${ oldTransaction.price }`,
+                newAmount: `${ dto.price }`,
                 terminalID: terminal.ID,
                 isCorrection: "true",
-                pool: '0'
+                pool: pool
             };
 
             if (terminal.isMain) {
@@ -257,7 +257,7 @@ export class PartnerTransactionController {
 
                 tradingPoint.xp = tradingPointXp + Number(tradingPoint.xp);
                 let pool = this.calService.calculateCost(dto.price, tradingPoint.donationPercentage, tradingPoint.vat);
-                let halfPool = pool / 2;
+                let halfPool = roundToTwo(pool / 2);
 
                 let provision = this.calService.calculateCost(dto.price, tradingPoint.fee, tradingPoint.vat);
                 transaction.updatePaymentValues(provision, pool);
@@ -286,10 +286,10 @@ export class PartnerTransactionController {
                     transactionID: transaction.ID,
                     tradingPointName: tradingPoint.name,
                     transactionDate: moment().format(Const.DATE_TIME_FORMAT),
-                    newAmount: `${dto.price}`,
+                    newAmount: `${ dto.price }`,
                     terminalID: terminal.ID,
                     isCorrection: "false",
-                    pool: `${transaction.poolValue}`
+                    pool: `${ transaction.poolValue }`
                 };
 
                 if (terminal.isMain) {

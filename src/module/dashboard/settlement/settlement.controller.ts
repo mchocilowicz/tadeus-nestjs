@@ -11,24 +11,24 @@ import {
     Query,
     UseGuards
 } from "@nestjs/common";
-import {PartnerPayment} from "../../../entity/partner-payment.entity";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../entity/transaction.entity";
-import {EntityManager, getConnection} from "typeorm";
-import {NgoPayout} from "../../../entity/ngo-payout.entity";
-import {Ngo} from "../../../entity/ngo.entity";
-import {UserPeriod} from "../../../entity/user-period.entity";
-import {PartnerPeriod} from "../../../entity/partner-period.entity";
-import {Configuration} from "../../../entity/configuration.entity";
-import {NgoPeriod} from "../../../entity/ngo-period.entity";
-import {TadeusEntity} from "../../../entity/base.entity";
-import {Donation} from "../../../entity/donation.entity";
-import {roundToTwo} from "../../../common/util/functions";
-import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
+import { PartnerPayment } from "../../../entity/partner-payment.entity";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../entity/transaction.entity";
+import { EntityManager, getConnection } from "typeorm";
+import { NgoPayout } from "../../../entity/ngo-payout.entity";
+import { Ngo } from "../../../entity/ngo.entity";
+import { UserPeriod } from "../../../entity/user-period.entity";
+import { PartnerPeriod } from "../../../entity/partner-period.entity";
+import { Configuration } from "../../../entity/configuration.entity";
+import { NgoPeriod } from "../../../entity/ngo-period.entity";
+import { TadeusEntity } from "../../../entity/base.entity";
+import { Donation } from "../../../entity/donation.entity";
+import { roundToTwo } from "../../../common/util/functions";
+import { ApiBearerAuth, ApiHeader } from "@nestjs/swagger";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
 
 const moment = require('moment');
 
@@ -206,17 +206,9 @@ export class SettlementController {
             .leftJoinAndSelect("p.ngoPeriod", 'ngoPeriod')
             .leftJoinAndSelect('payment.tradingPoint', 'point')
             .leftJoinAndSelect('payment.partnerPeriod', 'period');
-        if (query) {
-            if (query.selectedPeriod && query.selectedPeriod !== 'null') {
-                partnerPeriodQuery = partnerPeriodQuery.where("p.id = :id", {id: query.selectedPeriod});
-            } else {
-                partnerPeriodQuery = partnerPeriodQuery.where("p.isClosed = false")
-                    .andWhere("p.ngoPeriod is null");
-            }
-            if (query.showAll === 'false') {
-                partnerPeriodQuery = partnerPeriodQuery
-                    .andWhere("payment.isPaid = false");
-            }
+
+        if (query.selectedPeriod && query.selectedPeriod !== 'null') {
+            partnerPeriodQuery = partnerPeriodQuery.where("p.id = :id", {id: query.selectedPeriod});
         } else {
             partnerPeriodQuery = partnerPeriodQuery.where("p.isClosed = false")
                 .andWhere("p.ngoPeriod is null");
@@ -231,9 +223,9 @@ export class SettlementController {
 
         if (partnerPeriod && !partnerPeriod.isClosed) {
             let payments: PartnerPayment[] = await PartnerPayment.createQueryBuilder('p')
-                .leftJoin('p.partnerPeriod', 'period')
+                .leftJoin('p.partnerPeriod', 'partnerPeriod')
                 .leftJoinAndSelect('p.tradingPoint', 'point')
-                .where('period.id != :id', {id: partnerPeriod.id})
+                .where('partnerPeriod.id != :id', {id: partnerPeriod.id})
                 .andWhere('p.isPaid = false')
                 .getMany();
 
@@ -252,9 +244,12 @@ export class SettlementController {
             .andWhere('p.partnerPeriod is null')
             .getCount();
 
+        if (query.showAll && query.showAll === 'false') {
+            periodPayments = periodPayments.filter(value => !value.isPaid)
+        }
+
         return {
             userPeriodFrom: userPeriod ? userPeriod.from : null,
-            hasPartnerPeriod: partnerPeriod !== undefined,
             hasDataToProcess: userCount > 0,
             payments: periodPayments.map((p: PartnerPayment) => new PartnerPaymentResponse(p)),
             partnerPeriodFrom: partnerPeriod ? partnerPeriod.from : null,
@@ -278,7 +273,7 @@ export class SettlementController {
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async closePartnerPeriod(@Param('id') id: string) {
-        getConnection().transaction(async (entityManager: EntityManager) => {
+        await getConnection().transaction(async (entityManager: EntityManager) => {
 
             let period = await PartnerPeriod.createQueryBuilder("p")
                 .where("p.isEditable = false")

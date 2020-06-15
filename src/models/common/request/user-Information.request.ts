@@ -1,6 +1,6 @@
-import {ApiProperty} from "@nestjs/swagger";
-import {IsAlpha, IsEmail, IsNotEmpty, IsOptional} from "class-validator";
-import {PhoneRequest} from "./phone.request";
+import { ApiProperty } from "@nestjs/swagger";
+import { IsAlpha, IsEmail, IsNotEmpty, ValidateIf } from "class-validator";
+import { PhoneRequest } from "./phone.request";
 
 export class UserInformationRequest extends PhoneRequest {
     @IsNotEmpty({
@@ -12,8 +12,8 @@ export class UserInformationRequest extends PhoneRequest {
     @ApiProperty({required: true})
     name: string;
 
-    @ApiProperty({required: true})
-    @IsOptional()
+    @ApiProperty({required: false})
+    @ValidateIf(((object, value) => !!value))
     @IsEmail({}, {
         message: "email_format"
     })

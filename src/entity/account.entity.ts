@@ -1,8 +1,8 @@
-import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
-import {Role} from "./role.entity";
-import {Status} from "../common/enum/status.enum";
-import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Role } from "./role.entity";
+import { Status } from "../common/enum/status.enum";
+import { TadeusEntity } from "./base.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
 
 @Entity({name: 'ACCOUNT'})
 export class Account extends TadeusEntity {
@@ -10,7 +10,7 @@ export class Account extends TadeusEntity {
     @Column({name: 'ID'})
     ID: string;
 
-    @Column({name: 'CODE', nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'CODE', nullable: true, transformer: new NumberColumnTransformer()})
     code?: number;
 
     @Column({name: 'TOKEN', nullable: true})

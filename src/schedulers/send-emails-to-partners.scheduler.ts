@@ -18,7 +18,7 @@ export class SendEmailsToPartnersScheduler {
     constructor(private readonly emailService: EmailService) {
     }
 
-    @Cron('* * 8 * * *')
+    @Cron('0 0 8 * * *')
     async sendEmails() {
         this.logger.log("Sending email to Partners start")
 

@@ -1,13 +1,13 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TradingPointType} from "./trading-point-type.entity";
-import {Transaction} from "./transaction.entity";
-import {PartnerPayment} from "./partner-payment.entity";
-import {Terminal} from "./terminal.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {Address} from "./address.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
-import {Opinion} from "./opinion.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TradingPointType } from "./trading-point-type.entity";
+import { Transaction } from "./transaction.entity";
+import { PartnerPayment } from "./partner-payment.entity";
+import { Terminal } from "./terminal.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { Address } from "./address.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import { Opinion } from "./opinion.entity";
 
 @Entity({name: 'PARTNER'})
 export class TradingPoint extends TadeusEntity {
@@ -17,16 +17,16 @@ export class TradingPoint extends TadeusEntity {
     @Column({name: 'NAME'})
     name: string;
 
-    @Column({name: 'DONATION_PERCENTAGE', type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'DONATION_PERCENTAGE', type: "decimal", transformer: new NumberColumnTransformer()})
     donationPercentage: number = 2;
 
-    @Column({name: 'VAT', type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'VAT', type: "decimal", transformer: new NumberColumnTransformer()})
     vat: number = 23;
 
-    @Column({name: 'FEE', type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'FEE', type: "decimal", transformer: new NumberColumnTransformer()})
     fee: number = 0.66;
 
-    @Column({name: 'DEFAULT_PRICE', type: "decimal", transformer: new ColumnNumericTransformer(), default: 0})
+    @Column({name: 'DEFAULT_PRICE', type: "decimal", transformer: new NumberColumnTransformer(), default: 0})
     price: number = 0;
 
     @Column({name: 'EMAIL'})
@@ -35,7 +35,7 @@ export class TradingPoint extends TadeusEntity {
     @Column({name: 'IMAGE', nullable: true})
     image: string = 'icon.jpg';
 
-    @Column({name: 'XP', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'XP', transformer: new NumberColumnTransformer()})
     xp: number = 0;
 
     @Column({name: 'ACTIVE', default: false})

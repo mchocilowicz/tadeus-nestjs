@@ -11,22 +11,22 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {EntityManager, getConnection} from "typeorm";
-import {CodeService} from "../../../common/service/code.service";
-import {Terminal} from "../../../entity/terminal.entity";
-import {TerminalRequest} from "../../../models/common/request/terminal.request";
-import {TradingPoint} from "../../../entity/trading-point.entity";
-import {Phone} from "../../../entity/phone.entity";
-import {Status} from "../../../common/enum/status.enum";
-import {Account} from "../../../entity/account.entity";
-import {Role} from "../../../entity/role.entity";
-import {PhonePrefix} from "../../../entity/phone-prefix.entity";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { EntityManager, getConnection } from "typeorm";
+import { CodeService } from "../../../common/service/code.service";
+import { Terminal } from "../../../entity/terminal.entity";
+import { TerminalRequest } from "../../../models/common/request/terminal.request";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { Phone } from "../../../entity/phone.entity";
+import { Status } from "../../../common/enum/status.enum";
+import { Account } from "../../../entity/account.entity";
+import { Role } from "../../../entity/role.entity";
+import { PhonePrefix } from "../../../entity/phone-prefix.entity";
 
 @Controller()
 @ApiTags('terminal')
@@ -53,11 +53,12 @@ export class PartnerTerminalController {
             phone: terminal.phone ? terminal.phone.value : null,
             terminals: terminals
                 .filter((t: Terminal) => t.id !== terminal.id)
-                .map((t: any) => {
+                .map((t: Terminal) => {
                     return {
                         id: t.id,
                         phone: t.phone ? t.phone.value : null,
-                        step: t.step
+                        step: t.step,
+                        name: t.name
                     }
                 })
         }

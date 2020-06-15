@@ -1,4 +1,4 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class UserDetailsRequest {
     @ApiProperty()
@@ -6,7 +6,7 @@ export class UserDetailsRequest {
     @ApiProperty()
     lastName: string;
     @ApiProperty()
-    bankAccount: number;
+    bankAccount: string;
     @ApiProperty()
     phonePrefix: number;
     @ApiProperty()
@@ -16,7 +16,7 @@ export class UserDetailsRequest {
 
     constructor(firstName: string,
                 lastName: string,
-                bankAccount: number,
+                bankAccount: string,
                 phonePrefix: number,
                 email: string,
                 phone: number) {

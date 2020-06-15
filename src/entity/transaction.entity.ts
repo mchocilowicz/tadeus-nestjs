@@ -1,18 +1,18 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
-import {TradingPoint} from "./trading-point.entity";
-import {User} from "./user.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { TradingPoint } from "./trading-point.entity";
+import { User } from "./user.entity";
 
-import {Terminal} from "./terminal.entity";
-import {TadeusEntity} from "./base.entity";
-import {PartnerPayment} from "./partner-payment.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
-import {TransactionStatus} from "../common/enum/status.enum";
-import {Ngo} from "./ngo.entity";
-import {NgoPayout} from "./ngo-payout.entity";
-import {PartnerPeriod} from "./partner-period.entity";
-import {UserPeriod} from "./user-period.entity";
-import {NgoPeriod} from "./ngo-period.entity";
-import {roundToTwo} from "../common/util/functions";
+import { Terminal } from "./terminal.entity";
+import { TadeusEntity } from "./base.entity";
+import { PartnerPayment } from "./partner-payment.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import { TransactionStatus } from "../common/enum/status.enum";
+import { Ngo } from "./ngo.entity";
+import { NgoPayout } from "./ngo-payout.entity";
+import { PartnerPeriod } from "./partner-period.entity";
+import { UserPeriod } from "./user-period.entity";
+import { NgoPeriod } from "./ngo-period.entity";
+import { roundToTwo } from "../common/util/functions";
 
 const moment = require('moment');
 
@@ -21,40 +21,40 @@ export class Transaction extends TadeusEntity {
     @Column({name: 'ID'})
     ID: string;
 
-    @Column({name: 'PRICE', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PRICE', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     price: number;
 
-    @Column({name: 'DONATION_PERCENTAGE', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'DONATION_PERCENTAGE', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     donationPercentage: number = 0;
 
-    @Column({name: 'PROVISION_PERCENTAGE', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PROVISION_PERCENTAGE', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     provisionPercentage: number = 0;
 
-    @Column({name: 'PAYMENT_VALUE', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PAYMENT_VALUE', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     paymentValue: number = 0;
 
-    @Column({name: 'VAT', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'VAT', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     vat: number = 0;
 
-    @Column({name: 'PROVISION', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PROVISION', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     provision: number = 0;
 
-    @Column({name: 'TOTAL_POOL', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'TOTAL_POOL', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     poolValue: number = 0;
 
-    @Column({name: 'DONATION_POOL', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'DONATION_POOL', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     donationPool: number = 0;
 
-    @Column({name: 'PERSONAL_POOL', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PERSONAL_POOL', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     personalPool: number = 0;
 
-    @Column({name: 'USER_XP', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'USER_XP', default: 0, transformer: new NumberColumnTransformer()})
     userXp: number = 0;
 
-    @Column({name: 'PARTNER_XP', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PARTNER_XP', default: 0, transformer: new NumberColumnTransformer()})
     tradingPointXp: number = 0;
 
-    @Column({name: 'NGO_DONATION', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'NGO_DONATION', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     ngoDonation: number = 0;
 
     @Column({name: 'STATUS', type: 'text', default: TransactionStatus.WAITING})

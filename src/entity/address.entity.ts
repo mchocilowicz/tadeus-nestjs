@@ -1,28 +1,28 @@
-import {TadeusEntity} from "./base.entity";
-import {BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {City} from "./city.entity";
-import {Ngo} from "./ngo.entity";
-import {TradingPoint} from "./trading-point.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
+import { TadeusEntity } from "./base.entity";
+import { BeforeInsert, Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { City } from "./city.entity";
+import { Ngo } from "./ngo.entity";
+import { TradingPoint } from "./trading-point.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
 
 @Entity({name: 'ADDRESS'})
 export class Address extends TadeusEntity {
     @Column({name: 'STREET'})
     street: string;
 
-    @Column({name: 'NUMBER', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'NUMBER', transformer: new NumberColumnTransformer()})
     number: number;
 
     @Column({name: 'POST_CODE'})
     postCode: string;
 
-    @Column({name: 'LONGITUDE', type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'LONGITUDE', type: "decimal", transformer: new NumberColumnTransformer()})
     longitude: number;
 
-    @Column({name: 'LATITUDE', type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'LATITUDE', type: "decimal", transformer: new NumberColumnTransformer()})
     latitude: number;
 
-    @Column({name: 'DISTANCE', type: "decimal", transformer: new ColumnNumericTransformer()})
+    @Column({name: 'DISTANCE', type: "decimal", transformer: new NumberColumnTransformer()})
     distance: number = 0;
 
     @Column("geometry", {

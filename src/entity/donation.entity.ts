@@ -1,12 +1,12 @@
-import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
-import {Ngo} from "./ngo.entity";
-import {User} from "./user.entity";
-import {DonationEnum, PoolEnum} from "../common/enum/donation.enum";
-import {TadeusEntity} from "./base.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
-import {UserPeriod} from "./user-period.entity";
-import {NgoPeriod} from "./ngo-period.entity";
-import {NgoPayout} from "./ngo-payout.entity";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Ngo } from "./ngo.entity";
+import { User } from "./user.entity";
+import { DonationEnum, PoolEnum } from "../common/enum/donation.enum";
+import { TadeusEntity } from "./base.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import { UserPeriod } from "./user-period.entity";
+import { NgoPeriod } from "./ngo-period.entity";
+import { NgoPayout } from "./ngo-payout.entity";
 
 @Entity({name: 'DONATION'})
 export class Donation extends TadeusEntity {
@@ -23,7 +23,7 @@ export class Donation extends TadeusEntity {
     @Column({name: 'PAYMENT_NUMBER', nullable: true})
     paymentNumber?: string;
 
-    @Column({name: 'PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PRICE', type: 'decimal', transformer: new NumberColumnTransformer()})
     price: number = 0;
 
     @ManyToOne(type => Ngo, ngo => ngo.donations)

@@ -1,17 +1,16 @@
-import {ValueTransformer} from "typeorm";
-import { roundToTwo } from "./functions";
+import { ValueTransformer } from "typeorm";
 
-export class ColumnNumericTransformer implements ValueTransformer {
+export class NumberColumnTransformer implements ValueTransformer {
     to(data?: number | null): number | null {
         if (data) {
-            return roundToTwo(Number(data));
+            return Number(data);
         }
         return 0;
     }
 
     from(data?: string | null): number | null {
         if (data) {
-            return roundToTwo(Number(data));
+            return Number(data);
         }
         return 0
     }

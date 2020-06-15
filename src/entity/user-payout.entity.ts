@@ -1,7 +1,7 @@
-import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
-import {TadeusEntity} from "./base.entity";
-import {User} from "./user.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { TadeusEntity } from "./base.entity";
+import { User } from "./user.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
 
 @Entity({name: 'USER_PAYOUT'})
 export class UserPayout extends TadeusEntity {
@@ -11,10 +11,10 @@ export class UserPayout extends TadeusEntity {
     @Column({name: "LAST_NAME"})
     lastName: string;
 
-    @Column({name: "ACCOUNT_NUMBER", type: "bigint",transformer: new ColumnNumericTransformer()})
-    accountNumber: number;
+    @Column({name: "ACCOUNT_NUMBER"})
+    accountNumber: string;
 
-    @Column({name: 'PRICE', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PRICE', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     price: number = 0;
 
     readonly class: string = 'PAYOUT';
@@ -23,7 +23,7 @@ export class UserPayout extends TadeusEntity {
     @JoinColumn({name: 'USER_SKID'})
     user: User;
 
-    constructor(firstName: string, lastName: string, account: number, user: User) {
+    constructor(firstName: string, lastName: string, account: string, user: User) {
         super();
         this.firstName = firstName;
         this.lastName = lastName;

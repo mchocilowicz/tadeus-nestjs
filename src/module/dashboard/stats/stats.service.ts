@@ -1,7 +1,7 @@
-import {Injectable} from "@nestjs/common";
-import {Transaction} from "../../../entity/transaction.entity";
-import {TadeusEntity} from "../../../entity/base.entity";
-import {Const} from "../../../common/util/const";
+import { Injectable } from "@nestjs/common";
+import { Transaction } from "../../../entity/transaction.entity";
+import { TadeusEntity } from "../../../entity/base.entity";
+import { Const } from "../../../common/util/const";
 
 const moment = require("moment");
 
@@ -19,7 +19,7 @@ export class StatsService {
                 }
             } else {
                 return {
-                    period: `${this.prepareDate(value[0].createdAt)} - ${this.prepareDate(value[value.length - 1].createdAt)}`,
+                    period: `${ this.prepareDate(value[0].createdAt) } - ${ this.prepareDate(value[value.length - 1].createdAt) }`,
                     price: value.reduce((p: number, v: Transaction) => p + v.price, 0)
                 }
             }
@@ -33,23 +33,27 @@ export class StatsService {
         let activeOneMonthAgo: TadeusEntity[] = [];
         let activeMonthsAgo: TadeusEntity[] = [];
 
-        const yesterdayDate = moment().subtract(1,'days');
-        const weekAgoDate = moment().subtract(7, 'days');
-        const monthAgoDate = moment().subtract(1, 'months');
+        const today = moment()
+        const yesterdayDate = moment().subtract(23, 'hour').subtract(59, 'minute');
+        const weekAgoDate = moment().subtract(7, 'day').subtract(today.hour(), 'hour').subtract(today.minute(), 'minute');
+        const monthAgoDate = moment().subtract(1, 'month').subtract(today.hour(), 'hour').subtract(today.minute(), 'minute');
+        const oneMonthAgoDate = moment().subtract(30, 'day');
+        const threeMonthAgoDate = moment().subtract(90, 'day');
+        const infinity = moment().subtract(1000, 'year');
 
         if (list) {
             list.forEach((point: TadeusEntity) => {
                 const pointLastUpdatteAt = moment(point.updatedAt);
 
-                if (pointLastUpdatteAt.isBetween(yesterdayDate, moment())) {
+                if (pointLastUpdatteAt.isBetween(yesterdayDate, today)) {
                     activeToday.push(point);
-                } else if (pointLastUpdatteAt.isBetween(weekAgoDate, moment())) {
+                } else if (pointLastUpdatteAt.isBetween(weekAgoDate, today)) {
                     activeInWeek.push(point);
-                } else if (pointLastUpdatteAt.isBetween(monthAgoDate, moment())) {
+                } else if (pointLastUpdatteAt.isBetween(monthAgoDate, today)) {
                     activeInMonth.push(point);
-                } else if (pointLastUpdatteAt.isBetween(monthAgoDate.subtract(1,'months'), monthAgoDate)) {
+                } else if (pointLastUpdatteAt.isBetween(oneMonthAgoDate, infinity)) {
                     activeOneMonthAgo.push(point);
-                } else if (pointLastUpdatteAt.isBetween(monthAgoDate.subtract(2, 'months'), moment().subtract(100, 'years'))) {
+                } else if (pointLastUpdatteAt.isBetween(threeMonthAgoDate, infinity)) {
                     activeMonthsAgo.push(point);
                 }
             });

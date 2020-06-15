@@ -1,9 +1,9 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
-import {TradingPoint} from "./trading-point.entity";
-import {TadeusEntity} from "./base.entity";
-import {Transaction} from "./transaction.entity";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
-import {PartnerPeriod} from "./partner-period.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import { TradingPoint } from "./trading-point.entity";
+import { TadeusEntity } from "./base.entity";
+import { Transaction } from "./transaction.entity";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import { PartnerPeriod } from "./partner-period.entity";
 
 @Entity({name: 'PARTNER_PAYMENT'})
 export class PartnerPayment extends TadeusEntity {
@@ -22,22 +22,22 @@ export class PartnerPayment extends TadeusEntity {
     @Column({name: 'IS_PAID', default: false})
     isPaid: boolean = false;
 
-    @Column({name: 'PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PRICE', type: 'decimal', transformer: new NumberColumnTransformer()})
     price: number;
 
-    @Column({name: 'PAID_PRICE', type: 'decimal', nullable: true, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PAID_PRICE', type: 'decimal', nullable: true, transformer: new NumberColumnTransformer()})
     paidPrice: number = 0;
 
-    @Column({name: 'TRANSACTION_COUNT', type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'TRANSACTION_COUNT', type: 'decimal', transformer: new NumberColumnTransformer()})
     transactionsCount: number;
 
-    @Column({name: 'SELL_PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'SELL_PRICE', type: 'decimal', transformer: new NumberColumnTransformer()})
     sellPrice: number;
 
-    @Column({name: 'DONATION_PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'DONATION_PRICE', type: 'decimal', transformer: new NumberColumnTransformer()})
     donationPrice: number;
 
-    @Column({name: 'PROVISION_PRICE', type: 'decimal', transformer: new ColumnNumericTransformer()})
+    @Column({name: 'PROVISION_PRICE', type: 'decimal', transformer: new NumberColumnTransformer()})
     provisionPrice: number;
 
     @Column({name: 'SEND_MESSAGE_AT', nullable: true})

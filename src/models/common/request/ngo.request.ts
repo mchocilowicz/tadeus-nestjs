@@ -1,6 +1,6 @@
-import {ApiProperty} from "@nestjs/swagger";
-import {City} from "../../../entity/city.entity";
-import {NgoType} from "../../../entity/ngo-type.entity";
+import { ApiProperty } from "@nestjs/swagger";
+import { City } from "../../../entity/city.entity";
+import { NgoType } from "../../../entity/ngo-type.entity";
 
 export class NgoRequest {
     @ApiProperty({required: true})
@@ -24,7 +24,7 @@ export class NgoRequest {
     @ApiProperty({required: true})
     postCode: string;
     @ApiProperty({required: true})
-    bankNumber: number;
+    bankNumber: string;
     @ApiProperty({required: true})
     email: string;
     @ApiProperty({required: true})
@@ -41,7 +41,7 @@ export class NgoRequest {
                 description: string,
                 street: string,
                 number: number,
-                bankNumber: number,
+                bankNumber: string,
                 email: string,
                 phone: number,
                 phonePrefix: number,

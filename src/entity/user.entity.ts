@@ -1,16 +1,16 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne} from "typeorm";
-import {Transaction} from "./transaction.entity";
-import {Donation} from "./donation.entity";
-import {Account} from "./account.entity";
-import {VirtualCard} from "./virtual-card.entity";
-import {Opinion} from "./opinion.entity";
-import {Phone} from "./phone.entity";
-import {TadeusEntity} from "./base.entity";
-import {UserPayout} from "./user-payout.entity";
-import {RoleEnum} from "../common/enum/role.enum";
-import {ColumnNumericTransformer} from "../common/util/number-column.transformer";
-import {Ngo} from "./ngo.entity";
-import {Status, TransactionStatus} from "../common/enum/status.enum";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne } from "typeorm";
+import { Transaction } from "./transaction.entity";
+import { Donation } from "./donation.entity";
+import { Account } from "./account.entity";
+import { VirtualCard } from "./virtual-card.entity";
+import { Opinion } from "./opinion.entity";
+import { Phone } from "./phone.entity";
+import { TadeusEntity } from "./base.entity";
+import { UserPayout } from "./user-payout.entity";
+import { RoleEnum } from "../common/enum/role.enum";
+import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import { Ngo } from "./ngo.entity";
+import { Status, TransactionStatus } from "../common/enum/status.enum";
 
 const moment = require('moment');
 
@@ -22,7 +22,7 @@ export class User extends TadeusEntity {
     @Column({name: 'IS_ANONYMOUS', default: false})
     isAnonymous: boolean = false;
 
-    @Column({name: 'XP', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'XP', default: 0, transformer: new NumberColumnTransformer()})
     xp: number = 0;
 
     @Column({name: 'NAME', nullable: true})
@@ -34,10 +34,10 @@ export class User extends TadeusEntity {
     @Column({name: 'LAST_NAME', nullable: true})
     lastName?: string;
 
-    @Column({name: 'ACCOUNT_NUMBER', nullable: true, type: "bigint", transformer: new ColumnNumericTransformer()})
-    bankAccount?: number;
+    @Column({name: 'ACCOUNT_NUMBER', nullable: true})
+    bankAccount?: string;
 
-    @Column({name: 'COLLECTED_MONEY', type: 'decimal', default: 0, transformer: new ColumnNumericTransformer()})
+    @Column({name: 'COLLECTED_MONEY', type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
     collectedMoney: number = 0;
 
     @Column({name: 'PREVIOUS_NAME', nullable: true})
@@ -193,7 +193,7 @@ export class User extends TadeusEntity {
         this.xp = 50;
     }
 
-    updateInformation(name: string, lastName: string, email: string, bankAccount: number) {
+    updateInformation(name: string, lastName: string, email: string, bankAccount: string) {
         if (this.name !== name) {
             this.prevName = this.name;
             this.name = name;

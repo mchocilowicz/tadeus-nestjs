@@ -1,6 +1,5 @@
-import {ApiProperty} from "@nestjs/swagger";
-import {Phone} from "../../../entity/phone.entity";
-import {User} from "../../../entity/user.entity";
+import { ApiProperty } from "@nestjs/swagger";
+import { User } from "../../../entity/user.entity";
 
 export class UserDetailsResponse {
     @ApiProperty()
@@ -8,20 +7,19 @@ export class UserDetailsResponse {
     @ApiProperty()
     lastName?: string;
     @ApiProperty()
-    bankAccount?: number;
+    bankAccount?: string;
     @ApiProperty()
-    phonePrefix: number;
+    phonePrefix: number = 48;
     @ApiProperty()
-    phone: number;
+    phone?: number;
     @ApiProperty()
     email?: string;
 
-    constructor(details: User, phone: Phone) {
+    constructor(details: User, phone?: number) {
         this.firstName = details.name;
         this.lastName = details.lastName;
         this.bankAccount = details.bankAccount;
-        this.phone = phone.value;
-        this.phonePrefix = phone.prefix.value;
+        this.phone = phone;
         this.email = details.email;
     }
 }

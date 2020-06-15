@@ -153,6 +153,9 @@ export class ClientController {
         if (tempUser.payouts) {
             transactions = transactions.concat(tempUser.payouts)
         }
+        if (tempUser.donations) {
+            transactions = transactions.concat(tempUser.donations)
+        }
 
         let transactionHistoryWithPayouts = groupDatesByComponent(transactions, 'Y')
             .map((i: TadeusEntity[]) => groupDatesByComponent(i, 'DDD'));

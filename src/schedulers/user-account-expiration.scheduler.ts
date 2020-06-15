@@ -13,12 +13,12 @@ export class UserAccountExpirationScheduler {
 
     private readonly logger = new Logger(UserAccountExpirationScheduler.name);
 
-    @Cron('0 0 4 * * * *')
+    @Cron('0 0 4 * * *')
     async cronJob() {
         this.logger.log('Users expiration check start');
 
         const users: User[] = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.accounts', 'account')
+            .leftJoinAndSelect('user.account', 'account')
             .leftJoinAndSelect('user.details', 'details')
             .leftJoinAndSelect('account.role', 'role')
             .where('account.status = :status', {status: Status.ACTIVE})

@@ -1,4 +1,4 @@
-import {ApiProperty} from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 
 export class PayoutRequest {
     @ApiProperty()
@@ -6,12 +6,12 @@ export class PayoutRequest {
     @ApiProperty()
     surName: string;
     @ApiProperty()
-    bankAccount: number;
+    bankAccount: string;
 
 
     constructor(firstName: string,
                 lastName: string,
-                bankAccount: number) {
+                bankAccount: string) {
         this.name = firstName;
         this.surName = lastName;
         this.bankAccount = bankAccount;
