@@ -1,8 +1,7 @@
-import {BadRequestException, Logger} from "@nestjs/common";
-import {QueryFailedError} from "typeorm";
-import {ValidationError} from "class-validator";
-import {TadeusEntity} from "../../entity/base.entity";
-import {Const} from "./const";
+import { BadRequestException, Logger } from "@nestjs/common";
+import { QueryFailedError } from "typeorm";
+import { ValidationError } from "class-validator";
+import { TadeusEntity } from "../../entity/base.entity";
 
 const _ = require("lodash");
 const moment = require("moment");
@@ -35,7 +34,7 @@ export function extractErrors(errors: ValidationError[]): string[] {
 
 export function groupDatesByComponent(data: TadeusEntity[], token: string): Array<TadeusEntity[]> {
     const groupedMap = data.reduce(function (val: Map<string, TadeusEntity[]>, obj: TadeusEntity) {
-        let comp = moment(obj.createdAt, Const.DATE_FORMAT).format(token);
+        let comp = moment(obj.createdAt).format(token);
         const value = val.get(comp);
         if (value) {
             value.push(obj);

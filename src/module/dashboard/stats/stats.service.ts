@@ -7,23 +7,12 @@ const moment = require("moment");
 
 @Injectable()
 export class StatsService {
-    constructor() {
-    }
 
-    getPeriodOverview(list: Array<Transaction[]>) {
-        return list.map((value: Transaction[]) => {
-            if (value.length === 1) {
-                return {
-                    period: this.prepareDate(value[0].createdAt),
-                    price: value[0].price
-                }
-            } else {
-                return {
-                    period: `${ this.prepareDate(value[0].createdAt) } - ${ this.prepareDate(value[value.length - 1].createdAt) }`,
-                    price: value.reduce((p: number, v: Transaction) => p + v.price, 0)
-                }
-            }
-        });
+    getPeriodOverview(list: Transaction[], format: string) {
+        return {
+            period: this.prepareDate(list[0].createdAt, format),
+            price: list.reduce((p: number, v: Transaction) => p + v.price, 0)
+        }
     }
 
     getTimeStats(list?: TadeusEntity[]) {
@@ -43,17 +32,17 @@ export class StatsService {
 
         if (list) {
             list.forEach((point: TadeusEntity) => {
-                const pointLastUpdatteAt = moment(point.updatedAt);
+                const lastUpdateAt = moment(point.updatedAt);
 
-                if (pointLastUpdatteAt.isBetween(yesterdayDate, today)) {
+                if (lastUpdateAt.isBetween(yesterdayDate, today)) {
                     activeToday.push(point);
-                } else if (pointLastUpdatteAt.isBetween(weekAgoDate, today)) {
+                } else if (lastUpdateAt.isBetween(weekAgoDate, today)) {
                     activeInWeek.push(point);
-                } else if (pointLastUpdatteAt.isBetween(monthAgoDate, today)) {
+                } else if (lastUpdateAt.isBetween(monthAgoDate, today)) {
                     activeInMonth.push(point);
-                } else if (pointLastUpdatteAt.isBetween(oneMonthAgoDate, infinity)) {
+                } else if (lastUpdateAt.isBetween(oneMonthAgoDate, infinity)) {
                     activeOneMonthAgo.push(point);
-                } else if (pointLastUpdatteAt.isBetween(threeMonthAgoDate, infinity)) {
+                } else if (lastUpdateAt.isBetween(threeMonthAgoDate, infinity)) {
                     activeMonthsAgo.push(point);
                 }
             });
@@ -68,7 +57,21 @@ export class StatsService {
         }
     }
 
-    private prepareDate(date: Date): string {
-        return moment(date).format(Const.DATE_FORMAT);
+    groupDates(data: TadeusEntity[], token: string): Map<string, TadeusEntity[]> {
+        const groupedMap = data.reduce(function (val: Map<string, TadeusEntity[]>, obj: TadeusEntity) {
+            let comp = moment(obj.createdAt).format(token);
+            const value = val.get(comp);
+            if (value) {
+                value.push(obj);
+            } else {
+                val.set(comp, [obj])
+            }
+            return val;
+        }, new Map<string, []>());
+        return groupedMap;
+    }
+
+    private prepareDate(date: Date, format: string): string {
+        return `${ moment(date).startOf(format).format(Const.DATE_FORMAT) } - ${ moment(date).endOf(format).format(Const.DATE_FORMAT) }`;
     }
 }

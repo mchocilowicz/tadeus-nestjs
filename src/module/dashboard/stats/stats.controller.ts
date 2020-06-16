@@ -1,19 +1,18 @@
-import {Controller, Get, UseGuards} from "@nestjs/common";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {Const} from "../../../common/util/const";
-import {User} from "../../../entity/user.entity";
-import {DonationEnum} from "../../../common/enum/donation.enum";
-import {TradingPoint} from "../../../entity/trading-point.entity";
-import {Donation} from "../../../entity/donation.entity";
-import {TadeusEntity} from "../../../entity/base.entity";
-import {VirtualCard} from "../../../entity/virtual-card.entity";
-import {Transaction} from "../../../entity/transaction.entity";
-import {groupDatesByComponent} from "../../../common/util/functions";
-import {StatsService} from "./stats.service";
-import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
+import { Controller, Get, UseGuards } from "@nestjs/common";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { Const } from "../../../common/util/const";
+import { User } from "../../../entity/user.entity";
+import { DonationEnum } from "../../../common/enum/donation.enum";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { Donation } from "../../../entity/donation.entity";
+import { TadeusEntity } from "../../../entity/base.entity";
+import { VirtualCard } from "../../../entity/virtual-card.entity";
+import { Transaction } from "../../../entity/transaction.entity";
+import { StatsService } from "./stats.service";
+import { ApiBearerAuth, ApiHeader } from "@nestjs/swagger";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
 
 const moment = require("moment");
 const _ = require('lodash');
@@ -42,13 +41,7 @@ export class StatsController {
 
         const transactions: Transaction[] = await Transaction.find();
 
-        let years: Array<Transaction[]> = groupDatesByComponent(transactions, 'Y') as Array<Transaction[]>;
-        let allweeks = [];
-        let allMonths = [];
-        for (const year of years) {
-            allweeks.push(_.flatten(groupDatesByComponent(year, 'w')));
-            allMonths.push(_.flatten(groupDatesByComponent(year, 'M')));
-        }
+        let {allweeks, allMonths} = this.extractDataForWeeksAndMonths(transactions);
 
         let transactionsIn24Hours = transactions.filter((t: Transaction) => moment(t.updatedAt).isBetween(moment().format(Const.DATE_FORMAT), moment().subtract(1, 'days').format(Const.DATE_FORMAT)));
 
@@ -71,10 +64,38 @@ export class StatsController {
             },
             transactions: {
                 today: transactionsIn24Hours.reduce((o, e: Transaction) => o + e.price, 0),
-                weeks: this.service.getPeriodOverview(allweeks),
-                months: this.service.getPeriodOverview(allMonths)
+                weeks: allweeks,
+                months: allMonths
             }
         }
     }
 
+    private extractDataForWeeksAndMonths(transactions: Transaction[]) {
+        let years = this.service.groupDates(transactions, 'Y');
+        let allweeks: any = [];
+        let allMonths: any = [];
+
+        let sortedYear = [...years.keys()].sort((a, b) => a > b ? -1 : 1);
+
+        for (const year of sortedYear) {
+            const data = years.get(year);
+            if (data) {
+                this.extractedDataByFormat(data, allweeks, 'W', 'isoWeek');
+                this.extractedDataByFormat(data, allMonths, 'M', 'months');
+            }
+        }
+        return {allweeks, allMonths};
+    }
+
+    private extractedDataByFormat(data: TadeusEntity[], allweeks: any[], format: string, format2: string): void {
+        let groupedData = this.service.groupDates(data, format);
+        let sortedData = [...groupedData.keys()].sort((a, b) => a > b ? -1 : 1);
+
+        sortedData.forEach(value => {
+            let period = groupedData.get(value)
+            if (period) {
+                allweeks.push(this.service.getPeriodOverview(period as Transaction[], format2));
+            }
+        })
+    }
 }
