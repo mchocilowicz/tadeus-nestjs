@@ -5,6 +5,7 @@ import { Status } from "../common/enum/status.enum";
 import { RoleEnum } from "../common/enum/role.enum";
 import { Account } from "../entity/account.entity";
 import { Cron } from "@nestjs/schedule";
+import { EntityManager, getConnection } from "typeorm";
 
 const moment = require('moment');
 
@@ -17,31 +18,34 @@ export class UserAccountExpirationScheduler {
     async cronJob() {
         this.logger.log('Users expiration check start');
 
-        const users: User[] = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('user.details', 'details')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('account.status = :status', {status: Status.ACTIVE})
-            .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
-            .getMany();
+        await getConnection().transaction(async (entityManager: EntityManager) => {
 
-        this.logger.log(`Found ${ users.length } Users`);
+            const users: User[] = await User.createQueryBuilder('user')
+                .leftJoinAndSelect('user.account', 'account')
+                .leftJoinAndSelect('user.card', 'card')
+                .leftJoinAndSelect('account.role', 'role')
+                .where('account.status = :status', {status: Status.ACTIVE})
+                .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
+                .getMany();
 
-        const config = await Configuration.findOne({type: 'MAIN'});
+            this.logger.log(`Found ${ users.length } Users`);
 
-        for (const user of users) {
-            let account: Account = user.account;
+            const config = await Configuration.getMain();
 
-            if (account && user && config) {
-                if (account.role.value === RoleEnum.CLIENT) {
-                    const numberOfDays = moment().diff(moment(user.updatedAt), 'days', true);
+            for (const user of users) {
+                let account: Account = user.account;
+                let card = user.card;
+
+                if (account && user && config) {
+                    const numberOfDays = moment().diff(moment(card.updatedAt), 'days', true);
                     if (Math.ceil(numberOfDays) > config.userExpiration) {
                         account.status = Status.NOT_ACTIVE;
-                        await account.save();
+                        await entityManager.save(account);
                     }
                 }
             }
-        }
-        this.logger.log('Users expiration check start');
+        });
+
+        this.logger.log('Users expiration check end');
     }
 }

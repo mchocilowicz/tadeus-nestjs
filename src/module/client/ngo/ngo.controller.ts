@@ -99,7 +99,7 @@ export class NgoController {
                 order: "ASC",
                 nulls: "NULLS FIRST"
             };
-            sqlQuery = sqlQuery.addSelect(a, 'address_distance');
+            sqlQuery = sqlQuery.addSelect(a, 'address_DISTANCE');
             sqlQuery = sqlQuery.andWhere(`${ a } > 0`)
                 .orderBy(c)
                 .limit(10);
