@@ -10,7 +10,7 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import { getConnection } from "typeorm";
+import { getConnection, SelectQueryBuilder } from "typeorm";
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Ngo } from "../../../entity/ngo.entity";
 import { Const } from "../../../common/util/const";
@@ -22,9 +22,11 @@ import { RolesGuard } from "../../../common/guards/roles.guard";
 import { CityResponse } from "../../../models/common/response/city.response";
 import { City } from "../../../entity/city.entity";
 import { SelectedNgoRequest } from "../../../models/client/request/selected-ngo.request";
-import { NgoQuery } from "../../../models/client/ngo.query";
 import { User } from "../../../entity/user.entity";
 import { VirtualCard } from "../../../entity/virtual-card.entity";
+import { LocationQueryService } from "../../common/location-query.service";
+import { INgoQuery } from "../../../models/client/query/ngo-query.interface";
+import { NgoQuery } from "../../../models/client/query/ngo.query";
 
 const moment = require('moment');
 
@@ -83,33 +85,20 @@ export class NgoController {
     @ApiResponse({status: 200, type: Ngo, isArray: true})
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     @ApiTags('ngo')
-    async getAll(@Query() query: NgoQuery) {
+    async getAll(@Query() query: INgoQuery) {
+        let queryObject = new NgoQuery(query)
+
         let sqlQuery = Ngo.createQueryBuilder('ngo')
             .leftJoinAndSelect('ngo.address', 'address')
             .leftJoinAndSelect('address.city', 'city')
             .leftJoinAndSelect('ngo.type', 'ngoType');
 
-        if (query['longitude'] && query['latitude']) {
-            const lo = Number(query['longitude']);
-            const la = Number(query['latitude']);
+        sqlQuery = LocationQueryService.addDistanceCalculationToQuery(queryObject, sqlQuery) as SelectQueryBuilder<Ngo>
 
-            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${ lo } ${ la })'::geometry,3857)) * cosd(42.3521)`;
-            const c: any = {};
-            c[a] = {
-                order: "ASC",
-                nulls: "NULLS FIRST"
-            };
-            sqlQuery = sqlQuery.addSelect(a, 'address_DISTANCE');
-            sqlQuery = sqlQuery.andWhere(`${ a } > 0`)
-                .orderBy(c)
-                .limit(10);
-        }
+        Object.keys(queryObject).forEach(key => {
 
-        Object.keys(query).forEach(key => {
-            // @ts-ignore
-            if (query[key] && key !== 'longitude' && key !== 'latitude') {
-                // @ts-ignore
-                sqlQuery = sqlQuery.andWhere(`${ key }.id = :id`, {id: query[key]})
+            if (queryObject[key] && key !== 'longitude' && key !== 'latitude') {
+                sqlQuery = sqlQuery.andWhere(`${ key }.id = :id`, {id: queryObject[key]})
             }
         });
 

@@ -1,15 +1,18 @@
-import {Controller, Get, Logger, Query, UseGuards} from "@nestjs/common";
-import {ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {TradingPoint} from "../../../entity/trading-point.entity";
-import {Const} from "../../../common/util/const";
-import {TradingPointType} from "../../../entity/trading-point-type.entity";
-import {CityResponse} from "../../../models/common/response/city.response";
-import {PlaceQuery} from "../../../models/client/place.query";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {City} from "../../../entity/city.entity";
+import { Controller, Get, Logger, Query, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { Const } from "../../../common/util/const";
+import { TradingPointType } from "../../../entity/trading-point-type.entity";
+import { CityResponse } from "../../../models/common/response/city.response";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleEnum } from "../../../common/enum/role.enum";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { City } from "../../../entity/city.entity";
+import { LocationQueryService } from "../../common/location-query.service";
+import { SelectQueryBuilder } from "typeorm";
+import { PlaceQuery } from "../../../models/client/query/place.query";
+import { IPlaceQuery } from "../../../models/client/query/place-query.interface";
 
 @Controller()
 @ApiTags('place')
@@ -27,33 +30,22 @@ export class PlaceController {
     @ApiQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
     @ApiQuery({name: 'latitude', type: "number", description: 'latitude of user', required: false})
     @ApiResponse({status: 200, type: TradingPoint, isArray: true})
-    async getAll(@Query() query: PlaceQuery) {
+    async getAll(@Query() query: IPlaceQuery) {
+        const queryObject = new PlaceQuery(query);
+
         let sqlQuery = TradingPoint.createQueryBuilder('tradingPoint')
             .leftJoinAndSelect('tradingPoint.address', 'address')
             .leftJoinAndSelect('address.city', 'city')
             .leftJoinAndSelect('tradingPoint.type', 'placeType');
 
-        if (query['longitude'] && query['latitude']) {
-            const lo = Number(query['longitude']);
-            const la = Number(query['latitude']);
+        sqlQuery = LocationQueryService.addDistanceCalculationToQuery(queryObject, sqlQuery) as SelectQueryBuilder<TradingPoint>
 
-            const a = `ST_Distance(ST_Transform(address.coordinate, 3857), ST_Transform('SRID=4326;POINT(${lo} ${la})'::geometry,3857)) * cosd(42.3521)`;
-            const c: any = {};
-            c[a] = {
-                order: "ASC",
-                nulls: "NULLS FIRST"
-            };
-            sqlQuery = sqlQuery.addSelect(a, 'address_distance');
-            sqlQuery = sqlQuery.andWhere(`${a} > 0`)
-                .orderBy(c).limit(10);
-        }
-
-        Object.keys(query).forEach((key: string) => {
-            if (key !== 'longitude' && key !== 'latitude') {
-                // @ts-ignore
-                sqlQuery = sqlQuery.andWhere(`${key}.id = :id`, {id: query[key]})
+        Object.keys(queryObject).forEach((key: string) => {
+            if (queryObject[key] && key !== 'longitude' && key !== 'latitude') {
+                sqlQuery = sqlQuery.andWhere(`${ key }.id = :id`, {id: queryObject[key]})
             }
         });
+
         return await sqlQuery
             .andWhere('tradingPoint.active = true')
             .getMany();
