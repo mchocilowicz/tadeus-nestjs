@@ -10,26 +10,26 @@ import {
     Req,
     UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../common/util/const";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {PhoneRequest} from "../../models/common/request/phone.request";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {LoginService} from "../common/login.service";
-import {User} from "../../entity/user.entity";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
-import {PartnerDetailsResponse} from "../../models/common/response/partner-details.response";
-import {TradingPoint} from "../../entity/trading-point.entity";
-import {Transaction} from "../../entity/transaction.entity";
-import {CodeService} from "../../common/service/code.service";
-import {Terminal} from "../../entity/terminal.entity";
-import {Account} from "../../entity/account.entity";
-import {PartnerPayment} from "../../entity/partner-payment.entity";
-import {PartnerVerifyQuery} from "../../models/partner/partner-verify.query";
-import {PartnerVerifyResponse} from "../../models/partner/response/partner-verify.response";
-import {TransactionStatus} from "../../common/enum/status.enum";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../common/util/const";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { PhoneRequest } from "../../models/common/request/phone.request";
+import { RoleEnum } from "../../common/enum/role.enum";
+import { LoginService } from "../common/login.service";
+import { User } from "../../entity/user.entity";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { PartnerDetailsResponse } from "../../models/common/response/partner-details.response";
+import { TradingPoint } from "../../entity/trading-point.entity";
+import { Transaction } from "../../entity/transaction.entity";
+import { CodeService } from "../../common/service/code.service";
+import { Terminal } from "../../entity/terminal.entity";
+import { Account } from "../../entity/account.entity";
+import { PartnerPayment } from "../../entity/partner-payment.entity";
+import { PartnerVerifyQuery } from "../../models/partner/partner-verify.query";
+import { PartnerVerifyResponse } from "../../models/partner/response/partner-verify.response";
+import { TransactionStatus } from "../../common/enum/status.enum";
 
 const moment = require('moment');
 
@@ -69,7 +69,7 @@ export class PartnerController {
         const account: Account = terminal.account;
 
         if (!terminal || !account) {
-            this.logger.error(`Terminal or Accounts does not exists for ${terminal.id}`);
+            this.logger.error(`Terminal or Accounts does not exists for ${ terminal.id }`);
             throw new BadRequestException('internal_server_error')
         }
 
