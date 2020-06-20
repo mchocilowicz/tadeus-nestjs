@@ -12,36 +12,36 @@ import {
     Res,
     UseGuards
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { User } from "../../entity/user.entity";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { getConnection } from "typeorm";
-import { Const } from "../../common/util/const";
-import { MainResponse } from "../../models/common/response/main.response";
-import { ClientHistoryResponse } from "../../models/common/response/client-history.response";
-import { VirtualCardResponse } from "../../models/common/response/virtual-card.response";
-import { CodeService } from "../../common/service/code.service";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { LoginService } from "../common/login.service";
-import { Transaction } from "../../entity/transaction.entity";
-import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
-import { SignInResponse } from "../../models/common/response/signIn.response";
-import { VirtualCard } from "../../entity/virtual-card.entity";
-import { TadeusEntity } from "../../entity/base.entity";
-import { groupDatesByComponent, roundToTwo } from "../../common/util/functions";
-import { CalculationService } from "../../common/service/calculation.service";
-import { TradingPoint } from "../../entity/trading-point.entity";
-import { UserPayout } from "../../entity/user-payout.entity";
-import { FirebaseTokenRequest } from "../../models/client/request/firebase-token.request";
-import { Account } from "../../entity/account.entity";
-import { CorrectionRequest } from "../../models/client/request/correction.request";
-import { TransactionStatus } from "../../common/enum/status.enum";
-import { Ngo } from "../../entity/ngo.entity";
-import { PhysicalCard } from "../../entity/physical-card.entity";
-import { TierService } from "../common/tier.service";
+import {ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
+import {Roles} from "../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {User} from "../../entity/user.entity";
+import {JwtAuthGuard} from "../../common/guards/jwt.guard";
+import {RolesGuard} from "../../common/guards/roles.guard";
+import {getConnection} from "typeorm";
+import {Const} from "../../common/util/const";
+import {MainResponse} from "../../models/common/response/main.response";
+import {ClientHistoryResponse} from "../../models/common/response/client-history.response";
+import {VirtualCardResponse} from "../../models/common/response/virtual-card.response";
+import {CodeService} from "../../common/service/code.service";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {LoginService} from "../common/login.service";
+import {Transaction} from "../../entity/transaction.entity";
+import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
+import {SignInResponse} from "../../models/common/response/signIn.response";
+import {VirtualCard} from "../../entity/virtual-card.entity";
+import {TadeusEntity} from "../../entity/base.entity";
+import {groupDatesByComponent, roundToTwo} from "../../common/util/functions";
+import {CalculationService} from "../../common/service/calculation.service";
+import {TradingPoint} from "../../entity/trading-point.entity";
+import {UserPayout} from "../../entity/user-payout.entity";
+import {FirebaseTokenRequest} from "../../models/client/request/firebase-token.request";
+import {Account} from "../../entity/account.entity";
+import {CorrectionRequest} from "../../models/client/request/correction.request";
+import {TransactionStatus} from "../../common/enum/status.enum";
+import {Ngo} from "../../entity/ngo.entity";
+import {PhysicalCard} from "../../entity/physical-card.entity";
+import {TierService} from "../common/tier.service";
 
 const _ = require('lodash');
 const moment = require('moment');
@@ -93,7 +93,7 @@ export class ClientController {
         const card: VirtualCard | undefined = user.card;
 
         if (!card) {
-            this.logger.error(`User ${ user.id } does not have assigned  VirtualCard`);
+            this.logger.error(`User ${user.id} does not have assigned  VirtualCard`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -134,14 +134,14 @@ export class ClientController {
     async history(@Req() req: any) {
         const user: User = req.user;
         if (!user.id) {
-            this.logger.error(`User ${ user.id } does not exists`);
+            this.logger.error(`User ${user.id} does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
         let tempUser: User | undefined = await User.findOneWithHistoryData(user.id);
 
         if (!tempUser) {
-            this.logger.error(`User ${ user.id } does not exists`);
+            this.logger.error(`User ${user.id} does not exists`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -173,7 +173,7 @@ export class ClientController {
         const virtualCard: VirtualCard | undefined = user.card;
 
         if (!virtualCard) {
-            this.logger.error(`User ${ user.id } does not have assigned VirtualCard`);
+            this.logger.error(`User ${user.id} does not have assigned VirtualCard`);
             throw new BadRequestException('internal_server_error')
         }
 
@@ -200,8 +200,7 @@ export class ClientController {
                 .leftJoinAndSelect('user.card', 'virtualCard')
                 .where('t.ID = :ID', {ID: dto.transactionID})
                 .andWhere('terminal.ID = :terminal', {terminal: dto.terminalID})
-                .andWhere('t.status = :status', {status: TransactionStatus.WAITING})
-                .andWhere('t.isCorrection = true')
+                .andWhere('t.status = :status', {status: TransactionStatus.ACCEPTED})
                 .andWhere('virtualCard.status = :cardStatus', {cardStatus: 'ACTIVE'})
                 .getOne();
 
@@ -217,43 +216,44 @@ export class ClientController {
                 throw new BadRequestException('transaction_does_not_belong_to_user')
             }
 
-            if (dto.userDecision) {
-                transaction.status = TransactionStatus.ACCEPTED;
+            const correctedTransaction: Transaction = transaction.correction;
 
-                const t: Transaction = transaction.correction;
-                t.status = TransactionStatus.CORRECTED;
+            if (dto.userDecision) {
+                correctedTransaction.status = TransactionStatus.ACCEPTED;
+
+                transaction.status = TransactionStatus.CORRECTED;
 
                 const point: TradingPoint = transaction.tradingPoint;
                 const virtualCard: VirtualCard = user.card;
                 const ngo: Ngo = transaction.ngo;
                 const card: PhysicalCard = ngo.card;
 
-                if (transaction.price === 0) {
-                    const pool = roundToTwo(-t.poolValue / 2);
+                if (correctedTransaction.price === 0) {
+                    const pool = roundToTwo(-transaction.poolValue / 2);
 
-                    user.xp -= t.userXp;
-                    user.updateCollectedMoney(-t.poolValue);
-                    point.xp -= t.tradingPointXp;
+                    user.xp -= transaction.userXp;
+                    user.updateCollectedMoney(-transaction.poolValue);
+                    point.xp -= transaction.tradingPointXp;
                     TierService.asignTier(pool, user, virtualCard)
-                    virtualCard.updatePool(-t.poolValue);
-                    card.collectedMoney -= t.poolValue;
+                    virtualCard.updatePool(-transaction.poolValue);
+                    card.collectedMoney -= transaction.poolValue;
                 } else {
-                    const pool = roundToTwo((-t.poolValue + transaction.poolValue) / 2);
+                    const pool = roundToTwo((-transaction.poolValue + correctedTransaction.poolValue) / 2);
                     TierService.asignTier(pool, user, virtualCard)
-                    user.updateCollectedMoney(-t.poolValue + transaction.poolValue);
-                    virtualCard.updatePool(-t.poolValue + transaction.poolValue);
-                    card.collectedMoney += (-t.poolValue + transaction.poolValue);
+                    user.updateCollectedMoney(-transaction.poolValue + correctedTransaction.poolValue);
+                    virtualCard.updatePool(-transaction.poolValue + correctedTransaction.poolValue);
+                    card.collectedMoney += (-transaction.poolValue + correctedTransaction.poolValue);
                 }
 
                 await entityManager.save(card);
                 await entityManager.save(virtualCard);
                 await entityManager.save(point);
                 await entityManager.save(user);
-                await entityManager.save(t);
+                await entityManager.save(transaction);
             } else {
-                transaction.status = TransactionStatus.REJECTED
+                correctedTransaction.status = TransactionStatus.REJECTED
             }
-            await entityManager.save(transaction);
+            await entityManager.save(correctedTransaction);
         })
     }
 

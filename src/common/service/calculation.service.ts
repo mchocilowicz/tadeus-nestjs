@@ -1,6 +1,6 @@
-import { Injectable } from "@nestjs/common";
-import { Transaction } from "../../entity/transaction.entity";
-import { TradingPoint } from "../../entity/trading-point.entity";
+import {Injectable} from "@nestjs/common";
+import {Transaction} from "../../entity/transaction.entity";
+import {TradingPoint} from "../../entity/trading-point.entity";
 
 const _ = require('lodash');
 
@@ -76,11 +76,12 @@ export class CalculationService {
 
     calculateCost(price: number, donationPercentage: number, defaultVat: number): number {
         const vat = defaultVat / 100;
-        const netto = price / (1 + this.roundToTwo(vat));
-        const cost = this.roundToTwo(netto) * (donationPercentage / 100);
-        const roundedCost = this.roundToTwo(cost);
+        const netto = price / (1 + vat);
+        const cost = netto * (donationPercentage / 100);
 
-        return this.increaseInCaseOfOddNumber(roundedCost);
+        const newPrice = this.increaseInCaseOfOddNumber(cost);
+
+        return this.roundToTwo(newPrice);
     }
 
     increaseInCaseOfOddNumber(price: number): number {
