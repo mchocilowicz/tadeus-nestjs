@@ -1,6 +1,6 @@
-import { Column, Entity } from "typeorm";
-import { TadeusEntity } from "./base.entity";
-import { NumberColumnTransformer } from "../common/util/number-column.transformer";
+import {Column, Entity} from "typeorm";
+import {TadeusEntity} from "./base.entity";
+import {NumberColumnTransformer} from "../common/util/number-column.transformer";
 
 @Entity({name: 'SETTINGS'})
 export class Configuration extends TadeusEntity {
@@ -13,6 +13,12 @@ export class Configuration extends TadeusEntity {
 
     @Column({name: 'USER_EXPIRATION', transformer: new NumberColumnTransformer()})
     userExpiration: number = 0;
+
+    @Column({name: 'PERSONAL_POOL_FREQUENCY', default: 0, transformer: new NumberColumnTransformer()})
+    personalPoolFrequency: number = 0;
+
+    @Column({name: 'DONATION_POOL_FREQUENCY', default: 0, transformer: new NumberColumnTransformer()})
+    donationPoolFrequency: number = 0;
 
     @Column({name: 'USER_CLOSE_INTERVAL', transformer: new NumberColumnTransformer()})
     userCloseInterval: number = 0;

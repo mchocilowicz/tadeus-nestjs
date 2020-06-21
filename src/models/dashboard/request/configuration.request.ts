@@ -11,6 +11,10 @@ export class ConfigurationRequest {
     @ApiProperty()
     userExpiration: number;
     @ApiProperty()
+    personalPoolFrequency: number;
+    @ApiProperty()
+    donationPoolFrequency: number;
+    @ApiProperty()
     userCloseInterval: number;
     @ApiProperty()
     partnerEmailInterval: number;
@@ -40,6 +44,8 @@ export class ConfigurationRequest {
         this.partnerCloseInterval = configuration.partnerCloseInterval;
         this.ngoGenerateInterval = configuration.ngoGenerateInterval;
         this.ngoCloseInterval = configuration.ngoCloseInterval;
+        this.donationPoolFrequency = configuration.donationPoolFrequency;
+        this.personalPoolFrequency = configuration.personalPoolFrequency;
         this.userFrom = userPeriod?.from;
         this.partnerFrom = partnerPeriod?.from;
         this.partnerSendMessagesAt = partnerPeriod?.sendMessagesAt;

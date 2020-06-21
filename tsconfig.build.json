@@ -2,9 +2,11 @@
   "extends": "./tsconfig.json",
   "exclude": [
     "node_modules",
-    "ui",
     "test",
     "dist",
-    "**/*spec.ts"
+    "**/*spec.ts",
+    "config",
+    "migrations",
+    "public"
   ]
 }

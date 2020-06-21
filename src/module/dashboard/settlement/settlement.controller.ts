@@ -11,24 +11,25 @@ import {
     Query,
     UseGuards
 } from "@nestjs/common";
-import { PartnerPayment } from "../../../entity/partner-payment.entity";
-import { Const } from "../../../common/util/const";
-import { Transaction } from "../../../entity/transaction.entity";
-import { EntityManager, getConnection } from "typeorm";
-import { NgoPayout } from "../../../entity/ngo-payout.entity";
-import { Ngo } from "../../../entity/ngo.entity";
-import { UserPeriod } from "../../../entity/user-period.entity";
-import { PartnerPeriod } from "../../../entity/partner-period.entity";
-import { Configuration } from "../../../entity/configuration.entity";
-import { NgoPeriod } from "../../../entity/ngo-period.entity";
-import { TadeusEntity } from "../../../entity/base.entity";
-import { Donation } from "../../../entity/donation.entity";
-import { roundToTwo } from "../../../common/util/functions";
-import { ApiBearerAuth, ApiHeader } from "@nestjs/swagger";
-import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
-import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
-import { RolesGuard } from "../../../common/guards/roles.guard";
+import {PartnerPayment} from "../../../entity/partner-payment.entity";
+import {Const} from "../../../common/util/const";
+import {Transaction} from "../../../entity/transaction.entity";
+import {EntityManager, getConnection} from "typeorm";
+import {NgoPayout} from "../../../entity/ngo-payout.entity";
+import {Ngo} from "../../../entity/ngo.entity";
+import {UserPeriod} from "../../../entity/user-period.entity";
+import {PartnerPeriod} from "../../../entity/partner-period.entity";
+import {Configuration} from "../../../entity/configuration.entity";
+import {NgoPeriod} from "../../../entity/ngo-period.entity";
+import {TadeusEntity} from "../../../entity/base.entity";
+import {Donation} from "../../../entity/donation.entity";
+import {roundToTwo} from "../../../common/util/functions";
+import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
+import {Roles} from "../../../common/decorators/roles.decorator";
+import {RoleEnum} from "../../../common/enum/role.enum";
+import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
+import {RolesGuard} from "../../../common/guards/roles.guard";
+import {TradingPoint} from "../../../entity/trading-point.entity";
 
 const moment = require('moment');
 
@@ -122,7 +123,7 @@ export class SettlementController {
             .where('p.ID IN (:...list)', {list: changedPaymentIds})
             .getMany();
 
-        getConnection().transaction(async (entityManager: EntityManager) => {
+        await getConnection().transaction(async (entityManager: EntityManager) => {
             for (const payment of payments) {
                 let dto = changedData.find(e => e.ID === payment.ID);
                 if (dto) {
@@ -193,12 +194,23 @@ export class SettlementController {
         return [];
     }
 
+    @Get('partner/points')
+    @ApiBearerAuth()
+    @Roles(RoleEnum.DASHBOARD)
+    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+    async getTradingPoints() {
+        return await TradingPoint.createQueryBuilder('t')
+            .select('t.ID', 'ID')
+            .getRawMany();
+    }
+
     @Get('partner')
     @ApiBearerAuth()
     @Roles(RoleEnum.DASHBOARD)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
-    async getPayments(@Query() query: { showAll: string, selectedPeriod: string }) {
+    async getPayments(@Query() query: { showAll: string, selectedPeriod: string, partnerID: string }) {
         let config = await Configuration.getMain();
         let userPeriod = await UserPeriod.findActivePeriod();
         let partnerPeriodQuery = PartnerPeriod.createQueryBuilder('p')
@@ -246,6 +258,10 @@ export class SettlementController {
 
         if (query.showAll && query.showAll === 'false') {
             periodPayments = periodPayments.filter(value => !value.isPaid)
+        }
+
+        if (query.partnerID && query.partnerID !== 'null') {
+            periodPayments = periodPayments.filter((value: PartnerPayment) => value.tradingPoint.ID === query.partnerID)
         }
 
         return {
@@ -402,7 +418,7 @@ export class SettlementController {
         if (userPeriods.length > 0) {
             throw new BadRequestException('user_period_not_touched')
         } else {
-            getConnection().transaction(async entityManager => {
+            await getConnection().transaction(async entityManager => {
                 let activePartnerPeriod: PartnerPeriod | undefined = await PartnerPeriod.findActivePeriod();
                 if (activePartnerPeriod) {
                     const payments = await PartnerPayment.createQueryBuilder('p')
@@ -509,7 +525,7 @@ export class SettlementController {
             .where('n.id IN (:...list)', {list: changedPaymentIds})
             .getMany();
 
-        getConnection().transaction(async (entityManager: EntityManager) => {
+        await getConnection().transaction(async (entityManager: EntityManager) => {
             for (const payout of payouts) {
                 let dto = changedData.find(e => e.id === payout.id);
                 if (dto) {

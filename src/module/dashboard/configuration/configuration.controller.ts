@@ -39,6 +39,8 @@ export class ConfigurationController {
             config.userCloseInterval = dto.userCloseInterval;
             config.partnerEmailInterval = dto.partnerEmailInterval;
             config.partnerCloseInterval = dto.partnerCloseInterval;
+            config.personalPoolFrequency = dto.personalPoolFrequency;
+            config.donationPoolFrequency = dto.donationPoolFrequency;
 
             let period: UserPeriod | undefined = await UserPeriod.findActivePeriod();
             if (!period) {
