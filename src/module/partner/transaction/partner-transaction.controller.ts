@@ -191,16 +191,16 @@ export class PartnerTransactionController {
             }
         });
 
-        // this.firebaseService.getAdmin().messaging().send({
-        //     token: data.token,
-        //     data: data.data,
-        //     notification: {
-        //         title: 'Tadeus',
-        //         body: 'Korekta transakcji do akceptacji',
-        //     }
-        // })
-        //     .then(() => this.logger.log("Notification send"))
-        //     .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+        this.firebaseService.getAdmin().messaging().send({
+            token: data.token,
+            data: data.data,
+            notification: {
+                title: 'Tadeus',
+                body: 'Korekta transakcji do akceptacji',
+            }
+        })
+            .then(() => this.logger.log("Notification send"))
+            .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
 
         return data.api;
     }
