@@ -29,6 +29,7 @@ import {Account} from "../../entity/account.entity";
 import {PartnerPayment} from "../../entity/partner-payment.entity";
 import {PartnerVerifyQuery} from "../../models/partner/partner-verify.query";
 import {PartnerVerifyResponse} from "../../models/partner/response/partner-verify.response";
+import {TransactionHistoryResponse} from "../../models/partner/transaction-history.response";
 
 const moment = require('moment');
 
@@ -103,6 +104,7 @@ export class PartnerController {
         let sqlQuery = Transaction.createQueryBuilder('transaction')
             .leftJoinAndSelect('transaction.tradingPoint', 'tradingPoint')
             .leftJoinAndSelect('transaction.terminal', 'terminal')
+            .leftJoinAndSelect('transaction.correction', 'correction')
             .where('tradingPoint.id = :id', {id: point.id});
 
         if (query && query.terminal) {
@@ -160,7 +162,7 @@ export class PartnerController {
             if (period) {
                 allweeks.push({
                     week: this.prepareDate(period[0].createdAt, format2),
-                    list: period
+                    list: period.map(e => new TransactionHistoryResponse(e as Transaction))
                 })
             }
         })
