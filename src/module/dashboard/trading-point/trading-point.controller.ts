@@ -33,13 +33,13 @@ import {Account} from "../../../entity/account.entity";
 import {Role} from "../../../entity/role.entity";
 import {RoleEnum} from "../../../common/enum/role.enum";
 import {Address} from "../../../entity/address.entity";
-import {Status, Step} from "../../../common/enum/status.enum";
 import {TradingPointSaveRequest} from "../../../models/dashboard/request/trading-point-save.request";
 import {Opinion} from "../../../entity/opinion.entity";
 import {Roles} from "../../../common/decorators/roles.decorator";
 import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
 import {RolesGuard} from "../../../common/guards/roles.guard";
 import {Const} from "../../../common/util/const";
+import {TerminalService} from "../../common/terminal.service";
 
 const moment = require("moment");
 
@@ -48,7 +48,7 @@ const moment = require("moment");
 export class TradingPointController {
     private readonly logger = new Logger(TradingPointController.name);
 
-    constructor(private readonly codeService: CodeService) {
+    constructor(private readonly codeService: CodeService, private readonly terminalService: TerminalService) {
     }
 
     @Get()
@@ -332,75 +332,8 @@ export class TradingPointController {
     @Roles(RoleEnum.DASHBOARD)
     @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
-    async assignNewTerminal(@Param('ID') id: string, @Body() dto: any) {
-        const role = await Role.findOne({value: RoleEnum.TERMINAL});
-
-        if (!role) {
-            this.logger.error('TERMINAL Role does not exists');
-            throw new BadRequestException('internal_server_error');
-        }
-
-        const terminal = await Terminal.createQueryBuilder('t')
-            .leftJoinAndSelect('t.tradingPoint', 'point')
-            .leftJoinAndSelect('t.phone', 'phone')
-            .leftJoinAndSelect('t.account', 'account')
-            .where('phone.value = :phone', {phone: dto.phone})
-            .andWhere('point.ID = :ID', {ID: id})
-            .getOne();
-
-        if (terminal) {
-            let account = terminal.account;
-            if (account.status === Status.DELETED) {
-                terminal.account.status = Status.ACTIVE;
-                terminal.name = dto.name;
-                terminal.step = Step.SIGN_IN;
-                await terminal.save();
-                return {
-                    ID: terminal.ID,
-                    name: terminal.name,
-                    phone: terminal.phone?.value,
-                    step: terminal.step
-                }
-            } else {
-                this.logger.error('Terminal is already assigned to Trading Point');
-                throw new BadRequestException('excel_terminal_already_assigned')
-            }
-        } else {
-            const point = await TradingPoint.findOne({ID: id});
-
-            if (!point) {
-                throw new NotFoundException('trading_point_does_not_exists')
-            }
-
-            let counts = await Terminal.count({tradingPoint: point});
-            const accountID = [point.ID, this.codeService.generateTerminalNumber(counts)].join('-');
-
-            const account = new Account(accountID, role);
-
-            return await getConnection().transaction(async entityManager => {
-                const prefix = await PhonePrefix.findOne({value: 48});
-                if (prefix) {
-                    if (dto.phone.toString().length > prefix.maxLength) {
-                        throw new BadRequestException('invalid_phone_number')
-                    }
-
-                    let phone = new Phone(dto.phone, prefix);
-                    const newTerminal = new Terminal(accountID, await entityManager.save(phone), point, await entityManager.save(account));
-                    newTerminal.isMain = false;
-                    newTerminal.name = dto.name;
-                    await entityManager.save(newTerminal);
-
-                    return {
-                        ID: newTerminal.ID,
-                        name: newTerminal.name,
-                        phone: newTerminal.phone?.value,
-                        step: newTerminal.step
-                    }
-                } else {
-                    throw new BadRequestException('phone_prefix_does_not_exists')
-                }
-            });
-        }
+    async assignNewTerminal(@Param('ID') id: string, @Body() dto: { phone: number, prefix: number, name: string }) {
+        return this.terminalService.addNewTerminalToTradingPointByDashboard(id, dto);
     }
 
     @Post("import")

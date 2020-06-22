@@ -1,22 +1,22 @@
-import { BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import { CodeService } from "../../common/service/code.service";
-import { User } from "../../entity/user.entity";
-import { Role } from "../../entity/role.entity";
-import { RoleEnum } from "../../common/enum/role.enum";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { PhoneRequest } from "../../models/common/request/phone.request";
-import { Status, Step } from "../../common/enum/status.enum";
-import { CryptoService } from "../../common/service/crypto.service";
-import { EntityManager, getConnection } from "typeorm";
-import { Account } from "../../entity/account.entity";
-import { VirtualCard } from "../../entity/virtual-card.entity";
-import { TadeusJwtService } from "./TadeusJwtModule/TadeusJwtService";
-import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
-import { Phone } from "../../entity/phone.entity";
-import { PhonePrefix } from "../../entity/phone-prefix.entity";
-import { Terminal } from "../../entity/terminal.entity";
-import { Admin } from "../../entity/admin.entity";
-import { SmsService } from "./sms.service";
+import {BadRequestException, Injectable, Logger, NotFoundException, UnauthorizedException} from '@nestjs/common';
+import {CodeService} from "../../common/service/code.service";
+import {User} from "../../entity/user.entity";
+import {Role} from "../../entity/role.entity";
+import {RoleEnum} from "../../common/enum/role.enum";
+import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
+import {PhoneRequest} from "../../models/common/request/phone.request";
+import {Status, Step} from "../../common/enum/status.enum";
+import {CryptoService} from "../../common/service/crypto.service";
+import {EntityManager, getConnection} from "typeorm";
+import {Account} from "../../entity/account.entity";
+import {VirtualCard} from "../../entity/virtual-card.entity";
+import {TadeusJwtService} from "./TadeusJwtModule/TadeusJwtService";
+import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
+import {Phone} from "../../entity/phone.entity";
+import {PhonePrefix} from "../../entity/phone-prefix.entity";
+import {Terminal} from "../../entity/terminal.entity";
+import {Admin} from "../../entity/admin.entity";
+import {SmsService} from "./sms.service";
 
 @Injectable()
 export class LoginService {
@@ -105,6 +105,7 @@ export class LoginService {
             .where(`phone.value = :phone`, {phone: dto.phone})
             .andWhere(`prefix.value = :prefix`, {prefix: dto.phonePrefix})
             .andWhere('role.value = :name', {name: RoleEnum.CLIENT})
+            .andWhere('account.status <> :status', {status: Status.DELETED})
             .getOne();
 
         let anonymousUser: User | undefined = await User.createQueryBuilder('user')
@@ -139,6 +140,11 @@ export class LoginService {
                 if (!account || account.role.value !== RoleEnum.CLIENT) {
                     this.logger.error(`Account CLIENT does not exists for registered User ${user.id}`);
                     throw new BadRequestException('internal_server_error')
+                }
+
+                if (account && (account.status === Status.SUSPENDED || account.status === Status.BLOCKED)) {
+                    this.logger.error(`Account CLIENT is Suspended or Blocked for User ${user.id}`);
+                    throw new BadRequestException('account_blocked')
                 }
 
                 this.checkUserRights(account, RoleEnum.CLIENT);

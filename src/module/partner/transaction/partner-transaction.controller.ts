@@ -138,7 +138,7 @@ export class PartnerTransactionController {
                 newAmount: `${dto.price}`,
                 terminalID: terminal.ID,
                 isCorrection: "true",
-                pool: pool
+                pool: `${pool}`
             };
 
             if (terminal.isMain) {

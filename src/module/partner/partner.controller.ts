@@ -112,31 +112,62 @@ export class PartnerController {
             let transactions = await sqlQuery
                 .orderBy('transaction.createdAt', 'DESC')
                 .getMany();
-            let d = [];
+
             if (transactions.length > 0) {
-                let lastTransaction: any = transactions[transactions.length - 1];
-                const lastDate = moment(lastTransaction.createdAt);
-                const lastMonday = lastDate.weekday(-6);
-                let end = moment();
-                let start = moment().weekday(1);
-
-                while (start.isSameOrAfter(lastMonday)) {
-                    const from = start.format(Const.DATE_FORMAT);
-                    const to = end.format(Const.DATE_FORMAT);
-
-                    let t = transactions.filter((e: any) => moment(moment(e.createdAt).format(Const.DATE_FORMAT)).isBetween(from, to, null, '[]'));
-                    if (t.length > 0) {
-                        d.push(t);
-                    }
-                    start = moment(to).subtract(1, "days").weekday(-6);
-                    end = moment(from).subtract(1, 'days');
-                }
+                return this.extractDataForWeeks(transactions);
             }
-            return d;
+            return [];
         } catch (e) {
             console.log(e)
         }
+    }
 
+    groupDates(data: { createdAt: Date }[], token: string): Map<string, { createdAt: Date }[]> {
+        const groupedMap = data.reduce(function (val: Map<string, { createdAt: Date }[]>, obj: { createdAt: Date }) {
+            let comp = moment(obj.createdAt).format(token);
+            const value = val.get(comp);
+            if (value) {
+                value.push(obj);
+            } else {
+                val.set(comp, [obj])
+            }
+            return val;
+        }, new Map<string, []>());
+        return groupedMap;
+    }
+
+    private extractDataForWeeks(transactions: Transaction[]) {
+        let years = this.groupDates(transactions, 'Y');
+        let allweeks: any = [];
+
+        let sortedYear = [...years.keys()].sort((a, b) => a > b ? -1 : 1);
+
+        for (const year of sortedYear) {
+            const data = years.get(year) as Transaction[];
+            if (data) {
+                this.extractedDataByFormat(data, allweeks, 'W', 'isoWeek');
+            }
+        }
+        return allweeks
+    }
+
+    private extractedDataByFormat(data: Transaction[], allweeks: any[], format: string, format2: string): void {
+        let groupedData = this.groupDates(data, format);
+        let sortedData = [...groupedData.keys()].sort((a, b) => a > b ? -1 : 1);
+
+        sortedData.forEach(value => {
+            let period = groupedData.get(value)
+            if (period) {
+                allweeks.push({
+                    week: this.prepareDate(period[0].createdAt, format2),
+                    list: period
+                })
+            }
+        })
+    }
+
+    private prepareDate(date: Date, format: string): string {
+        return `${moment(date).startOf(format).format(Const.DATE_FORMAT)} - ${moment(date).endOf(format).format(Const.DATE_FORMAT)}`;
     }
 
     @Get('verify')
