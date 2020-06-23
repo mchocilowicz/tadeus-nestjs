@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Get, Logger, Put, Req, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
+import { RoleType } from "../../../common/enum/roleType";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
 import { Const } from "../../../common/util/const";
@@ -21,9 +21,7 @@ export class InformationController {
 
     private readonly logger = new Logger(InformationController.name);
 
-    @Get()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: UserDetailsResponse})
     getUserData(@Req() req: any): UserDetailsResponse {
         let user: User = req.user;
@@ -37,9 +35,7 @@ export class InformationController {
 
     }
 
-    @Put()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBody({type: UserDetailsRequest})
     async updateUserData(@Req() req: any, @Body() dto: UserDetailsRequest) {
         const user: User = req.user;

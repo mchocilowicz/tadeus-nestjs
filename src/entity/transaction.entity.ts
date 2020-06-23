@@ -13,6 +13,7 @@ import { PartnerPeriod } from "./partner-period.entity";
 import { UserPeriod } from "./user-period.entity";
 import { NgoPeriod } from "./ngo-period.entity";
 import { roundToTwo } from "../common/util/functions";
+import { TransactionType } from "../common/enum/transaction-type.enum";
 
 const moment = require('moment');
 
@@ -106,7 +107,7 @@ export class Transaction extends TadeusEntity {
     @JoinColumn({name: 'CORRECTION_SKID'})
     correction?: Transaction;
 
-    readonly class: string = 'TRANSACTION';
+    readonly class: TransactionType = TransactionType.TRANSACTION;
 
     constructor(terminal: Terminal,
                 user: User,

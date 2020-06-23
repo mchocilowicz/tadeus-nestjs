@@ -1,29 +1,23 @@
-import {Controller, Get, Req, UseGuards} from "@nestjs/common";
-import {Terminal} from "../../../entity/terminal.entity";
-import {TradingPoint} from "../../../entity/trading-point.entity";
-import {PartnerPayment} from "../../../entity/partner-payment.entity";
-import {CodeService} from "../../../common/service/code.service";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {ApiBearerAuth, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {PartnerPaymentResponse} from "../../../models/partner/response/partner-payment.response";
-import {Const} from "../../../common/util/const";
+import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { Terminal } from "../../../entity/terminal.entity";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { PartnerPayment } from "../../../entity/partner-payment.entity";
+import { CodeService } from "../../../common/service/code.service";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiBearerAuth, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { PartnerPaymentResponse } from "../../../models/partner/response/partner-payment.response";
+import { Const } from "../../../common/util/const";
 
-@Controller()
-@ApiTags('donation')
-@ApiBearerAuth()
-@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+@Controller() @ApiTags('donation') @ApiBearerAuth() @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER) @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class PartnerDonationController {
 
     constructor(private readonly codeService: CodeService) {
     }
 
-    @Get()
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: PartnerPaymentResponse})
     async getPaymentInformation(@Req() req: any) {
         let terminal: Terminal = req.user;

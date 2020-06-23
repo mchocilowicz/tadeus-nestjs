@@ -1,35 +1,25 @@
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    Get,
-    InternalServerErrorException,
-    Logger,
-    Param,
-    Post,
-    Put,
-    Query,
-    UseGuards
+    BadRequestException, Body, Controller, Get, InternalServerErrorException, Logger, Param, Post, Put, Query, UseGuards
 } from "@nestjs/common";
-import {PartnerPayment} from "../../../entity/partner-payment.entity";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../entity/transaction.entity";
-import {EntityManager, getConnection} from "typeorm";
-import {NgoPayout} from "../../../entity/ngo-payout.entity";
-import {Ngo} from "../../../entity/ngo.entity";
-import {UserPeriod} from "../../../entity/user-period.entity";
-import {PartnerPeriod} from "../../../entity/partner-period.entity";
-import {Configuration} from "../../../entity/configuration.entity";
-import {NgoPeriod} from "../../../entity/ngo-period.entity";
-import {TadeusEntity} from "../../../entity/base.entity";
-import {Donation} from "../../../entity/donation.entity";
-import {roundToTwo} from "../../../common/util/functions";
-import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {TradingPoint} from "../../../entity/trading-point.entity";
+import { PartnerPayment } from "../../../entity/partner-payment.entity";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../entity/transaction.entity";
+import { EntityManager, getConnection } from "typeorm";
+import { NgoPayout } from "../../../entity/ngo-payout.entity";
+import { Ngo } from "../../../entity/ngo.entity";
+import { UserPeriod } from "../../../entity/user-period.entity";
+import { PartnerPeriod } from "../../../entity/partner-period.entity";
+import { Configuration } from "../../../entity/configuration.entity";
+import { NgoPeriod } from "../../../entity/ngo-period.entity";
+import { TadeusEntity } from "../../../entity/base.entity";
+import { Donation } from "../../../entity/donation.entity";
+import { roundToTwo } from "../../../common/util/functions";
+import { ApiBearerAuth, ApiHeader } from "@nestjs/swagger";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { TradingPoint } from "../../../entity/trading-point.entity";
 
 const moment = require('moment');
 
@@ -38,10 +28,7 @@ export class SettlementController {
 
     private readonly logger = new Logger(SettlementController.name);
 
-    @Post('partner')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post('partner') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async generatePartnerPayments() {
         let userPeriods: UserPeriod[] = await UserPeriod.createQueryBuilder('p')
@@ -106,10 +93,7 @@ export class SettlementController {
         }
     }
 
-    @Put('partner')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put('partner') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updatePayments(@Body() dto: PartnerPaymentResponse[]) {
         const changedData = dto.filter(e => e.hasChanges);
@@ -160,10 +144,7 @@ export class SettlementController {
         });
     }
 
-    @Get('partner/periods')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('partner/periods') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getPartnerPeriods() {
         const periods = await PartnerPeriod.find();
@@ -177,10 +158,7 @@ export class SettlementController {
         return []
     }
 
-    @Get('ngo/periods')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('ngo/periods') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getNgoPeriods() {
         const periods = await NgoPeriod.find();
@@ -194,10 +172,7 @@ export class SettlementController {
         return [];
     }
 
-    @Get('partner/points')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('partner/points') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getTradingPoints() {
         return await TradingPoint.createQueryBuilder('t')
@@ -205,10 +180,7 @@ export class SettlementController {
             .getRawMany();
     }
 
-    @Get('partner')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('partner') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getPayments(@Query() query: { showAll: string, selectedPeriod: string, partnerID: string }) {
         let config = await Configuration.getMain();
@@ -283,10 +255,7 @@ export class SettlementController {
         }
     }
 
-    @Post('partner/:id/ngoPayout')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post('partner/:id/ngoPayout') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async closePartnerPeriod(@Param('id') id: string) {
         await getConnection().transaction(async (entityManager: EntityManager) => {
@@ -401,10 +370,7 @@ export class SettlementController {
         })
     }
 
-    @Put('partner/notifications')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put('partner/notifications') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async closePayments() {
         let userPeriods: UserPeriod[] = await UserPeriod.createQueryBuilder('p')
@@ -448,10 +414,7 @@ export class SettlementController {
         }
     }
 
-    @Get('ngo')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('ngo') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getNgoPayouts(@Query() query: { selectedPeriod: string, showAll: string }) {
         let config = await Configuration.getMain();
@@ -508,10 +471,7 @@ export class SettlementController {
         }
     }
 
-    @Put('ngo')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put('ngo') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updateNgoPayouts(@Body() dto: NgoPayment[]) {
         const changedData = dto.filter(e => e.hasChanges);
@@ -537,10 +497,7 @@ export class SettlementController {
         });
     }
 
-    @Put('ngo/:id/close')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put('ngo/:id/close') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async closeNgoPeriod(@Param('id') id: string) {
         const period = await NgoPeriod.createQueryBuilder("p")

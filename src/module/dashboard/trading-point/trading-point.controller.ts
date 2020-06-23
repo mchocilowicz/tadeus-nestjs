@@ -3,58 +3,45 @@ import {
     Body,
     Controller,
     Get,
-    Logger,
-    NotFoundException,
-    Param,
-    Post,
-    Put,
-    Query,
-    Res,
-    UploadedFile,
-    UseGuards,
-    UseInterceptors
+    Logger, NotFoundException, Param, Post, Put, Query, Res, UploadedFile, UseGuards, UseInterceptors
 } from "@nestjs/common";
-import {TradingPoint} from "../../../entity/trading-point.entity";
-import {EntityManager, getConnection, QueryFailedError} from "typeorm";
-import {FileInterceptor} from "@nestjs/platform-express";
-import {City} from "../../../entity/city.entity";
-import {TradingPointType} from "../../../entity/trading-point-type.entity";
-import {ApiBearerAuth, ApiConsumes, ApiHeader, ApiTags} from "@nestjs/swagger";
-import {validate} from "class-validator";
-import {extractErrors} from "../../../common/util/functions";
-import {ExcelException} from "../../../common/exceptions/excel.exception";
-import {CodeService} from "../../../common/service/code.service";
-import {Terminal} from "../../../entity/terminal.entity";
-import {diskStorage} from "multer";
-import {TradingPointExcelRow} from "../../../models/dashboard/excel/trading-point-row.excel";
-import {Phone} from "../../../entity/phone.entity";
-import {PhonePrefix} from "../../../entity/phone-prefix.entity";
-import {Account} from "../../../entity/account.entity";
-import {Role} from "../../../entity/role.entity";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {Address} from "../../../entity/address.entity";
-import {TradingPointSaveRequest} from "../../../models/dashboard/request/trading-point-save.request";
-import {Opinion} from "../../../entity/opinion.entity";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {Const} from "../../../common/util/const";
-import {TerminalService} from "../../common/terminal.service";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { EntityManager, getConnection, QueryFailedError } from "typeorm";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { City } from "../../../entity/city.entity";
+import { TradingPointType } from "../../../entity/trading-point-type.entity";
+import { ApiBearerAuth, ApiConsumes, ApiHeader, ApiTags } from "@nestjs/swagger";
+import { validate } from "class-validator";
+import { extractErrors } from "../../../common/util/functions";
+import { ExcelException } from "../../../common/exceptions/excel.exception";
+import { CodeService } from "../../../common/service/code.service";
+import { Terminal } from "../../../entity/terminal.entity";
+import { diskStorage } from "multer";
+import { TradingPointExcelRow } from "../../../models/dashboard/excel/trading-point-row.excel";
+import { Phone } from "../../../entity/phone.entity";
+import { PhonePrefix } from "../../../entity/phone-prefix.entity";
+import { Account } from "../../../entity/account.entity";
+import { Role } from "../../../entity/role.entity";
+import { RoleType } from "../../../common/enum/roleType";
+import { Address } from "../../../entity/address.entity";
+import { TradingPointSaveRequest } from "../../../models/dashboard/request/trading-point-save.request";
+import { Opinion } from "../../../entity/opinion.entity";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { Const } from "../../../common/util/const";
+import { TerminalService } from "../../common/terminal.service";
 
 const moment = require("moment");
 
-@Controller()
-@ApiTags('trading-point')
+@Controller() @ApiTags('trading-point')
 export class TradingPointController {
     private readonly logger = new Logger(TradingPointController.name);
 
     constructor(private readonly codeService: CodeService, private readonly terminalService: TerminalService) {
     }
 
-    @Get()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getAllTradePoints(@Query() query: { name: string, type: string, city: string }) {
         let sql = await TradingPoint.createQueryBuilder('t')
@@ -86,10 +73,7 @@ export class TradingPointController {
         return tradingPoints
     }
 
-    @Get('opinion')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('opinion') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getOpinionsForTradingPoints() {
         return await Opinion.createQueryBuilder("o")
@@ -113,10 +97,7 @@ export class TradingPointController {
         response.sendFile('trading-point.xlsx', {root: 'public/excel'});
     }
 
-    @Get(':ID')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get(':ID') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getTradePointById(@Param('ID') id: string) {
         const p: TradingPoint | undefined = await TradingPoint.createQueryBuilder('t')
@@ -177,10 +158,7 @@ export class TradingPointController {
         }
     }
 
-    @Post()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post() @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async createTradePoint(@Body() dto: TradingPointSaveRequest) {
         await getConnection().transaction(async (entityManager: EntityManager) => {
@@ -237,10 +215,7 @@ export class TradingPointController {
         })
     }
 
-    @Put(":ID")
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put(":ID") @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updateTradingPointInformation(@Param('ID') id: string, @Body() dto: TradingPointSaveRequest) {
         let point = await TradingPoint.findOne({ID: id}, {relations: ['address', 'phone']});
@@ -298,10 +273,7 @@ export class TradingPointController {
         })
     }
 
-    @Post(':ID/image')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post(':ID/image') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image', {
@@ -327,19 +299,13 @@ export class TradingPointController {
         await point.save()
     }
 
-    @Post(':ID/terminal')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post(':ID/terminal') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async assignNewTerminal(@Param('ID') id: string, @Body() dto: { phone: number, prefix: number, name: string }) {
         return this.terminalService.addNewTerminalToTradingPointByDashboard(id, dto);
     }
 
-    @Post("import")
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post("import") @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file', {
@@ -373,7 +339,7 @@ export class TradingPointController {
     }
 
     private async createNewTerminal(entityManager: EntityManager, phone: Phone, point: TradingPoint, isMain: boolean = false) {
-        const role = await Role.findOne({value: RoleEnum.TERMINAL});
+        const role = await Role.findOne({ value: RoleType.TERMINAL });
 
         if (!role) {
             this.logger.error('TERMINAL Role does not exists');

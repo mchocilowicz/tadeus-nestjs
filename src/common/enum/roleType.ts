@@ -1,0 +1,3 @@
+export enum RoleType {
+    CLIENT = 'CLIENT', DASHBOARD = 'DASHBOARD', TERMINAL = 'TERMINAL'
+}

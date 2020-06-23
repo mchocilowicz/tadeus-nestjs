@@ -1,21 +1,17 @@
-import {Controller, Get, Param, UseGuards} from "@nestjs/common";
-import {Transaction} from "../../../entity/transaction.entity";
-import {TransactionStatus} from "../../../common/enum/status.enum";
-import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {Const} from "../../../common/util/const";
+import { Controller, Get, Param, UseGuards } from "@nestjs/common";
+import { Transaction } from "../../../entity/transaction.entity";
+import { TransactionStatus } from "../../../common/enum/status.enum";
+import { ApiBearerAuth, ApiHeader } from "@nestjs/swagger";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { Const } from "../../../common/util/const";
 
 @Controller()
 export class DashboardTransactionController {
 
-    @Get()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
-    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+    @Get() @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard) @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getTransactions() {
         return await Transaction.createQueryBuilder('t')
             .leftJoinAndSelect('t.user', 'u')
@@ -33,10 +29,7 @@ export class DashboardTransactionController {
             .getRawMany();
     }
 
-    @Get(':ID')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get(':ID') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getTransaction(@Param('ID')id: string) {
         return await Transaction.createQueryBuilder('t')

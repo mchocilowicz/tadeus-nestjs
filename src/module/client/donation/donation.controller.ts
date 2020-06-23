@@ -3,14 +3,14 @@ import { ApiBearerAuth, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger"
 import { Const } from "../../../common/util/const";
 import { User } from "../../../entity/user.entity";
 import { Donation } from "../../../entity/donation.entity";
-import { DonationEnum, PoolEnum } from "../../../common/enum/donation.enum";
+import { DonationType, PoolType } from "../../../common/enum/donationType";
 import { CodeService } from "../../../common/service/code.service";
 import { Ngo } from "../../../entity/ngo.entity";
 import { getConnection } from "typeorm";
 import { Configuration } from "../../../entity/configuration.entity";
 import { NgoDonationRequest } from "../../../models/client/request/donation.request";
 import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
+import { RoleType } from "../../../common/enum/roleType";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
 import { VirtualCard } from "../../../entity/virtual-card.entity";
@@ -27,10 +27,7 @@ export class DonationController {
     constructor(private readonly codeService: CodeService) {
     }
 
-    @Get()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiResponse({status: 200, type: "boolean", description: "Check if user can make donation for selected NGO"})
@@ -63,10 +60,7 @@ export class DonationController {
         }
     }
 
-    @Post()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post() @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async donationAnotherNgo(@Req() req: any, @Body() request: NgoDonationRequest) {
@@ -106,7 +100,7 @@ export class DonationController {
                 }
 
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, DonationEnum.NGO, PoolEnum.PERSONAL, user, period, ngo, request.payUextOrderId);
+                const donation: Donation = new Donation(ID, DonationType.NGO, PoolType.PERSONAL, user, period, ngo, request.payUextOrderId);
                 donation.price = request.ngoDonation;
                 await entityManager.save(donation);
                 const card = ngo.card;
@@ -123,7 +117,7 @@ export class DonationController {
                 }
 
                 const ID = this.codeService.generateDonationID();
-                const donation: Donation = new Donation(ID, DonationEnum.TADEUS, PoolEnum.PERSONAL, user, period, ngo, request.payUextOrderId);
+                const donation: Donation = new Donation(ID, DonationType.TADEUS, PoolType.PERSONAL, user, period, ngo, request.payUextOrderId);
                 donation.price = request.tadeusDonation;
 
                 const card = ngo.card;

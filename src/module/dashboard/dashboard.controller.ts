@@ -1,25 +1,23 @@
-import {Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Res, UseGuards} from "@nestjs/common";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../common/util/const";
-import {PhoneRequest} from "../../models/common/request/phone.request";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {LoginService} from "../common/login.service";
-import {City} from "../../entity/city.entity";
-import {TradingPointType} from "../../entity/trading-point-type.entity";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
+import { Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Res, UseGuards } from "@nestjs/common";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../common/util/const";
+import { PhoneRequest } from "../../models/common/request/phone.request";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { LoginService } from "../common/login.service";
+import { City } from "../../entity/city.entity";
+import { TradingPointType } from "../../entity/trading-point-type.entity";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { RoleType } from "../../common/enum/roleType";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
 
-@Controller()
-@ApiTags('auth')
+@Controller() @ApiTags('auth')
 export class DashboardController {
 
     constructor(private readonly service: LoginService) {
     }
 
-    @Post('signIn')
-    @HttpCode(200)
+    @Post('signIn') @HttpCode(200)
     @ApiResponse({status: 200})
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     @ApiBody({type: PhoneRequest})
@@ -39,20 +37,14 @@ export class DashboardController {
         return City.find();
     }
 
-    @Post('city')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post('city') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async createCity(@Body() dto: any) {
         let city = new City(dto.name);
         return await city.save();
     }
 
-    @Put('city/:id')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put('city/:id') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updateCity(@Param('id') id: string, @Body() dto: any) {
         let city = await City.findOne({id: id});
@@ -64,10 +56,7 @@ export class DashboardController {
         await city.save();
     }
 
-    @Get('trading-point-type')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('trading-point-type') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     getAllTypes() {
         return TradingPointType.find();

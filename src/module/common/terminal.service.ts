@@ -1,16 +1,16 @@
-import {BadGatewayException, BadRequestException, Injectable, Logger, NotFoundException} from "@nestjs/common";
-import {Terminal} from "../../entity/terminal.entity";
-import {Status, Step} from "../../common/enum/status.enum";
-import {EntityManager, getConnection} from "typeorm";
-import {TradingPoint} from "../../entity/trading-point.entity";
-import {Phone} from "../../entity/phone.entity";
-import {PhonePrefix} from "../../entity/phone-prefix.entity";
-import {TerminalRequest} from "../../models/common/request/terminal.request";
-import {Role} from "../../entity/role.entity";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {Account} from "../../entity/account.entity";
-import {CodeService} from "../../common/service/code.service";
-import {TerminalCreateResponse} from "../../models/dashboard/response/terminal-create.response";
+import { BadGatewayException, BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Terminal } from "../../entity/terminal.entity";
+import { Status, Step } from "../../common/enum/status.enum";
+import { EntityManager, getConnection } from "typeorm";
+import { TradingPoint } from "../../entity/trading-point.entity";
+import { Phone } from "../../entity/phone.entity";
+import { PhonePrefix } from "../../entity/phone-prefix.entity";
+import { TerminalRequest } from "../../models/common/request/terminal.request";
+import { Role } from "../../entity/role.entity";
+import { RoleType } from "../../common/enum/roleType";
+import { Account } from "../../entity/account.entity";
+import { CodeService } from "../../common/service/code.service";
+import { TerminalCreateResponse } from "../../models/dashboard/response/terminal-create.response";
 
 @Injectable()
 export class TerminalService {
@@ -62,7 +62,7 @@ export class TerminalService {
 
     async addNewTerminalToTradingPointByDashboard(id: string, dto: { phone: number, prefix: number, name: string }) {
         return await getConnection().transaction(async entityManager => {
-            const role = await Role.findOne({value: RoleEnum.TERMINAL});
+            const role = await Role.findOne({ value: RoleType.TERMINAL });
 
             if (!role) {
                 this.logger.error('TERMINAL Role does not exists');
@@ -190,8 +190,8 @@ export class TerminalService {
             existingTerminal.name = name;
             await entityManager.save(existingTerminal);
         } else {
-            let counts = await Terminal.count({tradingPoint: tradingPoint});
-            let role = await Role.findOne({value: RoleEnum.TERMINAL});
+            let counts = await Terminal.count({ tradingPoint: tradingPoint });
+            let role = await Role.findOne({ value: RoleType.TERMINAL });
             if (!role) {
                 throw new NotFoundException('Role TERMINAL does not exists in DB');
             }

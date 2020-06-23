@@ -1,5 +1,5 @@
-import {Injectable, InternalServerErrorException, Logger} from "@nestjs/common";
-import {RoleEnum} from "../enum/role.enum";
+import { Injectable, InternalServerErrorException, Logger } from "@nestjs/common";
+import { RoleType } from "../enum/roleType";
 
 const crypto = require('crypto');
 
@@ -96,7 +96,7 @@ export class CryptoService {
         return this.sweet(md5Token);
     }
 
-    encryptId(id: string, role: RoleEnum): string {
+    encryptId(id: string, role: RoleType): string {
         let idParts = id.split('-');
         let p = idParts[1];
 

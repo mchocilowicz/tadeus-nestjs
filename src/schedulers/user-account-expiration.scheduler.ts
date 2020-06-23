@@ -2,7 +2,7 @@ import { Injectable, Logger } from "@nestjs/common";
 import { Configuration } from "../entity/configuration.entity";
 import { User } from "../entity/user.entity";
 import { Status } from "../common/enum/status.enum";
-import { RoleEnum } from "../common/enum/role.enum";
+import { RoleType } from "../common/enum/roleType";
 import { Account } from "../entity/account.entity";
 import { Cron } from "@nestjs/schedule";
 import { EntityManager, getConnection } from "typeorm";
@@ -21,12 +21,12 @@ export class UserAccountExpirationScheduler {
         await getConnection().transaction(async (entityManager: EntityManager) => {
 
             const users: User[] = await User.createQueryBuilder('user')
-                .leftJoinAndSelect('user.account', 'account')
-                .leftJoinAndSelect('user.card', 'card')
-                .leftJoinAndSelect('account.role', 'role')
-                .where('account.status = :status', {status: Status.ACTIVE})
-                .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
-                .getMany();
+                                            .leftJoinAndSelect('user.account', 'account')
+                                            .leftJoinAndSelect('user.card', 'card')
+                                            .leftJoinAndSelect('account.role', 'role')
+                                            .where('account.status = :status', { status: Status.ACTIVE })
+                                            .andWhere('role.value = :role', { role: RoleType.CLIENT })
+                                            .getMany();
 
             this.logger.log(`Found ${ users.length } Users`);
 

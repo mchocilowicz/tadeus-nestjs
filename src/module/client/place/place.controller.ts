@@ -5,7 +5,7 @@ import { Const } from "../../../common/util/const";
 import { TradingPointType } from "../../../entity/trading-point-type.entity";
 import { CityResponse } from "../../../models/common/response/city.response";
 import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
+import { RoleType } from "../../../common/enum/roleType";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
 import { City } from "../../../entity/city.entity";
@@ -22,9 +22,7 @@ import { IPlaceQuery } from "../../../models/client/query/place-query.interface"
 export class PlaceController {
     private readonly logger = new Logger(PlaceController.name);
 
-    @Get()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiQuery({name: 'city', type: "string", description: 'city id', required: false})
     @ApiQuery({name: 'placeType', type: "string", description: 'place-type id', required: false})
     @ApiQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
@@ -51,17 +49,13 @@ export class PlaceController {
             .getMany();
     }
 
-    @Get('type')
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('type') @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TradingPointType, isArray: true})
     getPlaceTypes() {
         return TradingPointType.find()
     }
 
-    @Get('city')
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('city') @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: CityResponse, isArray: true})
     getCities() {
         return City.findWhereTradingPointExists();

@@ -1,54 +1,41 @@
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    Get,
-    HttpCode,
-    Logger,
-    Param,
-    Post,
-    Put,
-    Req,
-    Res,
-    UseGuards
+    BadRequestException, Body, Controller, Get, HttpCode, Logger, Param, Post, Put, Req, Res, UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {User} from "../../entity/user.entity";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
-import {getConnection} from "typeorm";
-import {Const} from "../../common/util/const";
-import {MainResponse} from "../../models/common/response/main.response";
-import {ClientHistoryResponse} from "../../models/common/response/client-history.response";
-import {VirtualCardResponse} from "../../models/common/response/virtual-card.response";
-import {CodeService} from "../../common/service/code.service";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {LoginService} from "../common/login.service";
-import {Transaction} from "../../entity/transaction.entity";
-import {NewPhoneRequest} from "../../models/common/request/new-phone.request";
-import {SignInResponse} from "../../models/common/response/signIn.response";
-import {VirtualCard} from "../../entity/virtual-card.entity";
-import {TadeusEntity} from "../../entity/base.entity";
-import {groupDatesByComponent, roundToTwo} from "../../common/util/functions";
-import {CalculationService} from "../../common/service/calculation.service";
-import {TradingPoint} from "../../entity/trading-point.entity";
-import {UserPayout} from "../../entity/user-payout.entity";
-import {FirebaseTokenRequest} from "../../models/client/request/firebase-token.request";
-import {Account} from "../../entity/account.entity";
-import {CorrectionRequest} from "../../models/client/request/correction.request";
-import {TransactionStatus} from "../../common/enum/status.enum";
-import {Ngo} from "../../entity/ngo.entity";
-import {PhysicalCard} from "../../entity/physical-card.entity";
-import {TierService} from "../common/tier.service";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { RoleType } from "../../common/enum/roleType";
+import { User } from "../../entity/user.entity";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { getConnection } from "typeorm";
+import { Const } from "../../common/util/const";
+import { MainResponse } from "../../models/common/response/main.response";
+import { ClientHistoryResponse } from "../../models/common/response/client-history.response";
+import { VirtualCardResponse } from "../../models/common/response/virtual-card.response";
+import { CodeService } from "../../common/service/code.service";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { LoginService } from "../common/login.service";
+import { Transaction } from "../../entity/transaction.entity";
+import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
+import { SignInResponse } from "../../models/common/response/signIn.response";
+import { VirtualCard } from "../../entity/virtual-card.entity";
+import { TadeusEntity } from "../../entity/base.entity";
+import { groupDatesByComponent, roundToTwo } from "../../common/util/functions";
+import { CalculationService } from "../../common/service/calculation.service";
+import { TradingPoint } from "../../entity/trading-point.entity";
+import { UserPayout } from "../../entity/user-payout.entity";
+import { FirebaseTokenRequest } from "../../models/client/request/firebase-token.request";
+import { Account } from "../../entity/account.entity";
+import { CorrectionRequest } from "../../models/client/request/correction.request";
+import { TransactionStatus } from "../../common/enum/status.enum";
+import { Ngo } from "../../entity/ngo.entity";
+import { PhysicalCard } from "../../entity/physical-card.entity";
+import { TierService } from "../common/tier.service";
 
 const _ = require('lodash');
 const moment = require('moment');
 
-@Controller()
-@ApiBearerAuth()
-@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+@Controller() @ApiBearerAuth() @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
 export class ClientController {
 
     private readonly logger = new Logger(ClientController.name);
@@ -84,10 +71,7 @@ export class ClientController {
     }
 
     @Get()
-    @ApiResponse({status: 200, type: MainResponse})
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiResponse({status: 200, type: MainResponse}) @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     async mainScreen(@Req() req: any) {
         const user: User = req.user;
         const card: VirtualCard | undefined = user.card;
@@ -126,10 +110,7 @@ export class ClientController {
         return new MainResponse(user, card, ratingValue, payout, moment().isAfter(payout), ngoChange);
     }
 
-    @Get('history')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('history') @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: ClientHistoryResponse})
     async history(@Req() req: any) {
         const user: User = req.user;
@@ -163,10 +144,7 @@ export class ClientController {
         return new ClientHistoryResponse(tempUser.donations, _.flatten(transactionHistoryWithPayouts))
     }
 
-    @Get('card')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('card') @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: VirtualCardResponse})
     virtualCard(@Req() req: any) {
         const user: User = req.user;
@@ -180,9 +158,7 @@ export class ClientController {
         return new VirtualCardResponse(virtualCard);
     }
 
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200})
     @Post('correction')
     async verifyTransaction(@Req() req: any, @Body() dto: CorrectionRequest) {
@@ -190,19 +166,19 @@ export class ClientController {
             const user: User = req.user;
 
             let transaction: Transaction | undefined = await Transaction.createQueryBuilder('t')
-                .leftJoinAndSelect('t.user', 'user')
-                .leftJoinAndSelect('t.terminal', 'terminal')
-                .leftJoinAndSelect('t.tradingPoint', 'point')
-                .leftJoinAndSelect('t.correction', 'correction')
-                .leftJoinAndSelect('t.payment', 'payment')
-                .leftJoinAndSelect('t.ngo', 'ngo')
-                .leftJoinAndSelect('ngo.card', 'ngoCard')
-                .leftJoinAndSelect('user.card', 'virtualCard')
-                .where('t.ID = :ID', {ID: dto.transactionID})
-                .andWhere('terminal.ID = :terminal', {terminal: dto.terminalID})
-                .andWhere('t.status = :status', {status: TransactionStatus.ACCEPTED})
-                .andWhere('virtualCard.status = :cardStatus', {cardStatus: 'ACTIVE'})
-                .getOne();
+                                                                        .leftJoinAndSelect('t.user', 'user')
+                                                                        .leftJoinAndSelect('t.terminal', 'terminal')
+                                                                        .leftJoinAndSelect('t.tradingPoint', 'point')
+                                                                        .leftJoinAndSelect('t.correction', 'correction')
+                                                                        .leftJoinAndSelect('t.payment', 'payment')
+                                                                        .leftJoinAndSelect('t.ngo', 'ngo')
+                                                                        .leftJoinAndSelect('ngo.card', 'ngoCard')
+                                                                        .leftJoinAndSelect('user.card', 'virtualCard')
+                                                                        .where('t.ID = :ID', { ID: dto.transactionID })
+                                                                        .andWhere('terminal.ID = :terminal', { terminal: dto.terminalID })
+                                                                        .andWhere('t.status = :status', { status: TransactionStatus.WAITING })
+                                                                        .andWhere('virtualCard.status = :cardStatus', {cardStatus: 'ACTIVE'})
+                                                                        .getOne();
 
             if (!transaction) {
                 throw new BadRequestException('transaction_does_not_exists')
@@ -219,24 +195,24 @@ export class ClientController {
             const correctedTransaction: Transaction = transaction.correction;
 
             if (dto.userDecision) {
-                correctedTransaction.status = TransactionStatus.ACCEPTED;
+                correctedTransaction.status = TransactionStatus.CORRECTED;
 
-                transaction.status = TransactionStatus.CORRECTED;
+                transaction.status = TransactionStatus.ACCEPTED;
 
                 const point: TradingPoint = transaction.tradingPoint;
                 const virtualCard: VirtualCard = user.card;
                 const ngo: Ngo = transaction.ngo;
                 const card: PhysicalCard = ngo.card;
 
-                if (correctedTransaction.price === 0) {
-                    const pool = roundToTwo(-transaction.poolValue / 2);
+                if (transaction.price === 0) {
+                    const pool = roundToTwo(-correctedTransaction.poolValue / 2);
 
-                    user.xp -= transaction.userXp;
-                    user.updateCollectedMoney(-transaction.poolValue);
-                    point.xp -= transaction.tradingPointXp;
+                    user.xp -= correctedTransaction.userXp;
+                    user.updateCollectedMoney(-correctedTransaction.poolValue);
+                    point.xp -= correctedTransaction.tradingPointXp;
                     TierService.asignTier(pool, user, virtualCard)
-                    virtualCard.updatePool(-transaction.poolValue);
-                    card.collectedMoney -= transaction.poolValue;
+                    virtualCard.updatePool(-correctedTransaction.poolValue);
+                    card.collectedMoney -= correctedTransaction.poolValue;
                 } else {
                     const pool = roundToTwo((-transaction.poolValue + correctedTransaction.poolValue) / 2);
                     TierService.asignTier(pool, user, virtualCard)
@@ -249,18 +225,15 @@ export class ClientController {
                 await entityManager.save(virtualCard);
                 await entityManager.save(point);
                 await entityManager.save(user);
-                await entityManager.save(transaction);
+                await entityManager.save(correctedTransaction);
             } else {
-                correctedTransaction.status = TransactionStatus.REJECTED
+                transaction.status = TransactionStatus.REJECTED
             }
-            await entityManager.save(correctedTransaction);
+            await entityManager.save(transaction);
         })
     }
 
-    @Post('fcmToken')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post('fcmToken') @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200})
     @ApiBody({type: FirebaseTokenRequest})
     async setUserFcmToken(@Req() req: any, @Body() dto: FirebaseTokenRequest) {
@@ -270,10 +243,7 @@ export class ClientController {
         await account.save();
     }
 
-    @Put('activeCard')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put('activeCard') @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200})
     async activeVirtualCard(@Req() req: any) {
         const user: User = req.user;

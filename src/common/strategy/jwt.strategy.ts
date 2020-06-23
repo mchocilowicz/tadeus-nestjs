@@ -1,40 +1,39 @@
-import {ExtractJwt, Strategy} from 'passport-jwt';
-import {PassportStrategy} from "@nestjs/passport";
-import {Injectable, UnauthorizedException} from "@nestjs/common";
-import {User} from "../../entity/user.entity";
-import {CryptoService} from "../service/crypto.service";
-import {RoleEnum} from "../enum/role.enum";
-import {Account} from "../../entity/account.entity";
-import {Terminal} from "../../entity/terminal.entity";
-import {Admin} from "../../entity/admin.entity";
-import {Status} from "../enum/status.enum";
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { PassportStrategy } from "@nestjs/passport";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { User } from "../../entity/user.entity";
+import { CryptoService } from "../service/crypto.service";
+import { RoleType } from "../enum/roleType";
+import { Account } from "../../entity/account.entity";
+import { Terminal } from "../../entity/terminal.entity";
+import { Admin } from "../../entity/admin.entity";
+import { Status } from "../enum/status.enum";
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
     constructor(private readonly cryptoService: CryptoService) {
         super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            secretOrKey: process.env.TDS_JWT_EVEREST,
+            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), secretOrKey: process.env.TDS_JWT_EVEREST,
         });
     }
 
     async validate(payload: { id: string }) {
         let {id, role} = this.cryptoService.decryptId(payload.id);
 
-        if (role === RoleEnum.TERMINAL) {
+        if (role === RoleType.TERMINAL) {
             return await this.handleTerminalToken(id)
-        } else if (role === RoleEnum.CLIENT) {
+        } else if (role === RoleType.CLIENT) {
             const user = await User.getUserWithClientData(id);
 
             return this.verifiEntity(id, user);
-        } else if (role === RoleEnum.DASHBOARD) {
+        } else if (role === RoleType.DASHBOARD) {
             let admin = await Admin.createQueryBuilder('admin')
-                .leftJoinAndSelect('admin.account', 'account')
-                .leftJoinAndSelect('account.role', 'role')
-                .where(`account.id = :id`, {id: id})
-                .andWhere(`role.value = :role`, {role: RoleEnum.DASHBOARD})
-                .andWhere(`account.status = :status`, {status: Status.ACTIVE})
-                .getOne();
+                                   .leftJoinAndSelect('admin.account', 'account')
+                                   .leftJoinAndSelect('account.role', 'role')
+                                   .where(`account.id = :id`, { id: id })
+                                   .andWhere(`role.value = :role`, { role: RoleType.DASHBOARD })
+                                   .andWhere(`account.status = :status`, { status: Status.ACTIVE })
+                                   .getOne();
 
             return this.verifiEntity(id, admin)
         }
@@ -42,14 +41,14 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
     private async handleTerminalToken(id: string): Promise<Terminal> {
         let terminal = await Terminal.createQueryBuilder('terminal')
-            .leftJoinAndSelect('terminal.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
-            .leftJoinAndSelect('terminal.phone', 'phone')
-            .where(`account.id = :id`, {id: id})
-            .andWhere(`role.value = :role`, {role: RoleEnum.TERMINAL})
-            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
-            .getOne();
+                                     .leftJoinAndSelect('terminal.account', 'account')
+                                     .leftJoinAndSelect('account.role', 'role')
+                                     .leftJoinAndSelect('terminal.tradingPoint', 'tradingPoint')
+                                     .leftJoinAndSelect('terminal.phone', 'phone')
+                                     .where(`account.id = :id`, { id: id })
+                                     .andWhere(`role.value = :role`, { role: RoleType.TERMINAL })
+                                     .andWhere(`account.status = :status`, {status: Status.ACTIVE})
+                                     .getOne();
 
         return this.verifiEntity(id, terminal)
     }

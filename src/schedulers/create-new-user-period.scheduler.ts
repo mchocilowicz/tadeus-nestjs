@@ -6,7 +6,7 @@ import { UserPeriod } from "../entity/user-period.entity";
 import { User } from "../entity/user.entity";
 import { Donation } from "../entity/donation.entity";
 import { CodeService } from "../common/service/code.service";
-import { DonationEnum, PoolEnum } from "../common/enum/donation.enum";
+import { DonationType, PoolType } from "../common/enum/donationType";
 import { PartnerPeriod } from "../entity/partner-period.entity";
 import { TierService } from "../module/common/tier.service";
 
@@ -54,14 +54,7 @@ export class CreateNewUserPeriodScheduler {
                 for (const user of users) {
                     if (user.ngo) {
                         let ID = this.codeService.generateDonationID();
-                        let donation = new Donation(
-                            ID,
-                            DonationEnum.NGO,
-                            PoolEnum.DONATION,
-                            user,
-                            userPeriod,
-                            user.ngo
-                        );
+                        let donation = new Donation(ID, DonationType.NGO, PoolType.DONATION, user, userPeriod, user.ngo);
 
                         let card = user.card;
                         donation.price = card.donationPool;

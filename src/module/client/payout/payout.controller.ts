@@ -1,28 +1,22 @@
-import {BadRequestException, Body, Controller, Logger, Post, Req, UseGuards} from "@nestjs/common";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {User} from "../../../entity/user.entity";
-import {Phone} from "../../../entity/phone.entity";
-import {getConnection} from "typeorm";
-import {PayoutRequest} from "../../../models/client/request/payout.request";
-import {UserPayout} from "../../../entity/user-payout.entity";
+import { BadRequestException, Body, Controller, Logger, Post, Req, UseGuards } from "@nestjs/common";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { User } from "../../../entity/user.entity";
+import { Phone } from "../../../entity/phone.entity";
+import { getConnection } from "typeorm";
+import { PayoutRequest } from "../../../models/client/request/payout.request";
+import { UserPayout } from "../../../entity/user-payout.entity";
 
-@Controller()
-@ApiTags('payout')
-@ApiBearerAuth()
-@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+@Controller() @ApiTags('payout') @ApiBearerAuth() @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER) @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class PayoutController {
 
     private readonly logger = new Logger(PayoutController.name);
 
-    @Post()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBody({type: PayoutRequest})
     async updateUserData(@Req() req: any, @Body() dto: PayoutRequest) {
         const user: User = req.user;

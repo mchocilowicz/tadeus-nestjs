@@ -1,50 +1,37 @@
 import {
     BadRequestException,
     Body,
-    Controller,
-    Get,
-    InternalServerErrorException,
-    Logger,
-    NotFoundException,
-    Param,
-    Post,
-    Query,
-    Req,
-    UseGuards
+    Controller, Get, InternalServerErrorException, Logger, NotFoundException, Param, Post, Query, Req, UseGuards
 } from "@nestjs/common";
-import {CalculationService} from "../../../common/service/calculation.service";
-import {CodeService} from "../../../common/service/code.service";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../../common/util/const";
-import {Transaction} from "../../../entity/transaction.entity";
-import {TransactionResponse} from "../../../models/common/response/transaction.response";
-import {getConnection} from "typeorm";
-import {CorrectionRequest, TransactionRequest} from "../../../models/partner/request/transaction.request";
-import {handleException, roundToTwo} from "../../../common/util/functions";
-import {TradingPoint} from "../../../entity/trading-point.entity";
-import {User} from "../../../entity/user.entity";
-import {Terminal} from "../../../entity/terminal.entity";
-import {Configuration} from "../../../entity/configuration.entity";
-import {PartnerTransactionResponse} from "../../../models/partner/response/partner-transaction.response";
-import {FirebaseAdminService} from "../../../common/service/firebase-admin.service";
-import {TransactionStatus} from "../../../common/enum/status.enum";
-import {VirtualCard} from "../../../entity/virtual-card.entity";
-import {Ngo} from "../../../entity/ngo.entity";
-import {PhysicalCard} from "../../../entity/physical-card.entity";
-import {UserPeriod} from "../../../entity/user-period.entity";
-import {TierService} from "../../common/tier.service";
+import { CalculationService } from "../../../common/service/calculation.service";
+import { CodeService } from "../../../common/service/code.service";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../../common/util/const";
+import { Transaction } from "../../../entity/transaction.entity";
+import { TransactionResponse } from "../../../models/common/response/transaction.response";
+import { getConnection } from "typeorm";
+import { CorrectionRequest, TransactionRequest } from "../../../models/partner/request/transaction.request";
+import { handleException, roundToTwo } from "../../../common/util/functions";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { User } from "../../../entity/user.entity";
+import { Terminal } from "../../../entity/terminal.entity";
+import { Configuration } from "../../../entity/configuration.entity";
+import { PartnerTransactionResponse } from "../../../models/partner/response/partner-transaction.response";
+import { FirebaseAdminService } from "../../../common/service/firebase-admin.service";
+import { TransactionStatus } from "../../../common/enum/status.enum";
+import { VirtualCard } from "../../../entity/virtual-card.entity";
+import { Ngo } from "../../../entity/ngo.entity";
+import { PhysicalCard } from "../../../entity/physical-card.entity";
+import { UserPeriod } from "../../../entity/user-period.entity";
+import { TierService } from "../../common/tier.service";
 
 const moment = require('moment');
 
-@Controller()
-@ApiBearerAuth()
-@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
-@ApiTags("transaction")
+@Controller() @ApiBearerAuth() @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER) @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER) @ApiTags("transaction")
 export class PartnerTransactionController {
     private readonly logger = new Logger(PartnerTransactionController.name);
 
@@ -53,9 +40,7 @@ export class PartnerTransactionController {
                 private readonly firebaseService: FirebaseAdminService) {
     }
 
-    @Post('correction')
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post('correction') @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TransactionResponse})
     @ApiBody({type: CorrectionRequest})
     async createCorrection(@Req() req: any, @Body() dto: CorrectionRequest) {
@@ -66,7 +51,6 @@ export class PartnerTransactionController {
             .leftJoinAndSelect('t.user', 'user')
             .leftJoinAndSelect('t.terminal', 'terminal')
             .leftJoinAndSelect('t.tradingPoint', 'point')
-            .leftJoinAndSelect('t.correction', 'correction')
             .leftJoinAndSelect('t.ngo', 'ngo')
             .leftJoinAndSelect('user.account', 'account')
             .where('t.id = :id', {id: dto.transactionId})
@@ -87,22 +71,20 @@ export class PartnerTransactionController {
                 throw new BadRequestException('internal_server_error');
             }
 
-            let oldCorrection: Transaction | undefined;
-            if (oldTransaction.correction) {
-                const correction: Transaction = oldTransaction.correction;
-                if (correction.status === TransactionStatus.WAITING || correction.status === TransactionStatus.REJECTED) {
-                    oldCorrection = oldTransaction.correction;
-                }
+            let correction = await Transaction.createQueryBuilder('t')
+                                              .leftJoinAndSelect('t.correction', 'correction')
+                                              .where('correction.id = :id', { id: oldTransaction.id })
+                                              .getOne();
+
+            if (correction && (correction.status === TransactionStatus.WAITING || correction.status === TransactionStatus.REJECTED)) {
+                await entityManager.remove(correction);
             }
 
             let tradingPoint: TradingPoint = terminal.tradingPoint;
             let user: User = oldTransaction.user;
             let ngo: Ngo = oldTransaction.ngo;
 
-            let transaction: Transaction = new Transaction(
-                terminal,
-                user,
-                tradingPoint,
+            let transaction: Transaction = new Transaction(terminal, user, tradingPoint,
                 ngo,
                 period,
                 this.codeService.generateTransactionID(),
@@ -121,24 +103,20 @@ export class PartnerTransactionController {
             transaction.setUserPool(halfPool);
             transaction.ngoDonation = halfPool;
             transaction.isCorrection = true;
+            transaction.correction = oldTransaction;
 
-
-            oldTransaction.correction = await entityManager.save(transaction);
+            await entityManager.save(transaction);
             await entityManager.save(oldTransaction);
 
-            if (oldCorrection) {
-                await entityManager.remove(oldCorrection);
-            }
-
             const data = {
-                transactionID: oldTransaction.ID,
+                transactionID: transaction.ID,
                 tradingPointName: tradingPoint.name,
                 transactionDate: moment().format(Const.DATE_TIME_FORMAT),
-                prevAmount: `${oldTransaction.price}`,
-                newAmount: `${dto.price}`,
+                prevAmount: `${ oldTransaction.price }`,
+                newAmount: `${ dto.price }`,
                 terminalID: terminal.ID,
                 isCorrection: "true",
-                pool: `${pool}`
+                pool: `${ pool }`
             };
 
             if (terminal.isMain) {
@@ -162,29 +140,26 @@ export class PartnerTransactionController {
                         oldPrice: oldTransaction.price,
                         price: p,
                         transactionID: transaction.ID
-                    },
-                    data: data
+                    }, data: data
                 }
             }
         });
 
-        this.firebaseService.getAdmin().messaging().send({
-            token: data.token,
-            data: data.data,
-            notification: {
-                title: 'Tadeus',
-                body: 'Korekta transakcji do akceptacji',
-            }
-        })
-            .then(() => this.logger.log("Notification send"))
-            .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+        // this.firebaseService.getAdmin().messaging().send({
+        //     token: data.token,
+        //     data: data.data,
+        //     notification: {
+        //         title: 'Tadeus',
+        //         body: 'Korekta transakcji do akceptacji',
+        //     }
+        // })
+        //     .then(() => this.logger.log("Notification send"))
+        //     .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
 
         return data.api;
     }
 
-    @Post()
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post() @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: TransactionResponse})
     @ApiBody({type: TransactionRequest})
     async saveTransaction(@Req() req: any, @Body() dto: TransactionRequest) {
@@ -319,9 +294,7 @@ export class PartnerTransactionController {
         }
     }
 
-    @Get(':ID/status')
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get(':ID/status') @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     async getTransactionStatus(@Req() req: any, @Param('ID') id: string) {
         const terminal: Terminal = req.user;
         const t: Transaction | undefined = await Transaction.findOne({ID: id}, {relations: ['correction']});
@@ -351,9 +324,7 @@ export class PartnerTransactionController {
         }
     }
 
-    @Get()
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: PartnerTransactionResponse, isArray: true})
     @ApiQuery({name: 'prefix', type: "number", description: 'Phone prefix', required: false})
     @ApiQuery({name: 'phone', type: "number", description: 'Phone number', required: false})

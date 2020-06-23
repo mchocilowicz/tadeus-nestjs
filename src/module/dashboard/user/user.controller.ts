@@ -1,42 +1,28 @@
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    Delete,
-    Get,
-    NotFoundException,
-    Param,
-    Put,
-    Query,
-    UseGuards
+    BadRequestException, Body, Controller, Delete, Get, NotFoundException, Param, Put, Query, UseGuards
 } from "@nestjs/common";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {User} from "../../../entity/user.entity";
-import {ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {UserResponse} from "../../../models/dashboard/response/user.response";
-import {Status} from "../../../common/enum/status.enum";
-import {UserViewResponse} from "../../../models/dashboard/response/user-view.response";
-import {Phone} from "../../../entity/phone.entity";
-import {EntityManager, getConnection} from "typeorm";
-import {VirtualCard} from "../../../entity/virtual-card.entity";
-import {Opinion} from "../../../entity/opinion.entity";
-import {Account} from "../../../entity/account.entity";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {Const} from "../../../common/util/const";
+import { RoleType } from "../../../common/enum/roleType";
+import { User } from "../../../entity/user.entity";
+import { ApiBearerAuth, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { UserResponse } from "../../../models/dashboard/response/user.response";
+import { Status } from "../../../common/enum/status.enum";
+import { UserViewResponse } from "../../../models/dashboard/response/user-view.response";
+import { Phone } from "../../../entity/phone.entity";
+import { EntityManager, getConnection } from "typeorm";
+import { VirtualCard } from "../../../entity/virtual-card.entity";
+import { Opinion } from "../../../entity/opinion.entity";
+import { Account } from "../../../entity/account.entity";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { Const } from "../../../common/util/const";
 
 const moment = require('moment');
 
-@Controller()
-@ApiTags('user')
-@ApiBearerAuth()
-@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+@Controller() @ApiTags('user') @ApiBearerAuth() @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class UserController {
 
-    @Get()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, isArray: true, type: UserResponse})
     @ApiQuery({name: 'updatedFrom', type: Date, description: 'updated from', required: false})
     @ApiQuery({name: 'updatedTo', type: Date, description: 'updated to', required: false})
@@ -54,12 +40,12 @@ export class UserController {
         status: string
     }) {
         let sqlQuery = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('user.phone', 'phone')
-            .leftJoinAndSelect('phone.prefix', 'prefix')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.status != :status', {status: Status.DELETED});
+                                 .leftJoinAndSelect('user.account', 'account')
+                                 .leftJoinAndSelect('user.phone', 'phone')
+                                 .leftJoinAndSelect('phone.prefix', 'prefix')
+                                 .leftJoinAndSelect('account.role', 'role')
+                                 .where('role.value = :role', { role: RoleType.CLIENT })
+                                 .andWhere('account.status != :status', {status: Status.DELETED});
 
         if (query.xpMin && query.xpMax && (Number(query.xpMin) > Number(query.xpMax) || Number(query.xpMax) < Number(query.xpMin))) {
             throw new BadRequestException('query_xp_mismatch')
@@ -96,16 +82,12 @@ export class UserController {
         });
     }
 
-    @Get('status')
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('status') @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async getUserStatus() {
         return Object.keys(Status)
     }
 
-    @Get('opinion')
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('opinion') @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async getUsersOpinion() {
         return await Opinion.createQueryBuilder("o")
             .leftJoinAndSelect("o.user", 'user')
@@ -122,23 +104,21 @@ export class UserController {
             .getRawMany();
     }
 
-    @Get(':ID')
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get(':ID') @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async getUserById(@Param('ID') id: string) {
         let user: User | undefined = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('user.phone', 'phone')
-            .leftJoinAndSelect('user.transactions', 'transaction')
-            .leftJoinAndSelect('user.donations', 'donation')
-            .leftJoinAndSelect('donation.ngo', 'donationNgo')
-            .leftJoinAndSelect('user.ngo', 'ngo')
-            .leftJoinAndSelect('user.card', 'card')
-            .leftJoinAndSelect('phone.prefix', 'prefix')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.ID = :ID', {ID: id})
-            .getOne();
+                                               .leftJoinAndSelect('user.account', 'account')
+                                               .leftJoinAndSelect('user.phone', 'phone')
+                                               .leftJoinAndSelect('user.transactions', 'transaction')
+                                               .leftJoinAndSelect('user.donations', 'donation')
+                                               .leftJoinAndSelect('donation.ngo', 'donationNgo')
+                                               .leftJoinAndSelect('user.ngo', 'ngo')
+                                               .leftJoinAndSelect('user.card', 'card')
+                                               .leftJoinAndSelect('phone.prefix', 'prefix')
+                                               .leftJoinAndSelect('account.role', 'role')
+                                               .where('role.value = :role', { role: RoleType.CLIENT })
+                                               .andWhere('account.ID = :ID', {ID: id})
+                                               .getOne();
 
         if (!user) {
             throw new NotFoundException('user_does_not_exists')
@@ -147,25 +127,23 @@ export class UserController {
         return new UserViewResponse(user);
     }
 
-    @Put(':ID/transfer')
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put(':ID/transfer') @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async transferUserMoney(@Param('ID') ID: string, @Body() dto: any) {
         let user = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoinAndSelect('user.card', 'card')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.ID = :ID', {ID: ID})
-            .getOne();
+                             .leftJoinAndSelect('user.account', 'account')
+                             .leftJoinAndSelect('account.role', 'role')
+                             .leftJoinAndSelect('user.card', 'card')
+                             .where('role.value = :role', { role: RoleType.CLIENT })
+                             .andWhere('account.ID = :ID', {ID: ID})
+                             .getOne();
 
         let targetUser = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoinAndSelect('user.card', 'card')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.ID = :ID', {ID: dto.targetID})
-            .getOne();
+                                   .leftJoinAndSelect('user.account', 'account')
+                                   .leftJoinAndSelect('account.role', 'role')
+                                   .leftJoinAndSelect('user.card', 'card')
+                                   .where('role.value = :role', { role: RoleType.CLIENT })
+                                   .andWhere('account.ID = :ID', {ID: dto.targetID})
+                                   .getOne();
 
         if (!user || !targetUser) {
             throw new NotFoundException('user_does_not_exists')
@@ -185,17 +163,15 @@ export class UserController {
         })
     }
 
-    @Put(':ID')
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put(':ID') @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async updateUserStatus(@Param('ID') ID: string, @Body() dto: any) {
         let user = await User.createQueryBuilder('user')
-            .leftJoinAndSelect("user.phone", 'phone')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.ID = :ID', {ID: ID})
-            .getOne();
+                             .leftJoinAndSelect("user.phone", 'phone')
+                             .leftJoinAndSelect('user.account', 'account')
+                             .leftJoinAndSelect('account.role', 'role')
+                             .where('role.value = :role', { role: RoleType.CLIENT })
+                             .andWhere('account.ID = :ID', {ID: ID})
+                             .getOne();
 
 
         getConnection().transaction(async (entityManager: EntityManager) => {
@@ -222,19 +198,17 @@ export class UserController {
         })
     }
 
-    @Delete(':ID')
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Delete(':ID') @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async deleteUser(@Param('ID') id: string) {
         let user = await User.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('user.card', 'card')
-            .leftJoinAndSelect('user.ngo', 'ngo')
-            .leftJoinAndSelect('user.phone', 'phone')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.ID = :ID', {ID: id})
-            .getOne();
+                             .leftJoinAndSelect('user.account', 'account')
+                             .leftJoinAndSelect('user.card', 'card')
+                             .leftJoinAndSelect('user.ngo', 'ngo')
+                             .leftJoinAndSelect('user.phone', 'phone')
+                             .leftJoinAndSelect('account.role', 'role')
+                             .where('role.value = :role', { role: RoleType.CLIENT })
+                             .andWhere('account.ID = :ID', {ID: id})
+                             .getOne();
 
         if (!user) {
             throw new NotFoundException('user_does_not_exists')

@@ -1,7 +1,7 @@
 import { Column, Entity, Generated } from "typeorm";
 import { TadeusEntity } from "./base.entity";
 import { NumberColumnTransformer } from "../common/util/number-column.transformer";
-import { TierEnum } from "../common/enum/tier.enum";
+import { Tier } from "../common/enum/tier";
 
 @Entity({name: 'VIRTUAL_CARD'})
 export class VirtualCard extends TadeusEntity {
@@ -12,20 +12,25 @@ export class VirtualCard extends TadeusEntity {
     @Generated("uuid")
     code?: string;
 
-    @Column({name: "DONATION_POOL", type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
-    donationPool: number = 0;
+    @Column({
+        name: "DONATION_POOL",
+        type: 'decimal',
+        default: 0,
+        transformer: new NumberColumnTransformer()
+    }) donationPool: number = 0;
 
-    @Column({name: "PERSONAL_POOL", type: 'decimal', default: 0, transformer: new NumberColumnTransformer()})
-    personalPool: number = 0;
+    @Column({
+        name: "PERSONAL_POOL",
+        type: 'decimal',
+        default: 0,
+        transformer: new NumberColumnTransformer()
+    }) personalPool: number = 0;
 
-    @Column({name: "STATUS"})
-    status: string = 'NOT_ACTIVE';
+    @Column({ name: "STATUS" }) status: string = 'NOT_ACTIVE';
 
-    @Column({name: 'TIER', type: 'text', default: TierEnum.RUBIN})
-    tier: TierEnum = TierEnum.RUBIN;
+    @Column({ name: 'TIER', type: 'text', default: Tier.RUBIN }) tier: Tier = Tier.RUBIN;
 
-    @Column({name: 'EXPIRED_AT', nullable: true})
-    expiredAt?: Date;
+    @Column({ name: 'EXPIRED_AT', nullable: true }) expiredAt?: Date;
 
     constructor(ID: string) {
         super();

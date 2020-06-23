@@ -2,7 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { Ngo } from "../../../entity/ngo.entity";
 import { VirtualCard } from "../../../entity/virtual-card.entity";
 import { User } from "../../../entity/user.entity";
-import { TierEnum } from "../../../common/enum/tier.enum";
+import { Tier } from "../../../common/enum/tier";
 
 export class MainResponse {
     @ApiProperty()
@@ -23,12 +23,9 @@ export class MainResponse {
     selfPayoutDate: Date;
     @ApiProperty()
     selfPayoutPossible: boolean;
-    @ApiProperty()
-    activeCard: boolean = false;
-    @ApiProperty()
-    tier: TierEnum;
-    @ApiProperty()
-    canChangeNgo: boolean
+    @ApiProperty() activeCard: boolean = false;
+    @ApiProperty() tier: Tier;
+    @ApiProperty() canChangeNgo: boolean
 
     constructor(user: User, card: VirtualCard, activity: number, payout: Date, possible: boolean, ngoChange: boolean) {
         this.ngo = user.ngo;

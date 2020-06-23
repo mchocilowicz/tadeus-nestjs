@@ -1,26 +1,22 @@
-import {Controller, Get, Query, UseGuards} from "@nestjs/common";
-import {Transaction} from "../../../entity/transaction.entity";
-import {TransactionStatus} from "../../../common/enum/status.enum";
-import {ApiBearerAuth, ApiHeader} from "@nestjs/swagger";
-import {Roles} from "../../../common/decorators/roles.decorator";
-import {RoleEnum} from "../../../common/enum/role.enum";
-import {JwtAuthGuard} from "../../../common/guards/jwt.guard";
-import {RolesGuard} from "../../../common/guards/roles.guard";
-import {Const} from "../../../common/util/const";
-import {roundToTwo} from "../../../common/util/functions";
+import { Controller, Get, Query, UseGuards } from "@nestjs/common";
+import { Transaction } from "../../../entity/transaction.entity";
+import { TransactionStatus } from "../../../common/enum/status.enum";
+import { ApiBearerAuth, ApiHeader } from "@nestjs/swagger";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { Const } from "../../../common/util/const";
+import { roundToTwo } from "../../../common/util/functions";
 
 
 const moment = require("moment");
 const _ = require('lodash');
 
-@Controller()
-@ApiBearerAuth()
-@ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
+@Controller() @ApiBearerAuth() @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
 export class ReportsController {
 
-    @Get('dates')
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('dates') @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async getReportsDates() {
         const dates = await Transaction.createQueryBuilder('t')
             .select("to_char(t.createdAt,'YYYY-MM')", 'date')
@@ -30,9 +26,7 @@ export class ReportsController {
         return dates.map(e => e.date);
     }
 
-    @Get()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     async getReports(@Query() query: { date: string }) {
         let date = moment().format('YYYY-MM');
 

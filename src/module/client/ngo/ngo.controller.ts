@@ -1,14 +1,5 @@
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    Get,
-    HttpCode,
-    Logger,
-    Put,
-    Query,
-    Req,
-    UseGuards
+    BadRequestException, Body, Controller, Get, HttpCode, Logger, Put, Query, Req, UseGuards
 } from "@nestjs/common";
 import { getConnection, SelectQueryBuilder } from "typeorm";
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
@@ -16,7 +7,7 @@ import { Ngo } from "../../../entity/ngo.entity";
 import { Const } from "../../../common/util/const";
 import { NgoType } from "../../../entity/ngo-type.entity";
 import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
+import { RoleType } from "../../../common/enum/roleType";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
 import { CityResponse } from "../../../models/common/response/city.response";
@@ -35,10 +26,7 @@ export class NgoController {
     private readonly logger = new Logger(NgoController.name);
 
     @Put()
-    @HttpCode(200)
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @HttpCode(200) @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiTags('ngo')
@@ -74,10 +62,7 @@ export class NgoController {
         });
     }
 
-    @Get()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiQuery({name: 'city', type: "string", description: 'city id', required: false})
     @ApiQuery({name: 'ngoType', type: "string", description: 'ngo-type id', required: false})
     @ApiQuery({name: 'longitude', type: "number", description: 'longitude of user', required: false})
@@ -108,10 +93,7 @@ export class NgoController {
             .getMany()
     }
 
-    @Get('type')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('type') @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: NgoType, isArray: true})
     @ApiTags('ngo')
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
@@ -119,10 +101,7 @@ export class NgoController {
         return NgoType.find();
     }
 
-    @Get('city')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.CLIENT)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('city') @ApiBearerAuth() @Roles(RoleType.CLIENT) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiResponse({status: 200, type: CityResponse, isArray: true})
     @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
     @ApiTags('ngo')

@@ -33,7 +33,7 @@ import { PhonePrefix } from "../../../entity/phone-prefix.entity";
 import { Address } from "../../../entity/address.entity";
 import { NgoSaveRequest } from "../../../models/dashboard/request/ngo-save.request";
 import { Roles } from "../../../common/decorators/roles.decorator";
-import { RoleEnum } from "../../../common/enum/role.enum";
+import { RoleType } from "../../../common/enum/roleType";
 import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
 import { RolesGuard } from "../../../common/guards/roles.guard";
 
@@ -47,10 +47,7 @@ export class DashboardNgoController {
     constructor(private readonly codeService: CodeService) {
     }
 
-    @Get()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     getNgoList(@Query() query: any) {
         let sql = Ngo.createQueryBuilder('n')
@@ -89,10 +86,7 @@ export class DashboardNgoController {
         response.sendFile('ngo.xlsx', {root: 'public/excel'});
     }
 
-    @Get(':ID')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get(':ID') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async getNgoById(@Param('ID') ngoId: string) {
         let ngo = await Ngo.createQueryBuilder('n')
@@ -142,10 +136,7 @@ export class DashboardNgoController {
         }
     }
 
-    @Post()
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post() @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiBody({type: NgoSaveRequest})
     async create(@Body() dto: NgoSaveRequest) {
@@ -202,10 +193,7 @@ export class DashboardNgoController {
         });
     }
 
-    @Put(':ID')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Put(':ID') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     async updateNgoData(@Param('ID') ngoID: string, @Body() dto: NgoSaveRequest) {
         getConnection().transaction(async (entityManager: EntityManager) => {
@@ -270,10 +258,7 @@ export class DashboardNgoController {
 
     }
 
-    @Post("import")
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post("import") @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('file', {
@@ -306,10 +291,7 @@ export class DashboardNgoController {
         this.logger.log("Ended to process excel file with NGO");
     }
 
-    @Post(':ID/image')
-    @ApiBearerAuth()
-    @Roles(RoleEnum.DASHBOARD)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Post(':ID/image') @ApiBearerAuth() @Roles(RoleType.DASHBOARD) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
     @ApiConsumes('multipart/form-data')
     @UseInterceptors(FileInterceptor('image', {

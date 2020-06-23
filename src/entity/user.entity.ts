@@ -7,7 +7,7 @@ import { Opinion } from "./opinion.entity";
 import { Phone } from "./phone.entity";
 import { TadeusEntity } from "./base.entity";
 import { UserPayout } from "./user-payout.entity";
-import { RoleEnum } from "../common/enum/role.enum";
+import { RoleType } from "../common/enum/roleType";
 import { NumberColumnTransformer } from "../common/util/number-column.transformer";
 import { Ngo } from "./ngo.entity";
 import { Status, TransactionStatus } from "../common/enum/status.enum";
@@ -83,17 +83,17 @@ export class User extends TadeusEntity {
 
     static getUserWithClientData(accountId: string) {
         return this.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('user.phone', 'phone')
-            .leftJoinAndSelect('phone.prefix', 'prefix')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoinAndSelect('user.card', 'card')
-            .leftJoinAndSelect('user.ngo', 'ngo')
-            .leftJoinAndSelect('ngo.type', 'type')
-            .where(`account.id = :id`, {id: accountId})
-            .andWhere(`role.value = :role`, {role: RoleEnum.CLIENT})
-            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
-            .getOne();
+                   .leftJoinAndSelect('user.account', 'account')
+                   .leftJoinAndSelect('user.phone', 'phone')
+                   .leftJoinAndSelect('phone.prefix', 'prefix')
+                   .leftJoinAndSelect('account.role', 'role')
+                   .leftJoinAndSelect('user.card', 'card')
+                   .leftJoinAndSelect('user.ngo', 'ngo')
+                   .leftJoinAndSelect('ngo.type', 'type')
+                   .where(`account.id = :id`, { id: accountId })
+                   .andWhere(`role.value = :role`, { role: RoleType.CLIENT })
+                   .andWhere(`account.status = :status`, {status: Status.ACTIVE})
+                   .getOne();
     }
 
     static getUserForTransaction(code: string, prefix: number, phone: number) {
@@ -106,33 +106,33 @@ export class User extends TadeusEntity {
 
     static getUserForTransactionByCode(code: string) {
         return this.createQueryBuilder('user')
-            .leftJoin('user.phone', 'phone')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoin('account.role', 'role')
-            .leftJoin('phone.prefix', 'prefix')
-            .leftJoinAndSelect('user.card', 'virtual-card')
-            .leftJoinAndSelect('user.ngo', 'ngo')
-            .leftJoinAndSelect('ngo.card', 'physical-card')
-            .where('virtual-card.code = :code', {code: code})
-            .andWhere('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.status = :status', {status: Status.ACTIVE})
-            .getOne();
+                   .leftJoin('user.phone', 'phone')
+                   .leftJoinAndSelect('user.account', 'account')
+                   .leftJoin('account.role', 'role')
+                   .leftJoin('phone.prefix', 'prefix')
+                   .leftJoinAndSelect('user.card', 'virtual-card')
+                   .leftJoinAndSelect('user.ngo', 'ngo')
+                   .leftJoinAndSelect('ngo.card', 'physical-card')
+                   .where('virtual-card.code = :code', { code: code })
+                   .andWhere('role.value = :role', { role: RoleType.CLIENT })
+                   .andWhere('account.status = :status', {status: Status.ACTIVE})
+                   .getOne();
     }
 
     static getUserForTransactionByPhone(prefix: number, phone: number) {
         return this.createQueryBuilder('user')
-            .leftJoin('user.phone', 'phone')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoin('account.role', 'role')
-            .leftJoin('phone.prefix', 'prefix')
-            .leftJoinAndSelect('user.card', 'virtual-card')
-            .leftJoinAndSelect('user.ngo', 'ngo')
-            .leftJoinAndSelect('ngo.card', 'physical-card')
-            .where('role.value = :role', {role: RoleEnum.CLIENT})
-            .andWhere('account.status = :status', {status: Status.ACTIVE})
-            .andWhere('prefix.value = :prefix', {prefix: prefix})
-            .andWhere('phone.value = :phone', {phone: phone})
-            .getOne();
+                   .leftJoin('user.phone', 'phone')
+                   .leftJoinAndSelect('user.account', 'account')
+                   .leftJoin('account.role', 'role')
+                   .leftJoin('phone.prefix', 'prefix')
+                   .leftJoinAndSelect('user.card', 'virtual-card')
+                   .leftJoinAndSelect('user.ngo', 'ngo')
+                   .leftJoinAndSelect('ngo.card', 'physical-card')
+                   .where('role.value = :role', { role: RoleType.CLIENT })
+                   .andWhere('account.status = :status', {status: Status.ACTIVE})
+                   .andWhere('prefix.value = :prefix', {prefix: prefix})
+                   .andWhere('phone.value = :phone', {phone: phone})
+                   .getOne();
     }
 
     static findTopDetailsSortedByCollectedMoney() {
@@ -144,29 +144,29 @@ export class User extends TadeusEntity {
 
     static findUserByPhoneAndPrefix(phone: number, prefix: number) {
         return this.createQueryBuilder('user')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .leftJoin('user.phone', 'phone')
-            .leftJoin('phone.prefix', 'prefix')
-            .where('role.value = :name', {name: RoleEnum.CLIENT})
-            .andWhere('phone.value = :phone', {phone: phone})
-            .andWhere('prefix.value = :prefix', {prefix: prefix})
-            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
-            .getOne();
+                   .leftJoinAndSelect('user.account', 'account')
+                   .leftJoinAndSelect('account.role', 'role')
+                   .leftJoin('user.phone', 'phone')
+                   .leftJoin('phone.prefix', 'prefix')
+                   .where('role.value = :name', { name: RoleType.CLIENT })
+                   .andWhere('phone.value = :phone', {phone: phone})
+                   .andWhere('prefix.value = :prefix', {prefix: prefix})
+                   .andWhere(`account.status = :status`, {status: Status.ACTIVE})
+                   .getOne();
     }
 
     static findUserForVerification(phone: number, prefix: number, code: number) {
         return this.createQueryBuilder('user')
-            .leftJoin('user.phone', 'phone')
-            .leftJoin('phone.prefix', 'prefix')
-            .leftJoinAndSelect('user.account', 'account')
-            .leftJoinAndSelect('account.role', 'role')
-            .where('role.value = :name', {name: RoleEnum.CLIENT})
-            .andWhere('phone.value = :phone', {phone: phone})
-            .andWhere('prefix.value = :prefix', {prefix: prefix})
-            .andWhere('account.code = :code', {code: code})
-            .andWhere(`account.status = :status`, {status: Status.ACTIVE})
-            .getOne();
+                   .leftJoin('user.phone', 'phone')
+                   .leftJoin('phone.prefix', 'prefix')
+                   .leftJoinAndSelect('user.account', 'account')
+                   .leftJoinAndSelect('account.role', 'role')
+                   .where('role.value = :name', { name: RoleType.CLIENT })
+                   .andWhere('phone.value = :phone', {phone: phone})
+                   .andWhere('prefix.value = :prefix', {prefix: prefix})
+                   .andWhere('account.code = :code', {code: code})
+                   .andWhere(`account.status = :status`, {status: Status.ACTIVE})
+                   .getOne();
     }
 
     static findOneWithHistoryData(userId: string) {

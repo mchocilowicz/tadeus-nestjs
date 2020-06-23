@@ -5,7 +5,7 @@ import { User } from "../../../entity/user.entity";
 import { UserInformationRequest } from "../../../models/common/request/user-Information.request";
 import { handleException } from "../../../common/util/functions";
 import { CodeVerificationRequest } from "../../../models/common/request/code-verification.request";
-import { RoleEnum } from "../../../common/enum/role.enum";
+import { RoleType } from "../../../common/enum/roleType";
 import { getConnection } from "typeorm";
 import { CryptoService } from "../../../common/service/crypto.service";
 import { Account } from "../../../entity/account.entity";
@@ -49,7 +49,7 @@ export class RegisterService {
             handleException(e, 'user', this.logger)
         }
 
-        let id = this.cryptoService.encryptId(account.id, RoleEnum.CLIENT);
+        let id = this.cryptoService.encryptId(account.id, RoleType.CLIENT);
         return this.jwtService.signToken({id: id})
     }
 
@@ -61,7 +61,7 @@ export class RegisterService {
         }
         let account = user.account;
 
-        if (!account || !account.code || account.role.value !== RoleEnum.CLIENT) {
+        if (!account || !account.code || account.role.value !== RoleType.CLIENT) {
             this.logger.error(`User ${ user.id } does not have CLIENT account`);
             throw new BadRequestException('internal_server_error');
         }

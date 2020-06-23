@@ -1,40 +1,30 @@
 import {
-    BadRequestException,
-    Body,
-    Controller,
-    Get,
-    Logger,
-    NotFoundException,
-    Post,
-    Query,
-    Req,
-    UseGuards
+    BadRequestException, Body, Controller, Get, Logger, NotFoundException, Post, Query, Req, UseGuards
 } from "@nestjs/common";
-import {ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags} from "@nestjs/swagger";
-import {Const} from "../../common/util/const";
-import {CodeVerificationRequest} from "../../models/common/request/code-verification.request";
-import {PhoneRequest} from "../../models/common/request/phone.request";
-import {RoleEnum} from "../../common/enum/role.enum";
-import {LoginService} from "../common/login.service";
-import {User} from "../../entity/user.entity";
-import {Roles} from "../../common/decorators/roles.decorator";
-import {JwtAuthGuard} from "../../common/guards/jwt.guard";
-import {RolesGuard} from "../../common/guards/roles.guard";
-import {PartnerDetailsResponse} from "../../models/common/response/partner-details.response";
-import {TradingPoint} from "../../entity/trading-point.entity";
-import {Transaction} from "../../entity/transaction.entity";
-import {CodeService} from "../../common/service/code.service";
-import {Terminal} from "../../entity/terminal.entity";
-import {Account} from "../../entity/account.entity";
-import {PartnerPayment} from "../../entity/partner-payment.entity";
-import {PartnerVerifyQuery} from "../../models/partner/partner-verify.query";
-import {PartnerVerifyResponse} from "../../models/partner/response/partner-verify.response";
-import {TransactionHistoryResponse} from "../../models/partner/transaction-history.response";
+import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { Const } from "../../common/util/const";
+import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
+import { PhoneRequest } from "../../models/common/request/phone.request";
+import { RoleType } from "../../common/enum/roleType";
+import { LoginService } from "../common/login.service";
+import { User } from "../../entity/user.entity";
+import { Roles } from "../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../common/guards/jwt.guard";
+import { RolesGuard } from "../../common/guards/roles.guard";
+import { PartnerDetailsResponse } from "../../models/common/response/partner-details.response";
+import { TradingPoint } from "../../entity/trading-point.entity";
+import { Transaction } from "../../entity/transaction.entity";
+import { CodeService } from "../../common/service/code.service";
+import { Terminal } from "../../entity/terminal.entity";
+import { Account } from "../../entity/account.entity";
+import { PartnerPayment } from "../../entity/partner-payment.entity";
+import { PartnerVerifyQuery } from "../../models/partner/partner-verify.query";
+import { PartnerVerifyResponse } from "../../models/partner/response/partner-verify.response";
+import { TransactionHistoryResponse } from "../../models/partner/transaction-history.response";
 
 const moment = require('moment');
 
-@Controller()
-@ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
+@Controller() @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
 export class PartnerController {
     private readonly logger = new Logger(PartnerController.name);
 
@@ -57,10 +47,7 @@ export class PartnerController {
         await this.service.signInTerminal(phone);
     }
 
-    @Get()
-    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get() @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER) @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
     @ApiTags('partner')
     @ApiResponse({status: 200, type: PartnerDetailsResponse})
@@ -91,10 +78,7 @@ export class PartnerController {
         return new PartnerDetailsResponse(account.ID, partner, hasPayments, partner.price, paymentPrice, paymentAt)
     }
 
-    @Get('history')
-    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('history') @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER) @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
     @ApiTags('partner')
     @ApiQuery({name: 'terminal', type: "string", description: 'Terminal ID', required: false})
@@ -172,10 +156,7 @@ export class PartnerController {
         return `${moment(date).startOf(format).format(Const.DATE_FORMAT)} - ${moment(date).endOf(format).format(Const.DATE_FORMAT)}`;
     }
 
-    @Get('verify')
-    @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER)
-    @Roles(RoleEnum.TERMINAL)
-    @UseGuards(JwtAuthGuard, RolesGuard)
+    @Get('verify') @ApiHeader(Const.SWAGGER_AUTHORIZATION_HEADER) @Roles(RoleType.TERMINAL) @UseGuards(JwtAuthGuard, RolesGuard)
     @ApiBearerAuth()
     @ApiTags('partner')
     @ApiQuery({name: 'card', type: "string", description: 'Card code', required: false})
