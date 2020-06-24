@@ -2,40 +2,40 @@ import {
     BadRequestException, Body, Controller, Get, Logger, NotFoundException, Post, Query, Req, UseGuards
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { PhoneRequest } from "../../models/common/request/phone.request";
-import { RoleType } from "../../common/enum/roleType";
-import { LoginService } from "../common/login.service";
-import { User } from "../../entity/user.entity";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { PartnerDetailsResponse } from "../../models/common/response/partner-details.response";
-import { TradingPoint } from "../../entity/trading-point.entity";
-import { Transaction } from "../../entity/transaction.entity";
-import { CodeService } from "../../common/service/code.service";
-import { Terminal } from "../../entity/terminal.entity";
-import { Account } from "../../entity/account.entity";
-import { PartnerPayment } from "../../entity/partner-payment.entity";
-import { PartnerVerifyQuery } from "../../models/partner/partner-verify.query";
-import { PartnerVerifyResponse } from "../../models/partner/response/partner-verify.response";
-import { TransactionHistoryResponse } from "../../models/partner/transaction-history.response";
+import { Const } from "../../../common/util/const";
+import { CodeVerificationRequest } from "../../../models/common/request/code-verification.request";
+import { PhoneRequest } from "../../../models/common/request/phone.request";
+import { RoleType } from "../../../common/enum/roleType";
+import { LoginService } from "../../common/login.service";
+import { User } from "../../../entity/user.entity";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
+import { PartnerDetailsResponse } from "../../../models/common/response/partner-details.response";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { Transaction } from "../../../entity/transaction.entity";
+import { CodeService } from "../../../common/service/code.service";
+import { Terminal } from "../../../entity/terminal.entity";
+import { Account } from "../../../entity/account.entity";
+import { PartnerPayment } from "../../../entity/partner-payment.entity";
+import { PartnerVerifyQuery } from "../../../models/partner/partner-verify.query";
+import { PartnerVerifyResponse } from "../../../models/partner/response/partner-verify.response";
+import { TransactionHistoryResponse } from "../../../models/partner/transaction-history.response";
 
 const moment = require('moment');
 
 @Controller() @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-export class PartnerController {
-    private readonly logger = new Logger(PartnerController.name);
+export class PartnerRootController {
+    private readonly logger = new Logger(PartnerRootController.name);
 
     constructor(private readonly service: LoginService, private readonly codeService: CodeService) {
     }
 
-    @Post('code')
-    @ApiResponse({status: 200, type: 'string', description: 'Authorization token'})
-    @ApiTags('auth')
-    @ApiBody({type: CodeVerificationRequest})
-    verifyCode(@Body() dto: CodeVerificationRequest) {
+    @Post('code') @ApiResponse({
+        status: 200,
+        type: 'string',
+        description: 'Authorization token'
+    }) @ApiTags('auth') @ApiBody({ type: CodeVerificationRequest }) verifyCode(@Body() dto: CodeVerificationRequest) {
         return this.service.checkCodeForTerminal(dto);
     }
 

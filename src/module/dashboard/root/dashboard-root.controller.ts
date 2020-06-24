@@ -1,26 +1,23 @@
 import { Body, Controller, Get, HttpCode, NotFoundException, Param, Post, Put, Res, UseGuards } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Const } from "../../common/util/const";
-import { PhoneRequest } from "../../models/common/request/phone.request";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { LoginService } from "../common/login.service";
-import { City } from "../../entity/city.entity";
-import { TradingPointType } from "../../entity/trading-point-type.entity";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { RoleType } from "../../common/enum/roleType";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
+import { Const } from "../../../common/util/const";
+import { PhoneRequest } from "../../../models/common/request/phone.request";
+import { CodeVerificationRequest } from "../../../models/common/request/code-verification.request";
+import { LoginService } from "../../common/login.service";
+import { City } from "../../../entity/city.entity";
+import { TradingPointType } from "../../../entity/trading-point-type.entity";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
 
 @Controller() @ApiTags('auth')
-export class DashboardController {
+export class DashboardRootController {
 
     constructor(private readonly service: LoginService) {
     }
 
-    @Post('signIn') @HttpCode(200)
-    @ApiResponse({status: 200})
-    @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-    @ApiBody({type: PhoneRequest})
+    @Post('signIn') @HttpCode(200) @ApiResponse({ status: 200 }) @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER) @ApiBody({ type: PhoneRequest })
     async dashboardSignIn(@Body() phone: PhoneRequest) {
         await this.service.signInDashboard(phone);
     }

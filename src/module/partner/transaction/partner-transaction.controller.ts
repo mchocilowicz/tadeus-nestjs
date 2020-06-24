@@ -1,7 +1,16 @@
 import {
     BadRequestException,
     Body,
-    Controller, Get, InternalServerErrorException, Logger, NotFoundException, Param, Post, Query, Req, UseGuards
+    Controller,
+    Get,
+    InternalServerErrorException,
+    Logger,
+    NotFoundException,
+    Param,
+    Post,
+    Query,
+    Req,
+    UseGuards
 } from "@nestjs/common";
 import { CalculationService } from "../../../common/service/calculation.service";
 import { CodeService } from "../../../common/service/code.service";
@@ -134,8 +143,7 @@ export class PartnerTransactionController {
                 }
             } else {
                 return {
-                    token: user.account.firebaseToken,
-                    api: {
+                    token: user.account.firebaseToken, api: {
                         status: transaction.status,
                         oldPrice: oldTransaction.price,
                         price: p,
@@ -145,16 +153,13 @@ export class PartnerTransactionController {
             }
         });
 
-        // this.firebaseService.getAdmin().messaging().send({
-        //     token: data.token,
-        //     data: data.data,
-        //     notification: {
-        //         title: 'Tadeus',
-        //         body: 'Korekta transakcji do akceptacji',
-        //     }
-        // })
-        //     .then(() => this.logger.log("Notification send"))
-        //     .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
+        this.firebaseService.getAdmin().messaging().send({
+            token: data.token, data: data.data, notification: {
+                title: 'Tadeus', body: 'Korekta transakcji do akceptacji',
+            }
+        })
+            .then(() => this.logger.log("Notification send"))
+            .catch((reason: any) => this.logger.error('Message not send. Reason: ' + reason));
 
         return data.api;
     }

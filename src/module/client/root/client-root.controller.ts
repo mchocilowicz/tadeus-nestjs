@@ -2,51 +2,48 @@ import {
     BadRequestException, Body, Controller, Get, HttpCode, Logger, Param, Post, Put, Req, Res, UseGuards
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiBody, ApiHeader, ApiResponse, ApiTags } from "@nestjs/swagger";
-import { Roles } from "../../common/decorators/roles.decorator";
-import { RoleType } from "../../common/enum/roleType";
-import { User } from "../../entity/user.entity";
-import { JwtAuthGuard } from "../../common/guards/jwt.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
+import { Roles } from "../../../common/decorators/roles.decorator";
+import { RoleType } from "../../../common/enum/roleType";
+import { User } from "../../../entity/user.entity";
+import { JwtAuthGuard } from "../../../common/guards/jwt.guard";
+import { RolesGuard } from "../../../common/guards/roles.guard";
 import { getConnection } from "typeorm";
-import { Const } from "../../common/util/const";
-import { MainResponse } from "../../models/common/response/main.response";
-import { ClientHistoryResponse } from "../../models/common/response/client-history.response";
-import { VirtualCardResponse } from "../../models/common/response/virtual-card.response";
-import { CodeService } from "../../common/service/code.service";
-import { CodeVerificationRequest } from "../../models/common/request/code-verification.request";
-import { LoginService } from "../common/login.service";
-import { Transaction } from "../../entity/transaction.entity";
-import { NewPhoneRequest } from "../../models/common/request/new-phone.request";
-import { SignInResponse } from "../../models/common/response/signIn.response";
-import { VirtualCard } from "../../entity/virtual-card.entity";
-import { TadeusEntity } from "../../entity/base.entity";
-import { groupDatesByComponent, roundToTwo } from "../../common/util/functions";
-import { CalculationService } from "../../common/service/calculation.service";
-import { TradingPoint } from "../../entity/trading-point.entity";
-import { UserPayout } from "../../entity/user-payout.entity";
-import { FirebaseTokenRequest } from "../../models/client/request/firebase-token.request";
-import { Account } from "../../entity/account.entity";
-import { CorrectionRequest } from "../../models/client/request/correction.request";
-import { TransactionStatus } from "../../common/enum/status.enum";
-import { Ngo } from "../../entity/ngo.entity";
-import { PhysicalCard } from "../../entity/physical-card.entity";
-import { TierService } from "../common/tier.service";
+import { Const } from "../../../common/util/const";
+import { MainResponse } from "../../../models/common/response/main.response";
+import { ClientHistoryResponse } from "../../../models/common/response/client-history.response";
+import { VirtualCardResponse } from "../../../models/common/response/virtual-card.response";
+import { CodeService } from "../../../common/service/code.service";
+import { CodeVerificationRequest } from "../../../models/common/request/code-verification.request";
+import { LoginService } from "../../common/login.service";
+import { Transaction } from "../../../entity/transaction.entity";
+import { NewPhoneRequest } from "../../../models/common/request/new-phone.request";
+import { SignInResponse } from "../../../models/common/response/signIn.response";
+import { VirtualCard } from "../../../entity/virtual-card.entity";
+import { TadeusEntity } from "../../../entity/base.entity";
+import { groupDatesByComponent, roundToTwo } from "../../../common/util/functions";
+import { CalculationService } from "../../../common/service/calculation.service";
+import { TradingPoint } from "../../../entity/trading-point.entity";
+import { UserPayout } from "../../../entity/user-payout.entity";
+import { FirebaseTokenRequest } from "../../../models/client/request/firebase-token.request";
+import { Account } from "../../../entity/account.entity";
+import { CorrectionRequest } from "../../../models/client/request/correction.request";
+import { TransactionStatus } from "../../../common/enum/status.enum";
+import { Ngo } from "../../../entity/ngo.entity";
+import { PhysicalCard } from "../../../entity/physical-card.entity";
+import { TierService } from "../../common/tier.service";
 
 const _ = require('lodash');
 const moment = require('moment');
 
 @Controller() @ApiBearerAuth() @ApiHeader(Const.SWAGGER_LANGUAGE_HEADER)
-export class ClientController {
+export class ClientRootController {
 
-    private readonly logger = new Logger(ClientController.name);
+    private readonly logger = new Logger(ClientRootController.name);
 
-    constructor(private readonly codeService: CodeService,
-                private readonly service: LoginService,
-                private readonly calService: CalculationService) {
+    constructor(private readonly codeService: CodeService, private readonly service: LoginService, private readonly calService: CalculationService) {
     }
 
-    @Post('signIn')
-    @ApiTags('auth')
+    @Post('signIn') @ApiTags('auth')
     @HttpCode(200)
     @ApiResponse({status: 200, type: SignInResponse})
     @ApiBody({type: NewPhoneRequest})

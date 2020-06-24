@@ -1,7 +1,7 @@
-import {Step} from "../../common/enum/status.enum";
-import {Terminal} from "../../entity/terminal.entity";
-import {TradingPoint} from "../../entity/trading-point.entity";
-import {Transaction} from "../../entity/transaction.entity";
+import { Step, TransactionStatus } from "../../common/enum/status.enum";
+import { Terminal } from "../../entity/terminal.entity";
+import { TradingPoint } from "../../entity/trading-point.entity";
+import { Transaction } from "../../entity/transaction.entity";
 
 export class TransactionHistoryResponse {
     donationPercentage: number;
@@ -41,7 +41,7 @@ export class TransactionHistoryResponse {
         this.tradingPointXp = transaction.tradingPointXp
         this.ngoDonation = transaction.ngoDonation
         this.price = transaction.price
-        this.status = transaction.status
+        this.status = transaction.status === TransactionStatus.CORRECTED ? TransactionStatus.ACCEPTED : transaction.status;
         this.isCorrection = transaction.isCorrection
         this.isPaid = transaction.isPaid
         this.class = transaction.class
